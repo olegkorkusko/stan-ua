@@ -78,6 +78,9 @@ export interface Config {
     customers: Customer;
     'promo-codes': PromoCode;
     reviews: Review;
+    pages: Page;
+    posts: Post;
+    subscribers: Subscriber;
     media: Media;
     users: User;
     'payload-kv': PayloadKv;
@@ -97,6 +100,9 @@ export interface Config {
     customers: CustomersSelect<false> | CustomersSelect<true>;
     'promo-codes': PromoCodesSelect<false> | PromoCodesSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
+    subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -200,6 +206,13 @@ export interface Product {
    * Заповніть, якщо хочете показати перекреслену ціну.
    */
   oldPrice?: number | null;
+  generateColors?: (number | Color)[] | null;
+  generateSizes?: (number | Size)[] | null;
+  generateStock?: number | null;
+  /**
+   * Наявні комбінації лишаться недоторканими.
+   */
+  generateVariants?: boolean | null;
   variants?:
     | {
         color?: (number | null) | Color;
@@ -467,6 +480,10 @@ export interface Order {
    */
   prepaidAmount?: number | null;
   paymentReference?: string | null;
+  /**
+   * ID чека в Checkbox. Порожньо — ПРРО ще не підключено.
+   */
+  fiscalReceipt?: string | null;
   fulfillmentStatus?: ('new' | 'packing' | 'shipped' | 'done' | 'cancelled') | null;
   trackingNumber?: string | null;
   accessGranted?: boolean | null;
@@ -554,6 +571,109 @@ export interface Review {
   product?: (number | null) | Product;
   course?: (number | null) | Course;
   status?: ('pending' | 'approved' | 'rejected') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Тексти сторінок «Про бренд», «Доставка й оплата», «Оферта».
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  title: string;
+  /**
+   * Заповнюється автоматично з назви. Змінюйте, тільки якщо розумієте наслідки для SEO.
+   */
+  slug?: string | null;
+  intro?: string | null;
+  cover?: (number | null) | Media;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Порожньо — береться назва сторінки.
+   */
+  metaTitle?: string | null;
+  /**
+   * До 160 символів. Це те, що людина бачить у пошуку під заголовком.
+   */
+  metaDescription?: string | null;
+  ogImage?: (number | null) | Media;
+  status?: ('draft' | 'published') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  /**
+   * Заповнюється автоматично з назви. Змінюйте, тільки якщо розумієте наслідки для SEO.
+   */
+  slug?: string | null;
+  excerpt?: string | null;
+  cover?: (number | null) | Media;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Наприклад: вʼязання, догляд, подарунки.
+   */
+  tags?: string[] | null;
+  relatedProducts?: (number | Product)[] | null;
+  relatedCourses?: (number | Course)[] | null;
+  /**
+   * Порожньо — береться назва сторінки.
+   */
+  metaTitle?: string | null;
+  /**
+   * До 160 символів. Це те, що людина бачить у пошуку під заголовком.
+   */
+  metaDescription?: string | null;
+  ogImage?: (number | null) | Media;
+  publishedAt?: string | null;
+  status?: ('draft' | 'published') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscribers".
+ */
+export interface Subscriber {
+  id: number;
+  email: string;
+  source?: ('footer' | 'checkout' | 'manual') | null;
+  active?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -648,6 +768,18 @@ export interface PayloadLockedDocument {
         value: number | Review;
       } | null)
     | ({
+        relationTo: 'pages';
+        value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'subscribers';
+        value: number | Subscriber;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -718,6 +850,10 @@ export interface ProductsSelect<T extends boolean = true> {
   images?: T;
   price?: T;
   oldPrice?: T;
+  generateColors?: T;
+  generateSizes?: T;
+  generateStock?: T;
+  generateVariants?: T;
   variants?:
     | T
     | {
@@ -865,6 +1001,7 @@ export interface OrdersSelect<T extends boolean = true> {
   promoCode?: T;
   prepaidAmount?: T;
   paymentReference?: T;
+  fiscalReceipt?: T;
   fulfillmentStatus?: T;
   trackingNumber?: T;
   accessGranted?: T;
@@ -936,6 +1073,55 @@ export interface ReviewsSelect<T extends boolean = true> {
   product?: T;
   course?: T;
   status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  intro?: T;
+  cover?: T;
+  content?: T;
+  metaTitle?: T;
+  metaDescription?: T;
+  ogImage?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  cover?: T;
+  content?: T;
+  tags?: T;
+  relatedProducts?: T;
+  relatedCourses?: T;
+  metaTitle?: T;
+  metaDescription?: T;
+  ogImage?: T;
+  publishedAt?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscribers_select".
+ */
+export interface SubscribersSelect<T extends boolean = true> {
+  email?: T;
+  source?: T;
+  active?: T;
   updatedAt?: T;
   createdAt?: T;
 }

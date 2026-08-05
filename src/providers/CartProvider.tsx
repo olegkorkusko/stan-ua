@@ -10,6 +10,8 @@ import {
   type ReactNode,
 } from 'react'
 
+import { track } from '@/components/site/Analytics'
+
 export type CartItem = {
   /** Унікальний ключ позиції: товар + варіація, або курс. */
   key: string
@@ -63,6 +65,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [items, hydrated])
 
   const add: CartContext['add'] = useCallback((item, quantity = 1) => {
+    track('add_to_cart', {
+      currency: 'UAH',
+      value: item.price * quantity,
+      items: [{ item_id: item.id, item_name: item.title, price: item.price, quantity }],
+    })
+
     setItems((current) => {
       const existing = current.find((i) => i.key === item.key)
       if (!existing) return [...current, { ...item, quantity }]

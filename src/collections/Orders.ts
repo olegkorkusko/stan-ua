@@ -155,6 +155,12 @@ export const Orders: CollectionConfig = {
           ],
         },
         { name: 'paymentReference', type: 'text', label: 'Ідентифікатор платежу', admin: { readOnly: true } },
+        {
+          name: 'fiscalReceipt',
+          type: 'text',
+          label: 'Фіскальний чек',
+          admin: { readOnly: true, description: 'ID чека в Checkbox. Порожньо — ПРРО ще не підключено.' },
+        },
       ],
     },
     {

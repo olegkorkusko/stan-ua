@@ -5,8 +5,12 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { ProductCard } from '@/components/site/ProductCard'
+import { JsonLd, productSchema } from '@/components/site/JsonLd'
+import { KitAddons } from '@/components/site/KitAddons'
 import { ProductPurchase, type PurchaseVariant } from '@/components/site/ProductPurchase'
+import { Reviews } from '@/components/site/Reviews'
 import { imageAlt, imageUrl } from '@/lib/media'
+import type { Product } from '@/payload-types'
 import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
@@ -42,18 +46,27 @@ const ProductPage = async ({ params }: { params: Params }) => {
   const payload = await payloadClient()
   const categoryId = typeof product.category === 'object' ? product.category?.id : product.category
 
-  const related = categoryId
-    ? await payload.find({
-        collection: 'products',
-        where: {
-          status: { equals: 'published' },
-          category: { equals: categoryId },
-          id: { not_equals: product.id },
-        },
-        limit: 4,
-        depth: 2,
-      })
-    : { docs: [] }
+  const [related, reviews] = await Promise.all([
+    categoryId
+      ? payload.find({
+          collection: 'products',
+          where: {
+            status: { equals: 'published' },
+            category: { equals: categoryId },
+            id: { not_equals: product.id },
+          },
+          limit: 4,
+          depth: 2,
+        })
+      : Promise.resolve({ docs: [] }),
+    payload.find({
+      collection: 'reviews',
+      where: { status: { equals: 'approved' }, product: { equals: product.id } },
+      limit: 20,
+      depth: 0,
+      sort: '-createdAt',
+    }),
+  ])
 
   const images = Array.isArray(product.images) ? product.images : []
 
@@ -73,8 +86,24 @@ const ProductPage = async ({ params }: { params: Params }) => {
     }
   })
 
+  const ratingCount = reviews.docs.length
+  const ratingValue = ratingCount
+    ? Math.round((reviews.docs.reduce((sum, review) => sum + review.rating, 0) / ratingCount) * 10) / 10
+    : 0
+
   return (
     <div className="pb-24 pt-24 md:pt-32">
+      <JsonLd
+        data={productSchema({
+          name: product.title,
+          description: product.shortDescription,
+          image: imageUrl(images[0], 'wide'),
+          price: product.priceFrom ?? product.price,
+          inStock: Boolean(product.inStock),
+          url: `${process.env.NEXT_PUBLIC_SERVER_URL ?? ''}/shop/${product.slug}`,
+          rating: ratingCount ? { value: ratingValue, count: ratingCount } : null,
+        })}
+      />
       <div className="shell">
         <nav className="label mb-8 flex gap-2" aria-label="Навігація">
           <Link href="/shop" className="hover:text-ink">
@@ -134,6 +163,21 @@ const ProductPage = async ({ params }: { params: Params }) => {
               variants={variants}
             />
 
+            {product.isKit && (
+              <KitAddons
+                addons={(product.addons ?? [])
+                  .filter((addon): addon is Product => typeof addon === 'object')
+                  .map((addon) => ({
+                    id: String(addon.id),
+                    title: addon.title,
+                    price: addon.priceFrom ?? addon.price,
+                    slug: addon.slug ?? '',
+                    image: imageUrl(Array.isArray(addon.images) ? addon.images[0] : null, 'thumbnail') ?? undefined,
+                    inStock: Boolean(addon.inStock),
+                  }))}
+              />
+            )}
+
             {product.description && (
               <div className="prose prose-sm mt-10 max-w-none text-sm leading-relaxed text-muted">
                 <RichText data={product.description} />
@@ -156,6 +200,8 @@ const ProductPage = async ({ params }: { params: Params }) => {
             </dl>
           </div>
         </div>
+
+        <Reviews reviews={reviews.docs} target={{ product: product.id }} />
       </div>
 
       {related.docs.length > 0 && (

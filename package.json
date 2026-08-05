@@ -11,10 +11,12 @@
     "payload": "payload",
     "generate:types": "payload generate:types",
     "generate:importmap": "payload generate:importmap",
-    "seed": "payload run src/seed/index.ts"
+    "seed": "payload run src/seed/index.ts",
+    "seed:content": "payload run src/seed/content.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.87.0",
+    "@payloadcms/email-resend": "^3.87.0",
     "@payloadcms/next": "^3.87.0",
     "@payloadcms/plugin-seo": "^3.87.0",
     "@payloadcms/richtext-lexical": "^3.87.0",

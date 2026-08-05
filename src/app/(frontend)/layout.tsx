@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Manrope, Unbounded } from 'next/font/google'
 
+import { Analytics } from '@/components/site/Analytics'
 import { CartDrawer } from '@/components/site/CartDrawer'
 import { Footer } from '@/components/site/Footer'
 import { Header } from '@/components/site/Header'
@@ -72,6 +73,7 @@ const RootLayout = async ({ children }: { children: React.ReactNode }) => {
           <main>{children}</main>
           <Footer settings={settings} />
           <CartDrawer />
+          <Analytics ga={process.env.NEXT_PUBLIC_GA_ID} pixel={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
         </CartProvider>
       </body>
     </html>

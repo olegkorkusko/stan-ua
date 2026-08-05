@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { resendAdapter } from '@payloadcms/email-resend'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { en } from '@payloadcms/translations/languages/en'
@@ -9,6 +10,7 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { Categories, Colors, Sizes } from './collections/Attributes'
+import { Pages, Posts, Subscribers } from './collections/Content'
 import { CourseDirections, Courses } from './collections/Courses'
 import { Customers } from './collections/Customers'
 import { PromoCodes, Reviews } from './collections/Marketing'
@@ -41,6 +43,9 @@ export default buildConfig({
     Customers,
     PromoCodes,
     Reviews,
+    Pages,
+    Posts,
+    Subscribers,
     Media,
     Users,
   ],
@@ -64,6 +69,17 @@ export default buildConfig({
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URI || '' },
   }),
+  // Без ключа Resend листи просто пишуться в консоль — розробка не залежить
+  // від зовнішнього сервісу.
+  ...(process.env.RESEND_API_KEY
+    ? {
+        email: resendAdapter({
+          defaultFromAddress: process.env.EMAIL_FROM || 'noreply@mk.ua',
+          defaultFromName: 'МК',
+          apiKey: process.env.RESEND_API_KEY,
+        }),
+      }
+    : {}),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

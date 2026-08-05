@@ -3,7 +3,65 @@ import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 import { isAdmin, publishedOrAdmin } from '@/access'
 import { slugField } from '@/fields/slug'
 
-type Variant = { price?: number | null; stock?: number | null }
+type Variant = { price?: number | null; stock?: number | null; color?: unknown; size?: unknown }
+
+const asId = (value: unknown): number | null => {
+  if (typeof value === 'number') return value
+  if (value && typeof value === 'object' && 'id' in value) return Number((value as { id: number }).id)
+  return null
+}
+
+/**
+ * «Додати товар у кілька кліків»: замість створення рядка на кожну комбінацію
+ * власниця обирає кольори й розміри, ставить галочку — і після збереження
+ * отримує всю сітку варіацій з артикулами й однаковим стартовим залишком.
+ * Далі залишки правляться точково.
+ *
+ * Наявні комбінації не перезаписуються, а галочка знімається сама — щоб
+ * наступне збереження не затерло ручні правки.
+ */
+const generateVariants: CollectionBeforeChangeHook = ({ data, originalDoc }) => {
+  if (!data.generateVariants) return data
+
+  const colors = (Array.isArray(data.generateColors) ? data.generateColors : [])
+    .map(asId)
+    .filter((id): id is number => id !== null)
+  const sizes = (Array.isArray(data.generateSizes) ? data.generateSizes : [])
+    .map(asId)
+    .filter((id): id is number => id !== null)
+
+  if (colors.length === 0 && sizes.length === 0) {
+    data.generateVariants = false
+    return data
+  }
+
+  const stock = typeof data.generateStock === 'number' ? data.generateStock : 0
+  const prefix = String(data.slug || originalDoc?.slug || 'mk').slice(0, 8).toUpperCase()
+
+  const existing = new Map<string, Variant>()
+  for (const variant of (Array.isArray(data.variants) ? data.variants : []) as Variant[]) {
+    existing.set(`${asId(variant.color) ?? ''}-${asId(variant.size) ?? ''}`, variant)
+  }
+
+  const combos = (colors.length ? colors : [null]).flatMap((color) =>
+    (sizes.length ? sizes : [null]).map((size) => ({ color, size })),
+  )
+
+  data.variants = combos.map((combo, index) => {
+    const kept = existing.get(`${combo.color ?? ''}-${combo.size ?? ''}`)
+    if (kept) return kept
+
+    return {
+      color: combo.color ?? undefined,
+      size: combo.size ?? undefined,
+      sku: `${prefix}-${String(index + 1).padStart(2, '0')}`,
+      stock,
+    }
+  })
+
+  data.generateVariants = false
+  return data
+}
 
 /**
  * Ціна «від» і ознака наявності зберігаються полями, а не рахуються на льоту:
@@ -39,7 +97,9 @@ export const Products: CollectionConfig = {
     description: 'Готові прикраси, набори для створення та матеріали.',
   },
   access: { read: publishedOrAdmin, create: isAdmin, update: isAdmin, delete: isAdmin },
-  hooks: { beforeChange: [denormalise] },
+  // Порядок важливий: спершу розкладаємо сітку варіацій, потім рахуємо
+  // по ній ціну «від» і залишки.
+  hooks: { beforeChange: [generateVariants, denormalise] },
   fields: [
     {
       type: 'tabs',
@@ -91,6 +151,61 @@ export const Products: CollectionConfig = {
           description:
             'Якщо товар буває в різних кольорах чи розмірах — додайте варіації. Залишок ведеться по кожній окремо.',
           fields: [
+            {
+              type: 'collapsible',
+              label: 'Створити варіації за кольорами й розмірами',
+              admin: {
+                initCollapsed: true,
+                description:
+                  'Оберіть кольори й розміри, поставте галочку й збережіть — усі комбінації створяться самі.',
+              },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'generateColors',
+                      type: 'relationship',
+                      relationTo: 'colors',
+                      hasMany: true,
+                      label: 'Кольори',
+                      admin: { width: '50%' },
+                    },
+                    {
+                      name: 'generateSizes',
+                      type: 'relationship',
+                      relationTo: 'sizes',
+                      hasMany: true,
+                      label: 'Розміри',
+                      admin: { width: '50%' },
+                    },
+                  ],
+                },
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'generateStock',
+                      type: 'number',
+                      label: 'Залишок на кожну комбінацію',
+                      defaultValue: 1,
+                      min: 0,
+                      admin: { width: '50%' },
+                    },
+                    {
+                      name: 'generateVariants',
+                      type: 'checkbox',
+                      label: 'Створити при збереженні',
+                      defaultValue: false,
+                      admin: {
+                        width: '50%',
+                        description: 'Наявні комбінації лишаться недоторканими.',
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
             {
               name: 'variants',
               type: 'array',

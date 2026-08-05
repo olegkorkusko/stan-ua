@@ -1,8 +1,9 @@
 import crypto from 'crypto'
 import type { Payload } from 'payload'
 
-import { createCourseInvite, notifyAdmin } from '@/lib/telegram'
+import { createReceipt } from '@/lib/checkbox'
 import { formatPrice } from '@/lib/format'
+import { createCourseInvite, notifyAdmin } from '@/lib/telegram'
 
 export type CartLineInput = {
   kind: 'product' | 'course'
@@ -131,20 +132,33 @@ export const fulfillOrder = async (payload: Payload, orderId: number | string): 
   if (order.accessGranted) return
 
   const invites: string[] = []
+  const grants: { course: number; relatedOrder: number; grantedAt: string; telegramInviteLink?: string }[] = []
 
   for (const item of order.items ?? []) {
     if (item.kind === 'course') {
       const courseId = typeof item.course === 'object' ? item.course?.id : item.course
       if (!courseId) continue
       const course = await payload.findByID({ collection: 'courses', id: courseId, depth: 0 })
+      let inviteLink: string | undefined
 
       if (['telegram', 'both'].includes(course.accessType) && course.telegramChatId) {
         const link = await createCourseInvite(course.telegramChatId, course.title)
-        if (link) invites.push(`${course.title}: ${link}`)
+        if (link) {
+          inviteLink = link
+          invites.push(`${course.title}: ${link}`)
+        }
       }
       if (['canva', 'both'].includes(course.accessType) && course.canvaUrl) {
+        inviteLink = inviteLink ?? course.canvaUrl
         invites.push(`${course.title}: ${course.canvaUrl}`)
       }
+
+      grants.push({
+        course: courseId,
+        relatedOrder: Number(order.id),
+        grantedAt: new Date().toISOString(),
+        telegramInviteLink: inviteLink,
+      })
       continue
     }
 
@@ -171,10 +185,63 @@ export const fulfillOrder = async (payload: Payload, orderId: number | string): 
     }
   }
 
+  // Доступи чіпляємо до облікового запису за поштою: покупець побачить їх
+  // у кабінеті й зможе відкрити повторно, навіть якщо загубив листа.
+  if (grants.length > 0) {
+    const existing = await payload.find({
+      collection: 'customers',
+      where: { email: { equals: order.customerEmail } },
+      limit: 1,
+      overrideAccess: true,
+    })
+
+    const customer =
+      existing.docs[0] ??
+      (await payload.create({
+        collection: 'customers',
+        overrideAccess: true,
+        data: {
+          email: order.customerEmail,
+          name: order.customerName,
+          phone: order.customerPhone,
+          password: crypto.randomBytes(16).toString('hex'),
+        },
+      }))
+
+    await payload.update({
+      collection: 'customers',
+      id: customer.id,
+      overrideAccess: true,
+      data: { access: [...(customer.access ?? []), ...grants] },
+    })
+
+    await payload.update({
+      collection: 'orders',
+      id: orderId,
+      data: { customer: customer.id },
+      overrideAccess: true,
+    })
+  }
+
+  const receiptId = await createReceipt({
+    orderNumber: order.orderNumber,
+    email: order.customerEmail,
+    items: (order.items ?? []).map((item) => ({
+      name: item.title,
+      price: item.price,
+      quantity: item.quantity,
+    })),
+    total: order.prepaidAmount || order.total,
+  })
+
   await payload.update({
     collection: 'orders',
     id: orderId,
-    data: { accessGranted: true, paymentStatus: order.prepaidAmount ? 'partial' : 'paid' },
+    data: {
+      accessGranted: true,
+      paymentStatus: order.prepaidAmount ? 'partial' : 'paid',
+      ...(receiptId ? { fiscalReceipt: receiptId } : {}),
+    },
     overrideAccess: true,
   })
 

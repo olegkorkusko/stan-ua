@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { CourseBuy } from '@/components/site/CourseBuy'
+import { courseSchema, JsonLd } from '@/components/site/JsonLd'
+import { Reviews } from '@/components/site/Reviews'
 import { plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
 import { payloadClient } from '@/lib/payload'
@@ -42,12 +44,30 @@ const CoursePage = async ({ params }: { params: Params }) => {
   const course = await findCourse(slug)
   if (!course) notFound()
 
+  const payload = await payloadClient()
+  const reviews = await payload.find({
+    collection: 'reviews',
+    where: { status: { equals: 'approved' }, course: { equals: course.id } },
+    limit: 20,
+    depth: 0,
+    sort: '-createdAt',
+  })
+
   const cover = imageUrl(course.cover, 'hero')
   const lessons = course.lessons ?? []
   const gallery = Array.isArray(course.gallery) ? course.gallery : []
 
   return (
     <div className="pb-24 pt-24 md:pt-32">
+      <JsonLd
+        data={courseSchema({
+          name: course.title,
+          description: course.tagline,
+          price: course.price,
+          url: `${process.env.NEXT_PUBLIC_SERVER_URL ?? ''}/courses/${directionSlug}/${course.slug}`,
+          lessons: lessons.length,
+        })}
+      />
       <div className="shell">
         <nav className="label mb-8 flex gap-2" aria-label="Навігація">
           <Link href="/courses" className="hover:text-ink">
@@ -173,6 +193,8 @@ const CoursePage = async ({ params }: { params: Params }) => {
             </dl>
           </section>
         )}
+
+        <Reviews reviews={reviews.docs} target={{ course: course.id }} />
       </div>
     </div>
   )

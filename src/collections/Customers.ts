@@ -15,6 +15,20 @@ export const Customers: CollectionConfig = {
   auth: {
     tokenExpiration: 60 * 60 * 24 * 30,
     verify: false,
+    forgotPassword: {
+      // Лист веде в кабінет на сайті, а не в адмінку Payload.
+      generateEmailSubject: () => 'Вхід у кабінет МК',
+      generateEmailHTML: (args) => {
+        const base = process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000'
+        const link = `${base}/account/reset?token=${args?.token}`
+        return [
+          '<p>Вітаємо!</p>',
+          '<p>Щоб зайти в кабінет і відкрити свої курси, перейдіть за посиланням:</p>',
+          `<p><a href="${link}">${link}</a></p>`,
+          '<p>Посилання діє годину. Якщо ви його не запитували — просто проігноруйте лист.</p>',
+        ].join('')
+      },
+    },
   },
   admin: {
     useAsTitle: 'email',

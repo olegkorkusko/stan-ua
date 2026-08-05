@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { SubscribeForm } from '@/components/site/SubscribeForm'
 import type { Setting } from '@/payload-types'
 
 const columns = [
@@ -39,23 +40,10 @@ export const Footer = ({ settings }: { settings: Partial<Setting> | null }) => (
             Прикраси ручної роботи та майстер-класи з вʼязання, бісероплетіння й макраме.
           </p>
 
-          <form className="mt-8 max-w-sm">
-            <label htmlFor="subscribe" className="label">
-              Новинки й знижки на пошту
-            </label>
-            <div className="mt-3 flex border-b border-ink">
-              <input
-                id="subscribe"
-                type="email"
-                required
-                placeholder="ваша@пошта.com"
-                className="w-full bg-transparent py-2 text-sm outline-none placeholder:text-muted"
-              />
-              <button type="submit" className="label py-2 text-ink">
-                Підписатись
-              </button>
-            </div>
-          </form>
+          <div className="mt-8 max-w-sm">
+            <p className="label">Новинки й знижки на пошту</p>
+            <SubscribeForm />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">

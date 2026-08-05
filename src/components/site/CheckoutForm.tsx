@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
+import { track } from '@/components/site/Analytics'
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 
@@ -82,6 +83,12 @@ export const CheckoutForm = () => {
     event.preventDefault()
     setError(null)
     setBusy(true)
+
+    track('begin_checkout', {
+      currency: 'UAH',
+      value: total,
+      items: items.map((item) => ({ item_id: item.id, item_name: item.title, price: item.price })),
+    })
 
     try {
       const response = await fetch('/api/checkout', {
