@@ -1,0 +1,45 @@
+# Локальне оточення: база й сховище файлів.
+# Запуск: docker compose up -d
+#
+# MinIO повністю сумісний з S3, тому на проді змінюються тільки значення
+# S3_* у .env — код лишається той самий.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: mk-postgres
+    environment:
+      POSTGRES_USER: mk
+      POSTGRES_PASSWORD: mkdev
+      POSTGRES_DB: mk
+    ports:
+      - '5439:5432'
+    volumes:
+      - mk-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mk']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: mk-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: mkadmin
+      MINIO_ROOT_PASSWORD: mkminio123
+    ports:
+      - '9000:9000' # S3 API
+      - '9001:9001' # вебінтерфейс
+    volumes:
+      - mk-minio-data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mk-postgres-data:
+  mk-minio-data:

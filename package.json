@@ -13,7 +13,8 @@
     "generate:importmap": "payload generate:importmap",
     "seed": "payload run src/seed/index.ts",
     "seed:content": "payload run src/seed/content.ts",
-    "seed:photos": "payload run src/seed/photos.ts"
+    "seed:photos": "payload run src/seed/photos.ts",
+    "storage:sync": "payload run src/seed/storage.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.87.0",
