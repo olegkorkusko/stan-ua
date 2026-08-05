@@ -152,7 +152,7 @@ const ShopPage = async ({ searchParams }: { searchParams: SearchParams }) => {
           {t.shop.inStockOnly}
         </Link>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 md:ml-auto">
           <span className="label">{t.shop.sort}</span>
           {SORTS.map((option) => (
             <Link
