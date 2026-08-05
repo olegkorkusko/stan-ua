@@ -1,0 +1,245 @@
+@import 'tailwindcss';
+
+/*
+  MK — дизайн-система.
+
+  Ідея: усе тримається на одній лінії — «нитці». Вона ж роздільник, вона ж
+  підкреслення, що дописується при наведенні, вона ж заходить у шапку й
+  розгалужується на три напрями. Нитка — це те спільне, що є у вʼязанні,
+  бісероплетінні й макраме.
+
+  Палітра свідомо холодна: щоб не зʼїхати в бежево-теракотовий «крафт», на який
+  схожий кожен другий хендмейд-сайт. Тепло дає тільки латунь у цінах і фото.
+*/
+
+@theme {
+  --color-paper: #faf9f7;
+  --color-paper-deep: #f2efe9;
+  --color-ink: #16150f;
+  --color-muted: #6e6a62;
+  --color-indigo: #2c3a52;
+  --color-flax: #e2dccf;
+  --color-brass: #a67c3d;
+
+  --font-display: var(--font-unbounded), 'Trebuchet MS', sans-serif;
+  --font-body: var(--font-manrope), 'Segoe UI', system-ui, sans-serif;
+
+  --radius-card: 2px;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-weight: 350;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--color-indigo);
+    color: var(--color-paper);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-indigo);
+    outline-offset: 3px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.06;
+  }
+}
+
+@layer components {
+  /* Дрібний підпис над заголовком: розділ, категорія, крок. */
+  .label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  /* Нитка. Один і той самий елемент по всьому сайту. */
+  .thread {
+    height: 1px;
+    background: var(--color-flax);
+    border: 0;
+  }
+
+  /* Посилання, під яким нитка дописується зліва направо. */
+  .thread-link {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 2px;
+  }
+
+  .thread-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 1px;
+    width: 100%;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .thread-link:hover::after,
+  .thread-link:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.9375rem 2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    border-radius: var(--radius-card);
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease,
+      border-color 0.25s ease;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .btn-primary:hover {
+    background: var(--color-indigo);
+  }
+
+  .btn-outline {
+    border: 1px solid var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .btn-outline:hover {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* Плейсхолдер, поки не завантажено фото: переплетення ниток, а не сірий
+     прямокутник. Свідомо ледь помітне — воно не має конкурувати з текстом,
+     а на місці плейсхолдерів згодом стануть фото. */
+  .weave {
+    background-color: var(--color-paper-deep);
+    background-image:
+      repeating-linear-gradient(90deg, rgb(0 0 0 / 0.035) 0 1px, transparent 1px 14px),
+      repeating-linear-gradient(0deg, rgb(0 0 0 / 0.035) 0 1px, transparent 1px 14px);
+  }
+
+  .price {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    letter-spacing: -0.01em;
+  }
+
+  /* Нитка «дописується». Клас додається, коли блок зʼявився в полі зору.
+     Без JS лінія просто намальована — вона не має зникати. */
+  .thread-draw {
+    stroke-dasharray: 1;
+    animation: thread-draw 1s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  .bead-in {
+    animation: bead-in 0.5s ease backwards;
+  }
+}
+
+@layer utilities {
+  .shell {
+    width: 100%;
+    max-width: 90rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .shell {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  .drift {
+    animation: drift 32s ease-in-out infinite alternate;
+  }
+
+  .rise {
+    animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: scale(1.06) translate3d(-1.2%, -0.8%, 0);
+  }
+  to {
+    transform: scale(1.14) translate3d(1.2%, 0.8%, 0);
+  }
+}
+
+@keyframes thread-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes bead-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
