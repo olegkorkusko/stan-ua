@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { notFound } from 'next/navigation'
 
 import { CourseCard } from '@/components/site/CourseCard'
 import { imageAlt, imageUrl } from '@/lib/media'
+import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
@@ -13,7 +14,8 @@ type Params = Promise<{ direction: string }>
 
 const findDirection = async (slug: string) => {
   const payload = await payloadClient()
-  const result = await payload.find({
+  const locale = await getLocale()
+  const result = await payload.find({ locale,
     collection: 'course-directions',
     where: { slug: { equals: slug } },
     limit: 1,
@@ -34,7 +36,8 @@ const DirectionPage = async ({ params }: { params: Params }) => {
   if (!direction) notFound()
 
   const payload = await payloadClient()
-  const courses = await payload.find({
+  const locale = await getLocale()
+  const courses = await payload.find({ locale,
     collection: 'courses',
     where: { status: { equals: 'published' }, direction: { equals: direction.id } },
     limit: 40,

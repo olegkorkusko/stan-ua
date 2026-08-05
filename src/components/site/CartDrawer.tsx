@@ -2,14 +2,17 @@
 
 import { Minus, Plus, X } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { useEffect } from 'react'
 
+import { useLocale } from '@/components/site/LocaleLink'
 import { formatPrice } from '@/lib/format'
+import { dictionary } from '@/lib/i18n'
 import { useCart } from '@/providers/CartProvider'
 
 export const CartDrawer = () => {
   const { items, total, isOpen, close, remove, setQuantity } = useCart()
+  const t = dictionary(useLocale()).cart
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
@@ -26,7 +29,7 @@ export const CartDrawer = () => {
       <button
         type="button"
         tabIndex={-1}
-        aria-label="Закрити кошик"
+        aria-label={t.title}
         onClick={close}
         className={`absolute inset-0 bg-ink/30 transition-opacity duration-400 ${
           isOpen ? 'opacity-100' : 'opacity-0'
@@ -40,8 +43,8 @@ export const CartDrawer = () => {
         aria-label="Кошик"
       >
         <div className="flex h-16 items-center justify-between border-b border-flax px-5">
-          <span className="label">Кошик</span>
-          <button type="button" onClick={close} aria-label="Закрити кошик" className="p-1">
+          <span className="label">{t.title}</span>
+          <button type="button" onClick={close} aria-label={t.title} className="p-1">
             <X strokeWidth={1.25} size={20} />
           </button>
         </div>
@@ -49,9 +52,9 @@ export const CartDrawer = () => {
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-8 text-center">
             <div className="weave h-24 w-24 rounded-full opacity-60" />
-            <p className="text-sm text-muted">Тут поки порожньо.</p>
+            <p className="text-sm text-muted">{t.empty}</p>
             <Link href="/courses" className="btn btn-outline" onClick={close}>
-              Обрати курс
+              {t.chooseCourse}
             </Link>
           </div>
         ) : (
@@ -81,7 +84,7 @@ export const CartDrawer = () => {
                       <span className="mt-0.5 text-xs text-muted">{item.variantLabel}</span>
                     )}
                     {item.kind === 'course' && (
-                      <span className="mt-0.5 text-xs text-muted">Доступ назавжди</span>
+                      <span className="mt-0.5 text-xs text-muted">{t.forever}</span>
                     )}
 
                     <div className="mt-auto flex items-center justify-between pt-3">
@@ -91,7 +94,7 @@ export const CartDrawer = () => {
                           onClick={() => remove(item.key)}
                           className="text-xs text-muted underline underline-offset-4"
                         >
-                          Прибрати
+                          {t.remove}
                         </button>
                       ) : (
                         <div className="flex items-center border border-flax">
@@ -99,7 +102,7 @@ export const CartDrawer = () => {
                             type="button"
                             onClick={() => setQuantity(item.key, item.quantity - 1)}
                             className="px-2 py-1.5"
-                            aria-label="Менше"
+                            aria-label={t.less}
                           >
                             <Minus size={13} strokeWidth={1.5} />
                           </button>
@@ -109,7 +112,7 @@ export const CartDrawer = () => {
                             onClick={() => setQuantity(item.key, item.quantity + 1)}
                             className="px-2 py-1.5 disabled:opacity-30"
                             disabled={item.quantity >= (item.maxQuantity ?? Infinity)}
-                            aria-label="Більше"
+                            aria-label={t.more}
                           >
                             <Plus size={13} strokeWidth={1.5} />
                           </button>
@@ -124,12 +127,12 @@ export const CartDrawer = () => {
 
             <div className="border-t border-flax px-5 py-5">
               <div className="flex items-baseline justify-between">
-                <span className="label">Разом</span>
+                <span className="label">{t.total}</span>
                 <span className="price text-base">{formatPrice(total)}</span>
               </div>
-              <p className="mt-1 text-xs text-muted">Вартість доставки рахується на наступному кроці.</p>
+              <p className="mt-1 text-xs text-muted">{t.deliveryNote}</p>
               <Link href="/checkout" onClick={close} className="btn btn-primary mt-4 w-full">
-                Оформити
+                {t.checkout}
               </Link>
             </div>
           </>

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import type { Where } from 'payload'
 
 import { ProductCard } from '@/components/site/ProductCard'
+import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
@@ -38,10 +39,11 @@ const buildHref = (current: Record<string, string | undefined>, patch: Record<st
 const ShopPage = async ({ searchParams }: { searchParams: SearchParams }) => {
   const params = await searchParams
   const payload = await payloadClient()
+  const locale = await getLocale()
 
   const [categories, colors] = await Promise.all([
-    payload.find({ collection: 'categories', limit: 20, depth: 0 }),
-    payload.find({ collection: 'colors', limit: 40, depth: 0 }),
+    payload.find({ locale, collection: 'categories', limit: 20, depth: 0 }),
+    payload.find({ locale, collection: 'colors', limit: 40, depth: 0 }),
   ])
 
   const where: Where = { status: { equals: 'published' } }
@@ -54,7 +56,7 @@ const ShopPage = async ({ searchParams }: { searchParams: SearchParams }) => {
 
   const sort = SORTS.some((s) => s.value === params.sort) ? params.sort! : '-createdAt'
 
-  const products = await payload.find({ collection: 'products', where, sort, limit: 48, depth: 2 })
+  const products = await payload.find({ locale, collection: 'products', where, sort, limit: 48, depth: 2 })
 
   const active = { category: params.category, color: params.color, sort: params.sort, instock: params.instock }
   const hasFilters = Boolean(params.category || params.color || params.instock)

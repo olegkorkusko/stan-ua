@@ -5,6 +5,9 @@ import { Analytics } from '@/components/site/Analytics'
 import { CartDrawer } from '@/components/site/CartDrawer'
 import { Footer } from '@/components/site/Footer'
 import { Header } from '@/components/site/Header'
+import { LocaleProvider } from '@/components/site/LocaleLink'
+import { dictionary } from '@/lib/i18n'
+import { getLocale, getPathname } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 import { CartProvider } from '@/providers/CartProvider'
 
@@ -42,17 +45,21 @@ export const metadata: Metadata = {
 
 const RootLayout = async ({ children }: { children: React.ReactNode }) => {
   const payload = await payloadClient()
+  const locale = await getLocale()
+  const pathname = await getPathname()
+  const t = dictionary(locale)
 
   const [directions, settings] = await Promise.all([
     payload
       .find({
+        locale,
         collection: 'course-directions',
         limit: 12,
         sort: 'order',
         depth: 0,
       })
       .catch(() => ({ docs: [] })),
-    payload.findGlobal({ slug: 'settings', depth: 0 }).catch(() => null),
+    payload.findGlobal({ locale, slug: 'settings', depth: 0 }).catch(() => null),
   ])
 
   const navDirections = directions.docs.map((doc) => ({
@@ -61,20 +68,22 @@ const RootLayout = async ({ children }: { children: React.ReactNode }) => {
   }))
 
   return (
-    <html lang="uk" className={`${unbounded.variable} ${manrope.variable}`}>
+    <html lang={locale} className={`${unbounded.variable} ${manrope.variable}`}>
       <body className="min-h-screen">
-        <CartProvider>
-          {settings?.announcement && (
-            <p className="bg-indigo px-4 py-2 text-center text-[0.6875rem] uppercase tracking-[0.16em] text-paper">
-              {settings.announcement}
-            </p>
-          )}
-          <Header directions={navDirections} />
-          <main>{children}</main>
-          <Footer settings={settings} />
-          <CartDrawer />
-          <Analytics ga={process.env.NEXT_PUBLIC_GA_ID} pixel={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
-        </CartProvider>
+        <LocaleProvider locale={locale}>
+          <CartProvider>
+            {settings?.announcement && (
+              <p className="bg-indigo px-4 py-2 text-center text-[0.6875rem] uppercase tracking-[0.16em] text-paper">
+                {settings.announcement}
+              </p>
+            )}
+            <Header directions={navDirections} t={t} locale={locale} pathname={pathname} />
+            <main>{children}</main>
+            <Footer settings={settings} t={t} />
+            <CartDrawer />
+            <Analytics ga={process.env.NEXT_PUBLIC_GA_ID} pixel={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
+          </CartProvider>
+        </LocaleProvider>
       </body>
     </html>
   )

@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
 import { formatPrice, plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'

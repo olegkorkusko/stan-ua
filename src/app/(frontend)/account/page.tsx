@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import Image from 'next/image'
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
 import { AuthForm } from '@/components/site/AuthForm'
 import { LogoutButton } from '@/components/site/LogoutButton'
 import { ResendAccess } from '@/components/site/ResendAccess'
 import { imageAlt, imageUrl } from '@/lib/media'
+import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 import type { Course } from '@/payload-types'
 
@@ -24,6 +25,7 @@ const courseHref = (course: Course): string => {
 
 const AccountPage = async () => {
   const payload = await payloadClient()
+  const locale = await getLocale()
   const { user } = await payload.auth({ headers: await headers() })
 
   if (!user || user.collection !== 'customers') {
@@ -38,7 +40,7 @@ const AccountPage = async () => {
     )
   }
 
-  const customer = await payload.findByID({
+  const customer = await payload.findByID({ locale,
     collection: 'customers',
     id: user.id,
     depth: 2,

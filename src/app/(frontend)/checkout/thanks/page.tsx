@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
+import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
@@ -16,8 +17,9 @@ const ThanksPage = async ({ searchParams }: { searchParams: SearchParams }) => {
   const { order: orderNumber, pending } = await searchParams
 
   const payload = await payloadClient()
+  const locale = await getLocale()
   const found = orderNumber
-    ? await payload.find({
+    ? await payload.find({ locale,
         collection: 'orders',
         where: { orderNumber: { equals: orderNumber } },
         limit: 1,

@@ -2,17 +2,13 @@
 
 import { useState } from 'react'
 
-export const SubscribeForm = () => {
+export const SubscribeForm = ({ cta, done }: { cta: string; done: string }) => {
   const [email, setEmail] = useState('')
   const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle')
   const [message, setMessage] = useState<string | null>(null)
 
   if (state === 'done') {
-    return (
-      <p className="mt-3 border-b border-ink py-2 text-sm">
-        Готово. Тепер новинки приходитимуть вам першою.
-      </p>
-    )
+    return <p className="mt-3 border-b border-ink py-2 text-sm">{done}</p>
   }
 
   return (
@@ -52,7 +48,7 @@ export const SubscribeForm = () => {
           className="w-full bg-transparent py-2 text-sm outline-none placeholder:text-muted"
         />
         <button type="submit" disabled={state === 'busy'} className="label py-2 text-ink">
-          {state === 'busy' ? '…' : 'Підписатись'}
+          {state === 'busy' ? '…' : cta}
         </button>
       </div>
       {message && <p className="mt-2 text-xs text-brass">{message}</p>}

@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
 import { CourseCard } from '@/components/site/CourseCard'
 import { ProductCard } from '@/components/site/ProductCard'
 import { plural } from '@/lib/format'
+import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
@@ -20,10 +21,11 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
   const query = (q ?? '').trim()
 
   const payload = await payloadClient()
+  const locale = await getLocale()
 
   const [products, courses] = query
     ? await Promise.all([
-        payload.find({
+        payload.find({ locale,
           collection: 'products',
           where: {
             status: { equals: 'published' },
@@ -32,7 +34,7 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
           limit: 24,
           depth: 2,
         }),
-        payload.find({
+        payload.find({ locale,
           collection: 'courses',
           where: {
             status: { equals: 'published' },

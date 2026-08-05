@@ -1,7 +1,7 @@
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { notFound } from 'next/navigation'
 
 import { ProductCard } from '@/components/site/ProductCard'
@@ -11,6 +11,7 @@ import { ProductPurchase, type PurchaseVariant } from '@/components/site/Product
 import { Reviews } from '@/components/site/Reviews'
 import { imageAlt, imageUrl } from '@/lib/media'
 import type { Product } from '@/payload-types'
+import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
@@ -19,7 +20,8 @@ type Params = Promise<{ slug: string }>
 
 const findProduct = async (slug: string) => {
   const payload = await payloadClient()
-  const result = await payload.find({
+  const locale = await getLocale()
+  const result = await payload.find({ locale,
     collection: 'products',
     where: { slug: { equals: slug }, status: { equals: 'published' } },
     limit: 1,
@@ -44,11 +46,12 @@ const ProductPage = async ({ params }: { params: Params }) => {
   if (!product) notFound()
 
   const payload = await payloadClient()
+  const locale = await getLocale()
   const categoryId = typeof product.category === 'object' ? product.category?.id : product.category
 
   const [related, reviews] = await Promise.all([
     categoryId
-      ? payload.find({
+      ? payload.find({ locale,
           collection: 'products',
           where: {
             status: { equals: 'published' },
@@ -59,7 +62,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
           depth: 2,
         })
       : Promise.resolve({ docs: [] }),
-    payload.find({
+    payload.find({ locale,
       collection: 'reviews',
       where: { status: { equals: 'approved' }, product: { equals: product.id } },
       limit: 20,

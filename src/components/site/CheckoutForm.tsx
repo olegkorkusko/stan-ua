@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { useEffect, useRef, useState } from 'react'
 
 import { track } from '@/components/site/Analytics'

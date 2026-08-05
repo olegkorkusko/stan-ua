@@ -1,12 +1,13 @@
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { notFound } from 'next/navigation'
 
 import { CourseCard } from '@/components/site/CourseCard'
 import { ProductCard } from '@/components/site/ProductCard'
 import { imageAlt, imageUrl } from '@/lib/media'
+import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 import type { Course, Product } from '@/payload-types'
 
@@ -16,7 +17,8 @@ type Params = Promise<{ slug: string }>
 
 const findPost = async (slug: string) => {
   const payload = await payloadClient()
-  const result = await payload.find({
+  const locale = await getLocale()
+  const result = await payload.find({ locale,
     collection: 'posts',
     where: { slug: { equals: slug }, status: { equals: 'published' } },
     limit: 1,

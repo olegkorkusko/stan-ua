@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
 import { CourseCard } from '@/components/site/CourseCard'
 import { plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
+import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 import type { Course } from '@/payload-types'
 
@@ -18,10 +19,11 @@ export const metadata: Metadata = {
 
 const CoursesPage = async () => {
   const payload = await payloadClient()
+  const locale = await getLocale()
 
   const [directions, courses] = await Promise.all([
-    payload.find({ collection: 'course-directions', sort: 'order', limit: 20 }),
-    payload.find({
+    payload.find({ locale, collection: 'course-directions', sort: 'order', limit: 20 }),
+    payload.find({ locale,
       collection: 'courses',
       where: { status: { equals: 'published' } },
       limit: 60,

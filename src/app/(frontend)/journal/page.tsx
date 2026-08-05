@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
 import { imageAlt, imageUrl } from '@/lib/media'
+import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
@@ -24,7 +25,8 @@ const formatDate = (value?: string | null) => {
 
 const JournalPage = async () => {
   const payload = await payloadClient()
-  const posts = await payload.find({
+  const locale = await getLocale()
+  const posts = await payload.find({ locale,
     collection: 'posts',
     where: { status: { equals: 'published' } },
     sort: '-publishedAt',

@@ -1,36 +1,49 @@
 'use client'
 
 import { Menu, Search, ShoppingBag, User, X } from 'lucide-react'
-import Link from 'next/link'
+import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { plural } from '@/lib/format'
+import { dictionary, LOCALES, localePath, type Locale } from '@/lib/i18n'
 import { useCart } from '@/providers/CartProvider'
 
 export type NavDirection = { title: string; slug: string }
 
-const SHOP_LINKS = [
-  { href: '/shop', title: 'Усі товари' },
-  { href: '/shop?category=prykrasy', title: 'Готові прикраси' },
-  { href: '/shop?category=nabory', title: 'Набори для створення' },
-]
+type Props = {
+  directions: NavDirection[]
+  t: ReturnType<typeof dictionary>
+  locale: Locale
+  /** Шлях без мовного префікса: перемикач мов має лишати вас на тій самій сторінці. */
+  pathname: string
+}
 
-const INFO_LINKS = [
-  { href: '/about', title: 'Про бренд' },
-  { href: '/delivery', title: 'Доставка й оплата' },
-  { href: '/reviews', title: 'Відгуки' },
-]
+const LOCALE_LABELS: Record<Locale, string> = { uk: 'UA', en: 'EN' }
 
-export const Header = ({ directions }: { directions: NavDirection[] }) => {
-  const pathname = usePathname()
+export const Header = ({ directions, t, locale, pathname }: Props) => {
+  const currentPath = usePathname()
   const { count, open } = useCart()
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
+  const shopLinks = [
+    { href: '/shop', title: t.nav.allProducts },
+    { href: '/shop?category=prykrasy', title: locale === 'uk' ? 'Готові прикраси' : 'Ready jewellery' },
+    { href: '/shop?category=nabory', title: locale === 'uk' ? 'Набори для створення' : 'Make-it-yourself kits' },
+  ]
+
+  const infoLinks = [
+    { href: '/about', title: t.footer.links.about },
+    { href: '/delivery', title: t.footer.links.delivery },
+    { href: '/journal', title: t.footer.links.journal },
+  ]
+
   // На головній шапка лежить поверх фонового зображення й світиться білим,
   // поки сторінку не прокрутили.
-  const overlay = pathname === '/' && !scrolled && !menuOpen
+  const isHome = currentPath === '/' || currentPath === '/en'
+  const overlay = isHome && !scrolled && !menuOpen
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -39,7 +52,7 @@ export const Header = ({ directions }: { directions: NavDirection[] }) => {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => setMenuOpen(false), [pathname])
+  useEffect(() => setMenuOpen(false), [currentPath])
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
@@ -50,6 +63,23 @@ export const Header = ({ directions }: { directions: NavDirection[] }) => {
       window.removeEventListener('keydown', onKey)
     }
   }, [menuOpen])
+
+  const languageSwitch = (
+    <span className="flex items-center gap-1.5 text-[0.6875rem] tracking-[0.16em]">
+      {LOCALES.map((option, index) => (
+        <span key={option} className="flex items-center gap-1.5">
+          {index > 0 && <span className="opacity-30">/</span>}
+          {option === locale ? (
+            <span aria-current="true">{LOCALE_LABELS[option]}</span>
+          ) : (
+            <NextLink href={localePath(option, pathname)} className="opacity-60 hover:opacity-100">
+              {LOCALE_LABELS[option]}
+            </NextLink>
+          )}
+        </span>
+      ))}
+    </span>
+  )
 
   return (
     <>
@@ -64,7 +94,7 @@ export const Header = ({ directions }: { directions: NavDirection[] }) => {
               type="button"
               onClick={() => setMenuOpen(true)}
               className="-ml-1 p-1 lg:hidden"
-              aria-label="Відкрити меню"
+              aria-label={t.header.menu}
               aria-expanded={menuOpen}
             >
               <Menu strokeWidth={1.25} size={22} />
@@ -72,37 +102,36 @@ export const Header = ({ directions }: { directions: NavDirection[] }) => {
 
             <nav className="hidden items-center gap-7 lg:flex">
               <Link href="/courses" className="thread-link text-[0.8125rem]">
-                Курси
+                {t.nav.courses}
               </Link>
               <Link href="/shop" className="thread-link text-[0.8125rem]">
-                Магазин
+                {t.nav.shop}
               </Link>
               <Link href="/about" className="thread-link text-[0.8125rem]">
-                Про бренд
+                {t.nav.about}
               </Link>
             </nav>
           </div>
 
-          <Link
-            href="/"
-            aria-label="MK — головна"
-            className="font-display text-lg tracking-[0.3em] md:text-xl"
-          >
+          <Link href="/" aria-label={t.header.home} className="font-display text-lg tracking-[0.3em] md:text-xl">
             МК
           </Link>
 
           <div className="flex flex-1 items-center justify-end gap-4 md:gap-5">
-            <Link href="/search" aria-label="Пошук" className="hidden p-1 md:block">
+            <span className="hidden md:block">{languageSwitch}</span>
+            <Link href="/search" aria-label={t.header.search} className="hidden p-1 md:block">
               <Search strokeWidth={1.25} size={19} />
             </Link>
-            <Link href="/account" aria-label="Кабінет" className="p-1">
+            <Link href="/account" aria-label={t.header.account} className="p-1">
               <User strokeWidth={1.25} size={19} />
             </Link>
             <button
               type="button"
               onClick={open}
               className="relative p-1"
-              aria-label={`Кошик, ${plural(count, 'позиція', 'позиції', 'позицій')}`}
+              aria-label={`${t.header.cart}, ${
+                locale === 'uk' ? plural(count, 'позиція', 'позиції', 'позицій') : `${count} items`
+              }`}
             >
               <ShoppingBag strokeWidth={1.25} size={19} />
               {count > 0 && (
@@ -123,7 +152,7 @@ export const Header = ({ directions }: { directions: NavDirection[] }) => {
         <button
           type="button"
           tabIndex={-1}
-          aria-label="Закрити меню"
+          aria-label={t.header.closeMenu}
           onClick={() => setMenuOpen(false)}
           className={`absolute inset-0 bg-ink/30 transition-opacity duration-400 ${
             menuOpen ? 'opacity-100' : 'opacity-0'
@@ -136,13 +165,21 @@ export const Header = ({ directions }: { directions: NavDirection[] }) => {
         >
           <div className="flex h-16 items-center justify-between border-b border-flax px-5">
             <span className="font-display text-base tracking-[0.3em]">МК</span>
-            <button type="button" onClick={() => setMenuOpen(false)} aria-label="Закрити меню" className="p-1">
-              <X strokeWidth={1.25} size={22} />
-            </button>
+            <div className="flex items-center gap-5">
+              {languageSwitch}
+              <button
+                type="button"
+                onClick={() => setMenuOpen(false)}
+                aria-label={t.header.closeMenu}
+                className="p-1"
+              >
+                <X strokeWidth={1.25} size={22} />
+              </button>
+            </div>
           </div>
 
           <nav className="flex-1 overflow-y-auto px-5 py-7">
-            <p className="label">Курси</p>
+            <p className="label">{t.nav.courses}</p>
             <ul className="mt-3 space-y-3">
               {directions.map((direction) => (
                 <li key={direction.slug}>
@@ -153,16 +190,16 @@ export const Header = ({ directions }: { directions: NavDirection[] }) => {
               ))}
               <li>
                 <Link href="/courses" className="thread-link text-sm text-muted">
-                  Усі курси
+                  {t.nav.allCourses}
                 </Link>
               </li>
             </ul>
 
             <hr className="thread my-7" />
 
-            <p className="label">Магазин</p>
+            <p className="label">{t.nav.shop}</p>
             <ul className="mt-3 space-y-3">
-              {SHOP_LINKS.map((link) => (
+              {shopLinks.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-[0.9375rem]">
                     {link.title}
@@ -174,7 +211,7 @@ export const Header = ({ directions }: { directions: NavDirection[] }) => {
             <hr className="thread my-7" />
 
             <ul className="space-y-3">
-              {INFO_LINKS.map((link) => (
+              {infoLinks.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-[0.9375rem] text-muted">
                     {link.title}

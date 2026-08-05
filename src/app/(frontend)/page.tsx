@@ -1,10 +1,11 @@
 import Image from 'next/image'
-import Link from 'next/link'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
 import { ProductCard } from '@/components/site/ProductCard'
 import { ThreadFork } from '@/components/site/ThreadFork'
 import { formatPrice, plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
+import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
@@ -26,9 +27,10 @@ const STEPS = [
 
 const HomePage = async () => {
   const payload = await payloadClient()
+  const locale = await getLocale()
 
   const [settings, directions, products, courses, reviews] = await Promise.all([
-    payload.findGlobal({ slug: 'settings' }).catch(() => null),
+    payload.findGlobal({ locale, slug: 'settings' }).catch(() => null),
     payload
       .find({ collection: 'course-directions', sort: 'order', limit: 3 })
       .catch(() => ({ docs: [] as never[] })),

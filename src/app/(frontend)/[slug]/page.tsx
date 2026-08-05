@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
 import { imageAlt, imageUrl } from '@/lib/media'
+import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
@@ -12,7 +13,8 @@ type Params = Promise<{ slug: string }>
 
 const findPage = async (slug: string) => {
   const payload = await payloadClient()
-  const result = await payload.find({
+  const locale = await getLocale()
+  const result = await payload.find({ locale,
     collection: 'pages',
     where: { slug: { equals: slug }, status: { equals: 'published' } },
     limit: 1,
