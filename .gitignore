@@ -50,3 +50,9 @@ next-env.d.ts
 /.playwright-mcp
 *.stackdump
 /mk-*.png
+
+# Внутрішні матеріали: кошториси, брифи, аудіо клієнтів.
+# Тримати поруч із репозиторієм, а не всередині.
+/estimate
+/docs_interal
+/docs_internal
