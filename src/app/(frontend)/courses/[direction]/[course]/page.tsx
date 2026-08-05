@@ -4,23 +4,21 @@ import Image from 'next/image'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { notFound } from 'next/navigation'
 
+import { headers } from 'next/headers'
+
 import { CourseBuy } from '@/components/site/CourseBuy'
 import { courseSchema, JsonLd } from '@/components/site/JsonLd'
 import { Reviews } from '@/components/site/Reviews'
+import { SaveCourse } from '@/components/site/SaveCourse'
 import { plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
+import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
 
 type Params = Promise<{ direction: string; course: string }>
-
-const LEVELS: Record<string, string> = {
-  beginner: 'Для початківців',
-  medium: 'Середній рівень',
-  advanced: 'Просунутий рівень',
-}
 
 const findCourse = async (slug: string) => {
   const payload = await payloadClient()
@@ -48,6 +46,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
 
   const payload = await payloadClient()
   const locale = await getLocale()
+  const t = dictionary(locale)
   const reviews = await payload.find({ locale,
     collection: 'reviews',
     where: { status: { equals: 'approved' }, course: { equals: course.id } },
@@ -55,6 +54,21 @@ const CoursePage = async ({ params }: { params: Params }) => {
     depth: 0,
     sort: '-createdAt',
   })
+
+  // Чи додано курс в обране — читаємо тут, щоб кнопка одразу малювалась
+  // у правильному стані, без блимання після гідратації.
+  const { user } = await payload.auth({ headers: await headers() })
+  const authorized = user?.collection === 'customers'
+  const isSaved = authorized
+    ? await payload
+        .findByID({ collection: 'customers', id: user.id, depth: 0, overrideAccess: true })
+        .then((customer) =>
+          (customer.savedCourses ?? []).some((item) =>
+            typeof item === 'object' ? item.id === course.id : item === course.id,
+          ),
+        )
+        .catch(() => false)
+    : false
 
   const cover = imageUrl(course.cover, 'hero')
   const lessons = course.lessons ?? []
@@ -74,7 +88,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
       <div className="shell">
         <nav className="label mb-8 flex gap-2" aria-label="Навігація">
           <Link href="/courses" className="hover:text-ink">
-            Курси
+            {t.courses.label}
           </Link>
           <span aria-hidden>/</span>
           <Link href={`/courses/${directionSlug}`} className="hover:text-ink">
@@ -125,8 +139,8 @@ const CoursePage = async ({ params }: { params: Params }) => {
 
             <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
               {lessons.length > 0 && <span>{plural(lessons.length, 'МК', 'МК', 'МК')}</span>}
-              {course.level && <span>{LEVELS[course.level]}</span>}
-              <span>Доступ назавжди</span>
+              {course.level && <span>{t.courses.levels[course.level]}</span>}
+              <span>{t.courses.forever}</span>
             </div>
 
             <div className="mt-8">
@@ -138,6 +152,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
                 oldPrice={course.oldPrice}
                 image={imageUrl(course.cover, 'card') ?? undefined}
               />
+              <SaveCourse courseId={course.id} initialSaved={isSaved} authorized={authorized} />
             </div>
 
             {course.description && (
@@ -151,7 +166,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
         {/* Програма. Нумерація тут доречна: МК проходять по черзі. */}
         {lessons.length > 0 && (
           <section className="mt-24 max-w-3xl">
-            <p className="label">Програма</p>
+            <p className="label">{t.courses.programme}</p>
             <h2 className="mt-3 text-[clamp(1.5rem,3vw,2.25rem)]">
               {plural(lessons.length, 'майстер-клас', 'майстер-класи', 'майстер-класів')}
             </h2>
@@ -174,8 +189,8 @@ const CoursePage = async ({ params }: { params: Params }) => {
 
         {/* Як приходить доступ — головне питання покупця перед оплатою. */}
         <section className="mt-24 max-w-3xl border border-flax p-8">
-          <p className="label">Після оплати</p>
-          <h2 className="mt-3 text-2xl">Що ви отримаєте</h2>
+          <p className="label">{t.courses.afterPayment}</p>
+          <h2 className="mt-3 text-2xl">{t.courses.whatYouGet}</h2>
           <p className="mt-4 text-sm leading-relaxed text-muted">
             {course.accessType === 'canva'
               ? 'Одразу після оплати відкриється посилання на проєкт із відео, схемами й рекомендаціями. Воно ж прийде на пошту й лишиться у вашому кабінеті.'
@@ -185,7 +200,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
 
         {course.faq && course.faq.length > 0 && (
           <section className="mt-24 max-w-3xl">
-            <p className="label">Часті питання</p>
+            <p className="label">{t.courses.faq}</p>
             <dl className="mt-8 border-t border-flax">
               {course.faq.map((item, index) => (
                 <div key={item.id ?? index} className="border-b border-flax py-5">

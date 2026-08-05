@@ -1,9 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { useLocale } from '@/components/site/LocaleLink'
+import { dictionary } from '@/lib/i18n'
 
 export const ResendAccess = ({ courseId }: { courseId: number }) => {
   const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle')
+  const t = dictionary(useLocale()).account
   const [message, setMessage] = useState<string | null>(null)
 
   if (state === 'done') {
@@ -38,7 +41,7 @@ export const ResendAccess = ({ courseId }: { courseId: number }) => {
         }}
         className="thread-link text-xs text-muted"
       >
-        {state === 'busy' ? 'Випускаємо…' : 'Видати посилання ще раз'}
+        {state === 'busy' ? t.resending : t.resend}
       </button>
       {message && <span className="text-xs text-brass">{message}</span>}
     </span>

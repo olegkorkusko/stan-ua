@@ -4,6 +4,7 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { CourseCard } from '@/components/site/CourseCard'
 import { ProductCard } from '@/components/site/ProductCard'
 import { plural } from '@/lib/format'
+import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
@@ -22,6 +23,7 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
 
   const payload = await payloadClient()
   const locale = await getLocale()
+  const t = dictionary(locale)
 
   const [products, courses] = query
     ? await Promise.all([
@@ -50,7 +52,7 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
 
   return (
     <div className="shell pb-24 pt-28 md:pt-36">
-      <p className="label">Пошук</p>
+      <p className="label">{t.search.label}</p>
 
       <form action="/search" className="mt-4 max-w-xl">
         <div className="flex border-b border-ink">
@@ -58,18 +60,18 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
             name="q"
             defaultValue={query}
             autoFocus
-            placeholder="Що шукаємо?"
+            placeholder={t.search.placeholder}
             className="w-full bg-transparent py-3 text-lg outline-none placeholder:text-muted"
           />
           <button type="submit" className="label py-3 text-ink">
-            Знайти
+            {t.search.submit}
           </button>
         </div>
       </form>
 
       {query && (
         <p className="mt-6 text-sm text-muted">
-          {total > 0 ? `Знайшли ${plural(total, 'результат', 'результати', 'результатів')}` : 'Нічого не знайшли'}
+          {total > 0 ? t.search.found(total) : t.search.nothing}
         </p>
       )}
 

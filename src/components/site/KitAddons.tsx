@@ -5,6 +5,8 @@ import { useState } from 'react'
 
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
+import { useLocale } from '@/components/site/LocaleLink'
+import { dictionary } from '@/lib/i18n'
 
 export type Addon = {
   id: string
@@ -21,6 +23,7 @@ export type Addon = {
  */
 export const KitAddons = ({ addons }: { addons: Addon[] }) => {
   const { add } = useCart()
+  const t = dictionary(useLocale()).product
   const [chosen, setChosen] = useState<string[]>([])
 
   const available = addons.filter((addon) => addon.inStock)
@@ -31,8 +34,8 @@ export const KitAddons = ({ addons }: { addons: Addon[] }) => {
 
   return (
     <section className="mt-10 border border-flax p-6">
-      <p className="label">Докупити до набору</p>
-      <p className="mt-2 text-sm text-muted">Дрібниці, яких зазвичай не вистачає.</p>
+      <p className="label">{t.addonsTitle}</p>
+      <p className="mt-2 text-sm text-muted">{t.addonsNote}</p>
 
       <ul className="mt-5 space-y-3">
         {available.map((addon) => {
@@ -89,7 +92,7 @@ export const KitAddons = ({ addons }: { addons: Addon[] }) => {
         }}
         className="btn btn-outline mt-5 w-full"
       >
-        {selected.length === 0 ? 'Оберіть, що додати' : `Додати ${selected.length} · ${formatPrice(extra)}`}
+        {selected.length === 0 ? t.addonsEmpty : t.addonsAdd(selected.length, formatPrice(extra))}
       </button>
     </section>
   )

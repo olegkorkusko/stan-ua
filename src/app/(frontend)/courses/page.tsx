@@ -5,6 +5,7 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { CourseCard } from '@/components/site/CourseCard'
 import { plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
+import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 import type { Course } from '@/payload-types'
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
 const CoursesPage = async () => {
   const payload = await payloadClient()
   const locale = await getLocale()
+  const t = dictionary(locale)
 
   const [directions, courses] = await Promise.all([
     payload.find({ locale, collection: 'course-directions', sort: 'order', limit: 20 }),
@@ -41,13 +43,12 @@ const CoursesPage = async () => {
   return (
     <div className="pb-24 pt-28 md:pt-36">
       <div className="shell">
-        <p className="label">Курси</p>
+        <p className="label">{t.courses.label}</p>
         <h1 className="mt-3 max-w-3xl text-[clamp(2rem,4.5vw,3.5rem)]">
-          Навчимо робити руками. Далі — самі.
+          {t.courses.title}
         </h1>
         <p className="mt-5 max-w-xl text-[0.9375rem] leading-relaxed text-muted">
-          Кожен курс — це набір майстер-класів: відео, схеми й рекомендації з матеріалів. Після оплати
-          доступ приходить автоматично й лишається назавжди.
+          {t.courses.intro}
         </p>
       </div>
 
@@ -77,7 +78,7 @@ const CoursesPage = async () => {
                   <p className="mt-2 text-sm leading-relaxed text-muted">{direction.description}</p>
                 )}
                 <p className="mt-3 text-xs text-muted">
-                  {list.length ? plural(list.length, 'курс', 'курси', 'курсів') : 'Скоро'}
+                  {list.length ? t.home.coursesCount(list.length) : t.home.soon}
                 </p>
               </div>
 

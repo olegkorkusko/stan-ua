@@ -14,7 +14,6 @@ export type NavDirection = { title: string; slug: string }
 
 type Props = {
   directions: NavDirection[]
-  t: ReturnType<typeof dictionary>
   locale: Locale
   /** Шлях без мовного префікса: перемикач мов має лишати вас на тій самій сторінці. */
   pathname: string
@@ -22,7 +21,10 @@ type Props = {
 
 const LOCALE_LABELS: Record<Locale, string> = { uk: 'UA', en: 'EN' }
 
-export const Header = ({ directions, t, locale, pathname }: Props) => {
+export const Header = ({ directions, locale, pathname }: Props) => {
+  // Словник збираємо тут, а не приймаємо пропом: у ньому є функції,
+  // а їх не можна передати із серверного компонента в клієнтський.
+  const t = dictionary(locale)
   const currentPath = usePathname()
   const { count, open } = useCart()
   const [menuOpen, setMenuOpen] = useState(false)

@@ -45,3 +45,10 @@ export const notifyAdmin = async (text: string): Promise<void> => {
   if (!chatId) return
   await call('sendMessage', { chat_id: chatId, text, parse_mode: 'HTML' })
 }
+
+/** Публікація розсилки у відкритий Telegram-канал бренду. */
+export const broadcastToChannel = async (text: string): Promise<void> => {
+  const chatId = process.env.TELEGRAM_BROADCAST_CHAT_ID
+  if (!chatId) return
+  await call('sendMessage', { chat_id: chatId, text, parse_mode: 'HTML' })
+}

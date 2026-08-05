@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -33,6 +34,8 @@ type CartContext = {
   count: number
   total: number
   isOpen: boolean
+  /** Поки кошик не приїхав із сервера, показуємо стан завантаження. */
+  ready: boolean
   add: (item: Omit<CartItem, 'quantity'>, quantity?: number) => void
   remove: (key: string) => void
   setQuantity: (key: string, quantity: number) => void
@@ -44,25 +47,96 @@ type CartContext = {
 const Context = createContext<CartContext | null>(null)
 const STORAGE_KEY = 'mk.cart.v1'
 
+/** Серверу вистачає ідентифікаторів: назви й ціни він підставляє сам. */
+const toLines = (items: CartItem[]) =>
+  items.map((item) => ({
+    kind: item.kind,
+    itemId: item.id,
+    variantId: item.variantId,
+    quantity: item.quantity,
+  }))
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([])
   const [isOpen, setIsOpen] = useState(false)
-  const [hydrated, setHydrated] = useState(false)
+  const [ready, setReady] = useState(false)
+  const skipNextSave = useRef(true)
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Крок 1: миттєво малюємо те, що лишилось у браузері.
+  // Крок 2: питаємо сервер — він знає про інші пристрої й свіжі ціни.
   useEffect(() => {
+    let cancelled = false
+
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY)
       if (raw) setItems(JSON.parse(raw) as CartItem[])
     } catch {
       // зіпсоване сховище не має ламати сайт
     }
-    setHydrated(true)
+
+    const sync = async () => {
+      try {
+        const response = await fetch('/api/cart', { cache: 'no-store' })
+        if (!response.ok) return
+        const data = (await response.json()) as { items: CartItem[] }
+        if (cancelled) return
+
+        const local = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '[]') as CartItem[]
+
+        if (data.items.length === 0 && local.length > 0) {
+          // На сервері порожньо — віддаємо йому те, що набрали до входу.
+          const push = await fetch('/api/cart', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: toLines(local) }),
+          })
+          if (push.ok) {
+            const pushed = (await push.json()) as { items: CartItem[] }
+            if (!cancelled) setItems(pushed.items)
+          }
+        } else {
+          setItems(data.items)
+        }
+      } catch {
+        // Немає звʼязку — лишаємось на локальному кошику.
+      } finally {
+        if (!cancelled) {
+          skipNextSave.current = true
+          setReady(true)
+        }
+      }
+    }
+
+    void sync()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
+  // Зміни зберігаються локально одразу, на сервер — із затримкою,
+  // щоб натискання «+» п'ять разів поспіль не давало п'ять запитів.
   useEffect(() => {
-    if (!hydrated) return
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
-  }, [items, hydrated])
+
+    if (skipNextSave.current) {
+      skipNextSave.current = false
+      return
+    }
+
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => {
+      void fetch('/api/cart', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: toLines(items) }),
+      }).catch(() => undefined)
+    }, 600)
+
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current)
+    }
+  }, [items])
 
   const add: CartContext['add'] = useCallback((item, quantity = 1) => {
     track('add_to_cart', {
@@ -104,6 +178,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       count: items.reduce((sum, i) => sum + i.quantity, 0),
       total: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
       isOpen,
+      ready,
       add,
       remove,
       setQuantity,
@@ -111,7 +186,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
     }),
-    [items, isOpen, add, remove, setQuantity],
+    [items, isOpen, ready, add, remove, setQuantity],
   )
 
   return <Context.Provider value={value}>{children}</Context.Provider>

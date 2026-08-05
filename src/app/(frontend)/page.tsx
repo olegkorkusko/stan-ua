@@ -5,29 +5,16 @@ import { ProductCard } from '@/components/site/ProductCard'
 import { ThreadFork } from '@/components/site/ThreadFork'
 import { formatPrice, plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
+import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
 
-const STEPS = [
-  {
-    title: 'Обираєте курс і платите карткою',
-    text: 'Просто на сайті, без листування й пересилання реквізитів. Apple Pay і Google Pay теж працюють.',
-  },
-  {
-    title: 'Одразу отримуєте доступ',
-    text: 'Запрошення в закритий Telegram-канал приходить автоматично — за хвилину після оплати, без нашої участі.',
-  },
-  {
-    title: 'Дивитесь, коли зручно',
-    text: 'Відео, схеми й рекомендації лишаються з вами назавжди. Термін доступу не спливає.',
-  },
-]
-
 const HomePage = async () => {
   const payload = await payloadClient()
   const locale = await getLocale()
+  const t = dictionary(locale)
 
   const [settings, directions, products, courses, reviews] = await Promise.all([
     payload.findGlobal({ locale, slug: 'settings' }).catch(() => null),
@@ -84,20 +71,19 @@ const HomePage = async () => {
         </div>
 
         <div className="shell relative pb-14 text-paper md:pb-20">
-          <p className="label rise text-paper/70">Хендмейд-студія · Україна</p>
+          <p className="label rise text-paper/70">{t.home.eyebrow}</p>
           <h1 className="rise mt-4 max-w-4xl text-[clamp(2.25rem,6vw,4.75rem)]">
-            {settings?.heroTitle ?? 'Прикраси ручної роботи. І курси, щоб зробити свою.'}
+            {settings?.heroTitle ?? t.home.heroTitle}
           </h1>
           <p className="rise mt-5 max-w-md text-[0.9375rem] leading-relaxed text-paper/80">
-            {settings?.heroSubtitle ??
-              'Вʼязання, бісероплетіння й макраме — від першої петлі до готової прикраси.'}
+            {settings?.heroSubtitle ?? t.home.heroSubtitle}
           </p>
           <div className="rise mt-8 flex flex-wrap gap-3">
             <Link href="/courses" className="btn bg-paper text-ink hover:bg-flax">
-              Обрати курс
+              {t.home.ctaCourses}
             </Link>
             <Link href="/shop" className="btn border border-paper text-paper hover:bg-paper hover:text-ink">
-              Дивитись прикраси
+              {t.home.ctaShop}
             </Link>
           </div>
         </div>
@@ -106,8 +92,8 @@ const HomePage = async () => {
       {/* Три напрями. Нитка приходить згори однією лінією й ділиться на три. */}
       <section id="directions" className="shell pt-16 md:pt-20">
         <div className="text-center">
-          <p className="label">Три напрями</p>
-          <h2 className="mt-3 text-[clamp(1.75rem,3.5vw,2.75rem)]">З чого почати</h2>
+          <p className="label">{t.home.directionsLabel}</p>
+          <h2 className="mt-3 text-[clamp(1.75rem,3.5vw,2.75rem)]">{t.home.directionsTitle}</h2>
         </div>
 
         <ThreadFork />
@@ -136,8 +122,8 @@ const HomePage = async () => {
                 {direction.tagline && <p className="mt-1.5 text-sm text-muted">{direction.tagline}</p>}
                 <p className="mt-3 text-xs text-muted">
                   {stat
-                    ? `${plural(stat.count, 'курс', 'курси', 'курсів')} · від ${formatPrice(stat.from)}`
-                    : 'Скоро'}
+                    ? `${t.home.coursesCount(stat.count)} · ${formatPrice(stat.from)}`
+                    : t.home.soon}
                 </p>
               </Link>
             )
@@ -148,13 +134,13 @@ const HomePage = async () => {
       {/* Як це працює. Нумерація тут по суті: це послідовність кроків. */}
       <section className="mt-24 border-y border-flax bg-paper-deep py-16 md:py-20">
         <div className="shell">
-          <p className="label">Після оплати</p>
+          <p className="label">{t.home.stepsLabel}</p>
           <h2 className="mt-3 max-w-2xl text-[clamp(1.75rem,3.5vw,2.75rem)]">
-            Доступ приходить сам. Пересилати нічого не треба.
+            {t.home.stepsTitle}
           </h2>
 
           <ol className="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
-            {STEPS.map((step, index) => (
+            {t.home.steps.map((step, index) => (
               <li key={step.title}>
                 <span className="font-display text-sm text-brass">
                   {String(index + 1).padStart(2, '0')}
@@ -173,11 +159,11 @@ const HomePage = async () => {
         <section className="shell mt-24">
           <div className="flex items-end justify-between gap-6">
             <div>
-              <p className="label">Магазин</p>
-              <h2 className="mt-3 text-[clamp(1.75rem,3.5vw,2.75rem)]">Готові прикраси</h2>
+              <p className="label">{t.home.shopLabel}</p>
+              <h2 className="mt-3 text-[clamp(1.75rem,3.5vw,2.75rem)]">{t.home.shopTitle}</h2>
             </div>
             <Link href="/shop" className="thread-link hidden text-sm md:inline-block">
-              Усі товари
+              {t.nav.allProducts}
             </Link>
           </div>
 
@@ -188,7 +174,7 @@ const HomePage = async () => {
           </div>
 
           <Link href="/shop" className="btn btn-outline mt-10 w-full md:hidden">
-            Усі товари
+            {t.nav.allProducts}
           </Link>
         </section>
       )}
@@ -196,7 +182,7 @@ const HomePage = async () => {
       {/* Відгуки */}
       {reviews.docs.length > 0 && (
         <section className="shell mt-24">
-          <p className="label text-center">Відгуки</p>
+          <p className="label text-center">{t.home.reviewsLabel}</p>
           <div className="mt-10 grid gap-10 md:grid-cols-3">
             {reviews.docs.map((review) => (
               <figure key={review.id}>

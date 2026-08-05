@@ -75,8 +75,10 @@ export interface Config {
     courses: Course;
     'course-directions': CourseDirection;
     orders: Order;
+    carts: Cart;
     customers: Customer;
     'promo-codes': PromoCode;
+    broadcasts: Broadcast;
     reviews: Review;
     pages: Page;
     posts: Post;
@@ -97,8 +99,10 @@ export interface Config {
     courses: CoursesSelect<false> | CoursesSelect<true>;
     'course-directions': CourseDirectionsSelect<false> | CourseDirectionsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    carts: CartsSelect<false> | CartsSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
     'promo-codes': PromoCodesSelect<false> | PromoCodesSelect<true>;
+    broadcasts: BroadcastsSelect<false> | BroadcastsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
@@ -557,6 +561,57 @@ export interface PromoCode {
   createdAt: string;
 }
 /**
+ * Незавершені кошики. Звідси беруться листи про кинутий кошик.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts".
+ */
+export interface Cart {
+  id: number;
+  token: string;
+  customer?: (number | null) | Customer;
+  /**
+   * Для листа про кинутий кошик.
+   */
+  email?: string | null;
+  items?:
+    | {
+        kind: 'product' | 'course';
+        itemId: string;
+        variantId?: string | null;
+        quantity: number;
+        id?: string | null;
+      }[]
+    | null;
+  reminderSentAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Напишіть лист, поставте галочку «Надіслати» і збережіть.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "broadcasts".
+ */
+export interface Broadcast {
+  id: number;
+  subject: string;
+  /**
+   * Звичайний текст без розмітки — так лист не потрапляє в спам.
+   */
+  body: string;
+  audience?: ('subscribers' | 'customers' | 'all') | null;
+  alsoTelegram?: boolean | null;
+  /**
+   * Знімається автоматично після відправлення.
+   */
+  send?: boolean | null;
+  sentAt?: string | null;
+  sentCount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Нові відгуки не показуються на сайті, доки ви їх не схвалите.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -756,12 +811,20 @@ export interface PayloadLockedDocument {
         value: number | Order;
       } | null)
     | ({
+        relationTo: 'carts';
+        value: number | Cart;
+      } | null)
+    | ({
         relationTo: 'customers';
         value: number | Customer;
       } | null)
     | ({
         relationTo: 'promo-codes';
         value: number | PromoCode;
+      } | null)
+    | ({
+        relationTo: 'broadcasts';
+        value: number | Broadcast;
       } | null)
     | ({
         relationTo: 'reviews';
@@ -1010,6 +1073,27 @@ export interface OrdersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts_select".
+ */
+export interface CartsSelect<T extends boolean = true> {
+  token?: T;
+  customer?: T;
+  email?: T;
+  items?:
+    | T
+    | {
+        kind?: T;
+        itemId?: T;
+        variantId?: T;
+        quantity?: T;
+        id?: T;
+      };
+  reminderSentAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "customers_select".
  */
 export interface CustomersSelect<T extends boolean = true> {
@@ -1058,6 +1142,21 @@ export interface PromoCodesSelect<T extends boolean = true> {
   minOrderTotal?: T;
   usedCount?: T;
   active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "broadcasts_select".
+ */
+export interface BroadcastsSelect<T extends boolean = true> {
+  subject?: T;
+  body?: T;
+  audience?: T;
+  alsoTelegram?: T;
+  send?: T;
+  sentAt?: T;
+  sentCount?: T;
   updatedAt?: T;
   createdAt?: T;
 }

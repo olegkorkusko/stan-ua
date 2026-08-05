@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
 import { imageAlt, imageUrl } from '@/lib/media'
+import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
@@ -26,6 +27,7 @@ const formatDate = (value?: string | null) => {
 const JournalPage = async () => {
   const payload = await payloadClient()
   const locale = await getLocale()
+  const t = dictionary(locale)
   const posts = await payload.find({ locale,
     collection: 'posts',
     where: { status: { equals: 'published' } },
@@ -36,11 +38,11 @@ const JournalPage = async () => {
 
   return (
     <div className="shell pb-24 pt-28 md:pt-36">
-      <p className="label">Журнал</p>
-      <h1 className="mt-3 max-w-2xl text-[clamp(2rem,4.5vw,3.25rem)]">Гайди, поради, за лаштунками</h1>
+      <p className="label">{t.journal.label}</p>
+      <h1 className="mt-3 max-w-2xl text-[clamp(2rem,4.5vw,3.25rem)]">{t.journal.title}</h1>
 
       {posts.docs.length === 0 ? (
-        <p className="mt-12 text-sm text-muted">Перші статті вже пишуться.</p>
+        <p className="mt-12 text-sm text-muted">{t.journal.empty}</p>
       ) : (
         <div className="mt-14 grid gap-x-6 gap-y-14 md:grid-cols-3">
           {posts.docs.map((post) => {

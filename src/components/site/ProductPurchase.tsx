@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react'
 
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
+import { useLocale } from '@/components/site/LocaleLink'
+import { dictionary } from '@/lib/i18n'
 
 export type PurchaseVariant = {
   id: string
@@ -37,6 +39,7 @@ export const ProductPurchase = ({
   variants,
 }: Props) => {
   const { add } = useCart()
+  const t = dictionary(useLocale()).product
 
   const colors = useMemo(() => {
     const seen = new Map<string, { id: string; title: string; hex: string }>()
@@ -92,7 +95,7 @@ export const ProductPurchase = ({
       {colors.length > 0 && (
         <div className="mt-8">
           <p className="label">
-            Колір{variant?.colorTitle ? <span className="ml-2 normal-case text-ink">{variant.colorTitle}</span> : null}
+            {t.color}{variant?.colorTitle ? <span className="ml-2 normal-case text-ink">{variant.colorTitle}</span> : null}
           </p>
           <div className="mt-3 flex flex-wrap gap-2.5">
             {colors.map((color) => (
@@ -115,7 +118,7 @@ export const ProductPurchase = ({
 
       {sizes.length > 0 && (
         <div className="mt-7">
-          <p className="label">Розмір</p>
+          <p className="label">{t.size}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {sizes.map((size) => (
               <button
@@ -138,9 +141,9 @@ export const ProductPurchase = ({
       <p className="mt-6 text-xs text-muted">
         {available
           ? stock <= 3
-            ? `Лишилось ${stock} шт — ручна робота, партії маленькі`
-            : 'В наявності'
-          : 'Немає в наявності. Напишіть нам — зробимо під замовлення.'}
+            ? t.lastLeft(stock)
+            : t.inStock
+          : t.outOfStock}
       </p>
 
       <button
@@ -162,7 +165,7 @@ export const ProductPurchase = ({
         }
         className="btn btn-primary mt-6 w-full"
       >
-        {available ? 'Додати в кошик' : 'Немає в наявності'}
+        {available ? t.addToCart : t.outOfStock.split('.')[0]}
       </button>
     </div>
   )

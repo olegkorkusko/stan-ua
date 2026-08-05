@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from 'react'
 import { track } from '@/components/site/Analytics'
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
+import { useLocale } from '@/components/site/LocaleLink'
+import { dictionary } from '@/lib/i18n'
 
 type Suggestion = { label: string; ref: string }
 
@@ -52,6 +54,7 @@ const field =
 
 export const CheckoutForm = () => {
   const { items, total, clear } = useCart()
+  const t = dictionary(useLocale()).checkout
   const formRef = useRef<HTMLFormElement>(null)
 
   const [form, setForm] = useState({
@@ -83,6 +86,22 @@ export const CheckoutForm = () => {
     event.preventDefault()
     setError(null)
     setBusy(true)
+
+    // Пошта потрібна не лише для замовлення: якщо людина не дійде до оплати,
+    // саме за нею піде лист про кинутий кошик.
+    void fetch('/api/cart', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: form.customerEmail,
+        items: items.map((item) => ({
+          kind: item.kind,
+          itemId: item.id,
+          variantId: item.variantId,
+          quantity: item.quantity,
+        })),
+      }),
+    }).catch(() => undefined)
 
     track('begin_checkout', {
       currency: 'UAH',
@@ -154,7 +173,7 @@ export const CheckoutForm = () => {
   if (items.length === 0) {
     return (
       <div className="py-20 text-center">
-        <p className="text-sm text-muted">Кошик порожній.</p>
+        <p className="text-sm text-muted">{t.empty}</p>
         <Link href="/courses" className="btn btn-outline mt-6">
           Обрати курс
         </Link>
@@ -166,12 +185,12 @@ export const CheckoutForm = () => {
     <form ref={formRef} onSubmit={submit} className="grid gap-12 lg:grid-cols-[1.3fr_1fr] lg:gap-16">
       <div className="space-y-10">
         <section>
-          <p className="label">Контакти</p>
+          <p className="label">{t.contacts}</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <input
               required
               className={field}
-              placeholder="Імʼя та прізвище"
+              placeholder={t.name}
               value={form.customerName}
               onChange={(e) => set('customerName')(e.target.value)}
             />
@@ -187,21 +206,21 @@ export const CheckoutForm = () => {
               required
               type="email"
               className={`${field} sm:col-span-2`}
-              placeholder="Пошта — на неї прийде доступ"
+              placeholder={t.email}
               value={form.customerEmail}
               onChange={(e) => set('customerEmail')(e.target.value)}
             />
           </div>
           {hasCourse && (
             <p className="mt-2 text-xs text-muted">
-              Доступ до курсу приходить на пошту одразу після оплати. Перевірте адресу.
+              {t.emailNote}
             </p>
           )}
         </section>
 
         {hasPhysical && (
           <section>
-            <p className="label">Доставка</p>
+            <p className="label">{t.delivery}</p>
             <div className="mt-4 space-y-2">
               {DELIVERY.map((option) => (
                 <label
@@ -227,7 +246,7 @@ export const CheckoutForm = () => {
               <div className="relative">
                 <input
                   className={field}
-                  placeholder="Місто"
+                  placeholder={t.city}
                   value={cityQuery}
                   onChange={(e) => {
                     setCityQuery(e.target.value)
@@ -259,7 +278,7 @@ export const CheckoutForm = () => {
                 <input
                   className={field}
                   placeholder={
-                    form.deliveryMethod === 'np_courier' ? 'Вулиця, будинок, квартира' : 'Відділення або поштомат'
+                    form.deliveryMethod === 'np_courier' ? t.address : t.branch
                   }
                   value={branch || branchQuery}
                   onChange={(e) => {
@@ -285,12 +304,12 @@ export const CheckoutForm = () => {
               </div>
             </div>
 
-            <p className="mt-2 text-xs text-muted">Доставка за тарифами перевізника.</p>
+            <p className="mt-2 text-xs text-muted">{t.deliveryNote}</p>
           </section>
         )}
 
         <section>
-          <p className="label">Оплата</p>
+          <p className="label">{t.payment}</p>
           <div className="mt-4 space-y-2">
             <label
               className={`flex cursor-pointer items-center gap-3 border px-3.5 py-3 text-sm transition-colors ${
@@ -304,7 +323,7 @@ export const CheckoutForm = () => {
                 onChange={() => set('paymentMethod')('card')}
                 className="accent-ink"
               />
-              Карткою онлайн · Apple Pay · Google Pay
+              {t.card}
             </label>
 
             {codAllowed && (
@@ -320,23 +339,23 @@ export const CheckoutForm = () => {
                   onChange={() => set('paymentMethod')('cod')}
                   className="accent-ink"
                 />
-                Накладений платіж із передплатою
+                {t.cod}
               </label>
             )}
           </div>
           {form.paymentMethod === 'cod' && (
             <p className="mt-2 text-xs text-muted">
-              Зараз сплачуєте передплату, решту — при отриманні на пошті.
+              {t.codNote}
             </p>
           )}
         </section>
 
         <section>
-          <p className="label">Коментар</p>
+          <p className="label">{t.comment}</p>
           <textarea
             rows={3}
             className={`${field} mt-4 resize-none`}
-            placeholder="Побажання до замовлення"
+            placeholder={t.commentPlaceholder}
             value={form.comment}
             onChange={(e) => set('comment')(e.target.value)}
           />
@@ -345,7 +364,7 @@ export const CheckoutForm = () => {
 
       <aside className="lg:sticky lg:top-28 lg:self-start">
         <div className="border border-flax p-6">
-          <p className="label">Замовлення</p>
+          <p className="label">{t.order}</p>
 
           <ul className="mt-4 space-y-3">
             {items.map((item) => (
@@ -362,32 +381,32 @@ export const CheckoutForm = () => {
 
           <div className="mt-5 border-t border-flax pt-5">
             <label htmlFor="promo" className="label">
-              Промокод
+              {t.promo}
             </label>
             <input
               id="promo"
               className={`${field} mt-2 uppercase`}
-              placeholder="Якщо є"
+              placeholder={t.promoPlaceholder}
               value={form.promoCode}
               onChange={(e) => set('promoCode')(e.target.value)}
             />
           </div>
 
           <div className="mt-5 flex items-baseline justify-between border-t border-flax pt-5">
-            <span className="label">До сплати</span>
+            <span className="label">{t.toPay}</span>
             <span className="price text-lg text-brass">{formatPrice(total)}</span>
           </div>
 
           {error && <p className="mt-4 border border-brass/40 bg-brass/5 px-3 py-2 text-xs text-ink">{error}</p>}
 
           <button type="submit" disabled={busy} className="btn btn-primary mt-5 w-full">
-            {busy ? 'Готуємо оплату…' : 'Перейти до оплати'}
+            {busy ? t.submitting : t.submit}
           </button>
 
           <p className="mt-3 text-center text-[0.6875rem] leading-relaxed text-muted">
-            Натискаючи кнопку, ви приймаєте умови{' '}
+            {t.terms}{' '}
             <Link href="/offer" className="underline underline-offset-2">
-              публічної оферти
+              {t.termsLink}
             </Link>
           </p>
         </div>

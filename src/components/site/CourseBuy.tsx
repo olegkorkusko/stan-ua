@@ -2,6 +2,8 @@
 
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
+import { useLocale } from '@/components/site/LocaleLink'
+import { dictionary } from '@/lib/i18n'
 
 type Props = {
   courseId: string
@@ -19,6 +21,7 @@ type Props = {
  */
 export const CourseBuy = ({ courseId, title, href, price, oldPrice, image }: Props) => {
   const { add } = useCart()
+  const t = dictionary(useLocale()).courses
 
   return (
     <div className="border border-flax bg-paper p-6">
@@ -42,13 +45,13 @@ export const CourseBuy = ({ courseId, title, href, price, oldPrice, image }: Pro
         }
         className="btn btn-primary mt-5 w-full"
       >
-        Купити курс
+        {t.buy}
       </button>
 
       <ul className="mt-5 space-y-2 text-xs leading-relaxed text-muted">
-        <li>Доступ приходить одразу після оплати</li>
-        <li>Лишається назавжди, без обмеження за часом</li>
-        <li>Оплата карткою, Apple Pay або Google Pay</li>
+        {t.perks.map((perk) => (
+          <li key={perk}>{perk}</li>
+        ))}
       </ul>
     </div>
   )

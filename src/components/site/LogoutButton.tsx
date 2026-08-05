@@ -2,9 +2,12 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useLocale } from '@/components/site/LocaleLink'
+import { dictionary } from '@/lib/i18n'
 
 export const LogoutButton = () => {
   const router = useRouter()
+  const t = dictionary(useLocale()).account
   const [busy, setBusy] = useState(false)
 
   return (
@@ -18,7 +21,7 @@ export const LogoutButton = () => {
       }}
       className="thread-link text-sm text-muted"
     >
-      {busy ? 'Виходимо…' : 'Вийти'}
+      {busy ? '…' : t.logout}
     </button>
   )
 }

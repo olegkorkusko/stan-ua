@@ -3,6 +3,7 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import type { Where } from 'payload'
 
 import { ProductCard } from '@/components/site/ProductCard'
+import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
@@ -18,7 +19,15 @@ type SearchParams = Promise<{
   color?: string
   sort?: string
   instock?: string
+  price?: string
 }>
+
+/** Готові діапазони замість двох полів вводу: на 30 позиціях так швидше. */
+const PRICE_RANGES = [
+  { value: '0-500', label: 'до 500 ₴', min: 0, max: 500 },
+  { value: '500-1000', label: '500–1000 ₴', min: 500, max: 1000 },
+  { value: '1000-', label: 'від 1000 ₴', min: 1000, max: null },
+]
 
 const SORTS = [
   { value: '-createdAt', label: 'Спочатку нові' },
@@ -40,6 +49,7 @@ const ShopPage = async ({ searchParams }: { searchParams: SearchParams }) => {
   const params = await searchParams
   const payload = await payloadClient()
   const locale = await getLocale()
+  const t = dictionary(locale)
 
   const [categories, colors] = await Promise.all([
     payload.find({ locale, collection: 'categories', limit: 20, depth: 0 }),
@@ -54,29 +64,42 @@ const ShopPage = async ({ searchParams }: { searchParams: SearchParams }) => {
   if (color) where['variants.color'] = { equals: color.id }
   if (params.instock === '1') where.inStock = { equals: true }
 
+  const range = PRICE_RANGES.find((item) => item.value === params.price)
+  if (range) {
+    where.priceFrom = range.max
+      ? { greater_than_equal: range.min, less_than_equal: range.max }
+      : { greater_than_equal: range.min }
+  }
+
   const sort = SORTS.some((s) => s.value === params.sort) ? params.sort! : '-createdAt'
 
   const products = await payload.find({ locale, collection: 'products', where, sort, limit: 48, depth: 2 })
 
-  const active = { category: params.category, color: params.color, sort: params.sort, instock: params.instock }
-  const hasFilters = Boolean(params.category || params.color || params.instock)
+  const active = {
+    category: params.category,
+    color: params.color,
+    sort: params.sort,
+    instock: params.instock,
+    price: params.price,
+  }
+  const hasFilters = Boolean(params.category || params.color || params.instock || params.price)
 
   return (
     <div className="shell pb-24 pt-28 md:pt-36">
-      <p className="label">Магазин</p>
+      <p className="label">{t.shop.label}</p>
       <h1 className="mt-3 text-[clamp(2rem,4vw,3.25rem)]">
-        {category ? category.title : 'Усе ручної роботи'}
+        {category ? category.title : t.shop.title}
       </h1>
 
       {/* Фільтри. Колір — кружечками, бо назва кольору мало що каже. */}
       <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4 border-y border-flax py-4">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="label">Категорія</span>
+          <span className="label">{t.shop.category}</span>
           <Link
             href={buildHref(active, { category: undefined })}
             className={`text-sm ${params.category ? 'text-muted' : 'text-ink underline underline-offset-4'}`}
           >
-            Усі
+            {t.shop.all}
           </Link>
           {categories.docs.map((item) => (
             <Link
@@ -92,7 +115,7 @@ const ShopPage = async ({ searchParams }: { searchParams: SearchParams }) => {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <span className="label">Колір</span>
+          <span className="label">{t.shop.color}</span>
           {colors.docs.map((item) => (
             <Link
               key={item.id}
@@ -107,15 +130,30 @@ const ShopPage = async ({ searchParams }: { searchParams: SearchParams }) => {
           ))}
         </div>
 
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="label">{t.shop.price}</span>
+          {PRICE_RANGES.map((item) => (
+            <Link
+              key={item.value}
+              href={buildHref(active, { price: params.price === item.value ? undefined : item.value })}
+              className={`text-sm ${
+                params.price === item.value ? 'text-ink underline underline-offset-4' : 'text-muted'
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+
         <Link
           href={buildHref(active, { instock: params.instock === '1' ? undefined : '1' })}
           className={`text-sm ${params.instock === '1' ? 'text-ink underline underline-offset-4' : 'text-muted'}`}
         >
-          Лише в наявності
+          {t.shop.inStockOnly}
         </Link>
 
         <div className="ml-auto flex items-center gap-3">
-          <span className="label">Сортування</span>
+          <span className="label">{t.shop.sort}</span>
           {SORTS.map((option) => (
             <Link
               key={option.value}
@@ -128,14 +166,14 @@ const ShopPage = async ({ searchParams }: { searchParams: SearchParams }) => {
         </div>
       </div>
 
-      <p className="mt-4 text-xs text-muted">{products.totalDocs} позицій</p>
+      <p className="mt-4 text-xs text-muted">{t.shop.found(products.totalDocs)}</p>
 
       {products.docs.length === 0 ? (
         <div className="py-24 text-center">
-          <p className="text-sm text-muted">За цими умовами нічого немає.</p>
+          <p className="text-sm text-muted">{t.shop.empty}</p>
           {hasFilters && (
             <Link href="/shop" className="btn btn-outline mt-6">
-              Скинути фільтри
+              {t.shop.reset}
             </Link>
           )}
         </div>

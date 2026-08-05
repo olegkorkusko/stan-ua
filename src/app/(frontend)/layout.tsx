@@ -77,7 +77,7 @@ const RootLayout = async ({ children }: { children: React.ReactNode }) => {
                 {settings.announcement}
               </p>
             )}
-            <Header directions={navDirections} t={t} locale={locale} pathname={pathname} />
+            <Header directions={navDirections} locale={locale} pathname={pathname} />
             <main>{children}</main>
             <Footer settings={settings} t={t} />
             <CartDrawer />

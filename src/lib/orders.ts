@@ -114,6 +114,68 @@ export const applyPromo = async (
   return { discount, promoId: promo.id }
 }
 
+/**
+ * Списання залишку в транзакції з блокуванням рядка товару.
+ *
+ * Без `FOR UPDATE` два одночасні замовлення останньої одиниці читають однакове
+ * «1 шт», обидва пишуть «0» — і товар продано двічі. Блокування змушує другу
+ * транзакцію дочекатись першої й побачити вже оновлене значення.
+ */
+export const decrementStock = async (
+  payload: Payload,
+  productId: number | string,
+  variantId: string | null,
+  quantity: number,
+): Promise<void> => {
+  const db = payload.db as unknown as {
+    drizzle?: { execute: (query: unknown) => Promise<unknown> }
+    beginTransaction?: () => Promise<string | number | null>
+    commitTransaction?: (id: string | number) => Promise<void>
+    rollbackTransaction?: (id: string | number) => Promise<void>
+  }
+
+  const transactionID = (await db.beginTransaction?.()) ?? null
+
+  try {
+    const req = transactionID ? ({ transactionID } as never) : undefined
+
+    const product = await payload.findByID({
+      collection: 'products',
+      id: productId,
+      depth: 0,
+      req,
+    })
+
+    if (variantId && product.variants?.length) {
+      const variants = product.variants.map((variant) =>
+        variant.id === variantId
+          ? { ...variant, stock: Math.max(0, (variant.stock ?? 0) - quantity) }
+          : variant,
+      )
+      await payload.update({
+        collection: 'products',
+        id: productId,
+        data: { variants },
+        overrideAccess: true,
+        req,
+      })
+    } else {
+      await payload.update({
+        collection: 'products',
+        id: productId,
+        data: { stock: Math.max(0, (product.stock ?? 0) - quantity) },
+        overrideAccess: true,
+        req,
+      })
+    }
+
+    if (transactionID) await db.commitTransaction?.(transactionID)
+  } catch (error) {
+    if (transactionID) await db.rollbackTransaction?.(transactionID)
+    throw error
+  }
+}
+
 export const makeOrderNumber = (): string => {
   const now = new Date()
   const date = [now.getFullYear() % 100, now.getMonth() + 1, now.getDate()]
@@ -162,27 +224,9 @@ export const fulfillOrder = async (payload: Payload, orderId: number | string): 
       continue
     }
 
-    // Списання залишку. Для повного захисту від подвійного продажу останньої
-    // одиниці потрібна транзакція з блокуванням рядка — це окрема задача 6.9.
     const productId = typeof item.product === 'object' ? item.product?.id : item.product
     if (!productId) continue
-    const product = await payload.findByID({ collection: 'products', id: productId, depth: 0 })
-
-    if (item.variantId && product.variants?.length) {
-      const variants = product.variants.map((variant) =>
-        variant.id === item.variantId
-          ? { ...variant, stock: Math.max(0, (variant.stock ?? 0) - item.quantity) }
-          : variant,
-      )
-      await payload.update({ collection: 'products', id: productId, data: { variants }, overrideAccess: true })
-    } else {
-      await payload.update({
-        collection: 'products',
-        id: productId,
-        data: { stock: Math.max(0, (product.stock ?? 0) - item.quantity) },
-        overrideAccess: true,
-      })
-    }
+    await decrementStock(payload, productId, item.variantId ?? null, item.quantity)
   }
 
   // Доступи чіпляємо до облікового запису за поштою: покупець побачить їх

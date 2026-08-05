@@ -10,6 +10,8 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { Categories, Colors, Sizes } from './collections/Attributes'
+import { Broadcasts } from './collections/Broadcasts'
+import { Carts } from './collections/Carts'
 import { Pages, Posts, Subscribers } from './collections/Content'
 import { CourseDirections, Courses } from './collections/Courses'
 import { Customers } from './collections/Customers'
@@ -40,8 +42,10 @@ export default buildConfig({
     Courses,
     CourseDirections,
     Orders,
+    Carts,
     Customers,
     PromoCodes,
+    Broadcasts,
     Reviews,
     Pages,
     Posts,

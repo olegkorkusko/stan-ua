@@ -11,6 +11,7 @@ import { ProductPurchase, type PurchaseVariant } from '@/components/site/Product
 import { Reviews } from '@/components/site/Reviews'
 import { imageAlt, imageUrl } from '@/lib/media'
 import type { Product } from '@/payload-types'
+import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
@@ -47,6 +48,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
 
   const payload = await payloadClient()
   const locale = await getLocale()
+  const t = dictionary(locale)
   const categoryId = typeof product.category === 'object' ? product.category?.id : product.category
 
   const [related, reviews] = await Promise.all([
@@ -110,7 +112,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
       <div className="shell">
         <nav className="label mb-8 flex gap-2" aria-label="Навігація">
           <Link href="/shop" className="hover:text-ink">
-            Магазин
+            {t.shop.label}
           </Link>
           {typeof product.category === 'object' && product.category && (
             <>
@@ -189,16 +191,16 @@ const ProductPage = async ({ params }: { params: Params }) => {
 
             <dl className="mt-10 divide-y divide-flax border-t border-flax text-sm">
               <div className="flex justify-between py-3">
-                <dt className="text-muted">Доставка</dt>
-                <dd>Нова Пошта, Укрпошта</dd>
+                <dt className="text-muted">{t.product.delivery}</dt>
+                <dd>{t.product.deliveryValue}</dd>
               </div>
               <div className="flex justify-between py-3">
-                <dt className="text-muted">Оплата</dt>
-                <dd>Картка, Apple Pay, Google Pay</dd>
+                <dt className="text-muted">{t.product.payment}</dt>
+                <dd>{t.product.paymentValue}</dd>
               </div>
               <div className="flex justify-between py-3">
-                <dt className="text-muted">Виготовлення</dt>
-                <dd>Ручна робота</dd>
+                <dt className="text-muted">{t.product.madeBy}</dt>
+                <dd>{t.product.madeByValue}</dd>
               </div>
             </dl>
           </div>
@@ -209,7 +211,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
 
       {related.docs.length > 0 && (
         <section className="shell mt-24">
-          <p className="label">Схоже</p>
+          <p className="label">{t.product.related}</p>
           <div className="mt-8 grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-4 md:gap-x-6">
             {related.docs.map((item) => (
               <ProductCard key={item.id} product={item} />

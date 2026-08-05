@@ -3,6 +3,8 @@
 import { useState } from 'react'
 
 import type { Review } from '@/payload-types'
+import { useLocale } from '@/components/site/LocaleLink'
+import { dictionary } from '@/lib/i18n'
 
 const Stars = ({ value }: { value: number }) => (
   <span className="text-brass" aria-label={`${value} з 5`}>
@@ -18,6 +20,7 @@ type Target = { product: number } | { course: number }
 
 export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target }) => {
   const [open, setOpen] = useState(false)
+  const t = dictionary(useLocale()).reviews
   const [form, setForm] = useState({ authorName: '', text: '', rating: 5 })
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -55,25 +58,25 @@ export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target
     <section className="mt-24 max-w-3xl">
       <div className="flex flex-wrap items-baseline justify-between gap-4">
         <div>
-          <p className="label">Відгуки</p>
+          <p className="label">{t.label}</p>
           {average !== null && (
             <p className="mt-3 flex items-center gap-3 text-2xl">
               <Stars value={Math.round(average)} />
-              <span className="price text-base text-muted">{average} з 5</span>
+              <span className="price text-base text-muted">{t.average(average)}</span>
             </p>
           )}
         </div>
 
         {!open && !sent && (
           <button type="button" onClick={() => setOpen(true)} className="btn btn-outline">
-            Залишити відгук
+            {t.leave}
           </button>
         )}
       </div>
 
       {sent && (
         <p className="mt-6 border border-flax bg-paper-deep px-4 py-3 text-sm">
-          Дякуємо! Відгук зʼявиться на сайті після перевірки.
+          {t.sent}
         </p>
       )}
 
@@ -82,13 +85,13 @@ export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target
           <input
             required
             className={field}
-            placeholder="Як вас звати"
+            placeholder={t.namePlaceholder}
             value={form.authorName}
             onChange={(e) => setForm((f) => ({ ...f, authorName: e.target.value }))}
           />
 
           <div className="flex items-center gap-3">
-            <span className="label">Оцінка</span>
+            <span className="label">{t.rating}</span>
             {[1, 2, 3, 4, 5].map((value) => (
               <button
                 key={value}
@@ -107,7 +110,7 @@ export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target
             required
             rows={4}
             className={`${field} resize-none`}
-            placeholder="Що сподобалось, що ні"
+            placeholder={t.textPlaceholder}
             value={form.text}
             onChange={(e) => setForm((f) => ({ ...f, text: e.target.value }))}
           />
@@ -116,10 +119,10 @@ export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target
 
           <div className="flex gap-3">
             <button type="submit" disabled={busy} className="btn btn-primary">
-              {busy ? 'Надсилаємо…' : 'Надіслати'}
+              {busy ? '…' : t.submit}
             </button>
             <button type="button" onClick={() => setOpen(false)} className="btn btn-outline">
-              Скасувати
+              {t.cancel}
             </button>
           </div>
         </form>
@@ -139,7 +142,7 @@ export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target
         </ul>
       ) : (
         <p className="mt-8 border-t border-flax pt-6 text-sm text-muted">
-          Відгуків поки немає. Будете першою.
+          {t.empty}
         </p>
       )}
     </section>
