@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
+import { PurchaseTracking } from '@/components/site/PurchaseTracking'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 
@@ -34,6 +35,19 @@ const ThanksPage = async ({ searchParams }: { searchParams: SearchParams }) => {
 
   return (
     <div className="shell flex min-h-[70svh] flex-col items-center justify-center py-24 text-center">
+      {paid && order && (
+        <PurchaseTracking
+          orderNumber={order.orderNumber}
+          total={order.total}
+          items={(order.items ?? []).map((item) => ({
+            id: String(item.kind === 'course' ? item.course : item.product),
+            title: item.title,
+            price: item.price,
+            quantity: item.quantity,
+          }))}
+        />
+      )}
+
       <p className="label">{orderNumber ?? 'Замовлення'}</p>
 
       <h1 className="mt-4 max-w-2xl text-[clamp(1.75rem,4vw,3rem)]">

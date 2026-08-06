@@ -14,13 +14,20 @@ declare global {
   }
 }
 
-/** Подія покупки/додавання в кошик — викликається з компонентів магазину. */
-export const track = (event: string, params: Record<string, unknown> = {}) => {
+/**
+ * Подія покупки/додавання в кошик — викликається з компонентів магазину.
+ *
+ * `eventId` потрібен покупці: таку саму подію відправляє сервер через
+ * Conversions API, і за цим ідентифікатором Meta розуміє, що це одна покупка,
+ * а не дві.
+ */
+export const track = (event: string, params: Record<string, unknown> = {}, eventId?: string) => {
   if (typeof window === 'undefined') return
   window.gtag?.('event', event, params)
-  if (event === 'add_to_cart') window.fbq?.('track', 'AddToCart', params)
-  if (event === 'begin_checkout') window.fbq?.('track', 'InitiateCheckout', params)
-  if (event === 'purchase') window.fbq?.('track', 'Purchase', params)
+  const options = eventId ? { eventID: eventId } : undefined
+  if (event === 'add_to_cart') window.fbq?.('track', 'AddToCart', params, options)
+  if (event === 'begin_checkout') window.fbq?.('track', 'InitiateCheckout', params, options)
+  if (event === 'purchase') window.fbq?.('track', 'Purchase', params, options)
 }
 
 /**

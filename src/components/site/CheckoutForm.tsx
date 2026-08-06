@@ -11,6 +11,16 @@ import { dictionary } from '@/lib/i18n'
 
 type Suggestion = { label: string; ref: string }
 
+/**
+ * Кукі пікселя Meta. Їх не існує, якщо людина не дала згоди на cookie —
+ * тоді серверна подія покупки просто піде без них, за поштою й телефоном.
+ */
+const readCookie = (name: string): string | undefined =>
+  document.cookie
+    .split('; ')
+    .find((row) => row.startsWith(`${name}=`))
+    ?.slice(name.length + 1)
+
 const DELIVERY = [
   { value: 'np_branch', label: 'Нова Пошта — відділення' },
   { value: 'np_locker', label: 'Нова Пошта — поштомат' },
@@ -18,12 +28,19 @@ const DELIVERY = [
   { value: 'ukrposhta', label: 'Укрпошта' },
 ]
 
-/** Підказки адрес з невеликою затримкою, щоб не смикати API на кожну літеру. */
-const useSuggestions = (type: 'city' | 'branch', query: string, cityRef?: string) => {
+/**
+ * Підказки адрес з невеликою затримкою, щоб не смикати API на кожну літеру.
+ * `enabled` вимикає їх для Укрпошти: довідник Нової Пошти для неї не підходить.
+ */
+const useSuggestions = (type: 'city' | 'branch', query: string, cityRef?: string, enabled = true) => {
   const [items, setItems] = useState<Suggestion[]>([])
   const [manual, setManual] = useState(false)
 
   useEffect(() => {
+    if (!enabled) {
+      setItems([])
+      return
+    }
     if (type === 'branch' && !cityRef) return
     if (type === 'city' && query.trim().length < 2) {
       setItems([])
@@ -44,7 +61,7 @@ const useSuggestions = (type: 'city' | 'branch', query: string, cityRef?: string
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [type, query, cityRef])
+  }, [type, query, cityRef, enabled])
 
   return { items, manual }
 }
@@ -70,6 +87,7 @@ export const CheckoutForm = () => {
   const [branch, setBranch] = useState('')
   const [cityQuery, setCityQuery] = useState('')
   const [branchQuery, setBranchQuery] = useState('')
+  const [postcode, setPostcode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -77,8 +95,12 @@ export const CheckoutForm = () => {
   const hasCourse = items.some((item) => item.kind === 'course')
   const codAllowed = hasPhysical && !hasCourse
 
-  const cities = useSuggestions('city', cityQuery)
-  const branches = useSuggestions('branch', branchQuery, city.ref)
+  // Укрпошта має власну адресну логіку: місто, вулиця й індекс, без довідника
+  // відділень Нової Пошти.
+  const isUkrposhta = form.deliveryMethod === 'ukrposhta'
+
+  const cities = useSuggestions('city', cityQuery, undefined, !isUkrposhta)
+  const branches = useSuggestions('branch', branchQuery, city.ref, !isUkrposhta)
 
   const set = (key: keyof typeof form) => (value: string) => setForm((f) => ({ ...f, [key]: value }))
 
@@ -115,9 +137,12 @@ export const CheckoutForm = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          fbp: readCookie('_fbp'),
+          fbc: readCookie('_fbc'),
           paymentMethod: codAllowed ? form.paymentMethod : 'card',
           deliveryCity: hasPhysical ? city.label || cityQuery : undefined,
           deliveryBranch: hasPhysical ? branch || branchQuery : undefined,
+          deliveryPostcode: hasPhysical && isUkrposhta ? postcode : undefined,
           items: items.map((item) => ({
             kind: item.kind,
             id: item.id,
@@ -278,7 +303,7 @@ export const CheckoutForm = () => {
                 <input
                   className={field}
                   placeholder={
-                    form.deliveryMethod === 'np_courier' ? t.address : t.branch
+                    form.deliveryMethod === 'np_courier' || isUkrposhta ? t.address : t.branch
                   }
                   value={branch || branchQuery}
                   onChange={(e) => {
@@ -302,6 +327,19 @@ export const CheckoutForm = () => {
                   </ul>
                 )}
               </div>
+              {isUkrposhta && (
+                <div>
+                  <input
+                    className={field}
+                    placeholder={t.postcode}
+                    inputMode="numeric"
+                    maxLength={5}
+                    value={postcode}
+                    onChange={(e) => setPostcode(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                  />
+                  <p className="mt-1.5 text-xs text-muted">{t.postcodeHint}</p>
+                </div>
+              )}
             </div>
 
             <p className="mt-2 text-xs text-muted">{t.deliveryNote}</p>

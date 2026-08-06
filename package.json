@@ -14,6 +14,7 @@
     "seed": "payload run src/seed/index.ts",
     "seed:content": "payload run src/seed/content.ts",
     "seed:photos": "payload run src/seed/photos.ts",
+    "import:products": "payload run src/seed/import.ts",
     "storage:sync": "payload run src/seed/storage.ts"
   },
   "dependencies": {

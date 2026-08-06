@@ -26,8 +26,11 @@ type Body = {
   deliveryMethod?: string
   deliveryCity?: string
   deliveryBranch?: string
+  deliveryPostcode?: string
   comment?: string
   paymentMethod: 'card' | 'cod'
+  fbp?: string
+  fbc?: string
 }
 
 const required = (body: Body) => {
@@ -53,6 +56,12 @@ export const POST = async (request: Request) => {
       return NextResponse.json({ error: 'Вкажіть місто й відділення' }, { status: 400 })
     }
 
+    // Укрпошта доставляє за індексом, а не за номером відділення: без нього
+    // посилку не оформити, тож просимо одразу, а не листуванням потім.
+    if (hasPhysical && body.deliveryMethod === 'ukrposhta' && !/^\d{5}$/.test(body.deliveryPostcode ?? '')) {
+      return NextResponse.json({ error: 'Вкажіть поштовий індекс — пʼять цифр' }, { status: 400 })
+    }
+
     const subtotal = lines.reduce((sum, line) => sum + line.price * line.quantity, 0)
     const { discount, promoId } = await applyPromo(payload, body.promoCode, lines)
     const total = Math.max(0, subtotal - discount)
@@ -63,7 +72,15 @@ export const POST = async (request: Request) => {
     // Курси так продавати не можна — доступ видається одразу.
     const codAllowed = hasPhysical && !lines.some((line) => line.kind === 'course')
     const isCod = body.paymentMethod === 'cod' && codAllowed
-    const prepaid = isCod ? Math.min(settings?.prepaymentAmount ?? 200, total) : 0
+
+    // Передплата — або фіксована сума, або відсоток від замовлення: як саме,
+    // вирішується в налаштуваннях, без правок у коді.
+    const prepaymentValue = settings?.prepaymentAmount ?? 200
+    const rawPrepaid =
+      settings?.prepaymentType === 'percent'
+        ? Math.round((total * Math.min(Math.max(prepaymentValue, 0), 100)) / 100)
+        : prepaymentValue
+    const prepaid = isCod ? Math.min(Math.max(rawPrepaid, 0), total) : 0
     const payNow = isCod ? prepaid : total
 
     const orderNumber = makeOrderNumber()
@@ -91,6 +108,7 @@ export const POST = async (request: Request) => {
         deliveryMethod: hasPhysical ? asDeliveryMethod(body.deliveryMethod) : undefined,
         deliveryCity: body.deliveryCity,
         deliveryBranch: body.deliveryBranch,
+        deliveryPostcode: body.deliveryMethod === 'ukrposhta' ? body.deliveryPostcode : undefined,
         comment: body.comment,
         subtotal,
         discount,
@@ -98,6 +116,10 @@ export const POST = async (request: Request) => {
         total,
         prepaidAmount: prepaid,
         promoCode: promoId,
+        // Приходять, лише якщо покупець дав згоду на cookie й піксель встиг
+        // їх поставити. Порожні — серверна подія просто піде без них.
+        metaFbp: typeof body.fbp === 'string' ? body.fbp.slice(0, 255) : undefined,
+        metaFbc: typeof body.fbc === 'string' ? body.fbc.slice(0, 255) : undefined,
       },
     })
 

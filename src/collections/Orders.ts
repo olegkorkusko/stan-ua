@@ -121,8 +121,14 @@ export const Orders: CollectionConfig = {
         {
           type: 'row',
           fields: [
-            { name: 'deliveryCity', type: 'text', label: 'Місто', admin: { width: '50%' } },
-            { name: 'deliveryBranch', type: 'text', label: 'Відділення / адреса', admin: { width: '50%' } },
+            { name: 'deliveryCity', type: 'text', label: 'Місто', admin: { width: '40%' } },
+            { name: 'deliveryBranch', type: 'text', label: 'Відділення / адреса', admin: { width: '40%' } },
+            {
+              name: 'deliveryPostcode',
+              type: 'text',
+              label: 'Індекс',
+              admin: { width: '20%', description: 'Тільки для Укрпошти.' },
+            },
           ],
         },
         { name: 'comment', type: 'textarea', label: 'Коментар до замовлення' },
@@ -184,5 +190,9 @@ export const Orders: CollectionConfig = {
       label: 'Доступ до курсів видано',
       admin: { position: 'sidebar', readOnly: true },
     },
+    // Кукі Meta, зняті в момент оформлення: за ними серверна подія покупки
+    // зіставляється з людиною, яка бачила рекламу. В адмінці не потрібні.
+    { name: 'metaFbp', type: 'text', admin: { hidden: true } },
+    { name: 'metaFbc', type: 'text', admin: { hidden: true } },
   ],
 }

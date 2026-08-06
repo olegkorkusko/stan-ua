@@ -473,6 +473,10 @@ export interface Order {
   deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta') | null;
   deliveryCity?: string | null;
   deliveryBranch?: string | null;
+  /**
+   * Тільки для Укрпошти.
+   */
+  deliveryPostcode?: string | null;
   comment?: string | null;
   subtotal: number;
   discount?: number | null;
@@ -491,6 +495,8 @@ export interface Order {
   fulfillmentStatus?: ('new' | 'packing' | 'shipped' | 'done' | 'cancelled') | null;
   trackingNumber?: string | null;
   accessGranted?: boolean | null;
+  metaFbp?: string | null;
+  metaFbc?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1056,6 +1062,7 @@ export interface OrdersSelect<T extends boolean = true> {
   deliveryMethod?: T;
   deliveryCity?: T;
   deliveryBranch?: T;
+  deliveryPostcode?: T;
   comment?: T;
   subtotal?: T;
   discount?: T;
@@ -1068,6 +1075,8 @@ export interface OrdersSelect<T extends boolean = true> {
   fulfillmentStatus?: T;
   trackingNumber?: T;
   accessGranted?: T;
+  metaFbp?: T;
+  metaFbc?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1373,6 +1382,10 @@ export interface Setting {
    * Порожньо — доставка завжди платна за тарифами перевізника.
    */
   freeDeliveryFrom?: number | null;
+  prepaymentType?: ('fixed' | 'percent') | null;
+  /**
+   * Для фіксованої — гривні (напр. 200). Для відсотка — число від 1 до 100.
+   */
   prepaymentAmount?: number | null;
   deliveryInfo?: {
     root: {
@@ -1406,6 +1419,7 @@ export interface SettingsSelect<T extends boolean = true> {
   instagram?: T;
   telegram?: T;
   freeDeliveryFrom?: T;
+  prepaymentType?: T;
   prepaymentAmount?: T;
   deliveryInfo?: T;
   updatedAt?: T;

@@ -131,6 +131,8 @@ type Dictionary = {
     city: string
     branch: string
     address: string
+    postcode: string
+    postcodeHint: string
     deliveryNote: string
     payment: string
     card: string
@@ -326,6 +328,8 @@ const uk: Dictionary = {
     city: 'Місто',
     branch: 'Відділення або поштомат',
     address: 'Вулиця, будинок, квартира',
+    postcode: 'Поштовий індекс',
+    postcodeHint: "П'ять цифр — індекс відділення Укрпошти за адресою.",
     deliveryNote: 'Доставка за тарифами перевізника.',
     payment: 'Оплата',
     card: 'Карткою онлайн · Apple Pay · Google Pay',
@@ -542,6 +546,8 @@ const en: Dictionary = {
     city: 'City',
     branch: 'Branch or parcel locker',
     address: 'Street, building, apartment',
+    postcode: 'Postcode',
+    postcodeHint: 'Five digits — the Ukrposhta postcode for this address.',
     deliveryNote: 'Shipping is charged at the carrier rate.',
     payment: 'Payment',
     card: 'Card online · Apple Pay · Google Pay',

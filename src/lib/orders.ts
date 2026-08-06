@@ -3,6 +3,7 @@ import type { Payload } from 'payload'
 
 import { createReceipt } from '@/lib/checkbox'
 import { formatPrice } from '@/lib/format'
+import { sendPurchase } from '@/lib/meta'
 import { createCourseInvite, notifyAdmin } from '@/lib/telegram'
 
 export type CartLineInput = {
@@ -120,24 +121,60 @@ export const applyPromo = async (
  * Без `FOR UPDATE` два одночасні замовлення останньої одиниці читають однакове
  * «1 шт», обидва пишуть «0» — і товар продано двічі. Блокування змушує другу
  * транзакцію дочекатись першої й побачити вже оновлене значення.
+ *
+ * Блокуємо рядок товару, а не варіації: залишок варіації змінюється лише через
+ * цю функцію, тож замок на «батькові» дає взаємне виключення і для варіацій.
  */
+type DrizzleSession = { db: { execute: (query: string) => Promise<unknown> } }
+
+type DatabaseInternals = {
+  sessions?: Record<string, DrizzleSession>
+  beginTransaction?: () => Promise<string | number | null>
+  commitTransaction?: (id: string | number) => Promise<void>
+  rollbackTransaction?: (id: string | number) => Promise<void>
+}
+
+/**
+ * `SELECT ... FOR UPDATE` у тій самій транзакції, якою пише Payload.
+ * Ідентифікатор проганяємо через `Number` — у запит потрапляє тільки число.
+ */
+const lockProductRow = async (
+  db: DatabaseInternals,
+  transactionID: string | number,
+  productId: number | string,
+): Promise<boolean> => {
+  const numericId = Number(productId)
+  if (!Number.isInteger(numericId)) return false
+
+  const session = db.sessions?.[String(transactionID)]
+  if (!session) return false
+
+  await session.db.execute(`SELECT id FROM products WHERE id = ${numericId} FOR UPDATE`)
+  return true
+}
+
 export const decrementStock = async (
   payload: Payload,
   productId: number | string,
   variantId: string | null,
   quantity: number,
 ): Promise<void> => {
-  const db = payload.db as unknown as {
-    drizzle?: { execute: (query: unknown) => Promise<unknown> }
-    beginTransaction?: () => Promise<string | number | null>
-    commitTransaction?: (id: string | number) => Promise<void>
-    rollbackTransaction?: (id: string | number) => Promise<void>
-  }
+  const db = payload.db as unknown as DatabaseInternals
 
   const transactionID = (await db.beginTransaction?.()) ?? null
 
   try {
     const req = transactionID ? ({ transactionID } as never) : undefined
+
+    // Читаємо залишок тільки після того, як рядок заблоковано: інакше
+    // прочитане значення може застаріти ще до запису.
+    const locked = transactionID !== null && (await lockProductRow(db, transactionID, productId))
+    if (!locked) {
+      payload.logger.warn(
+        { productId },
+        'Залишок списується без блокування рядка: одночасні замовлення можуть перепродати останню одиницю',
+      )
+    }
 
     const product = await payload.findByID({
       collection: 'products',
@@ -145,6 +182,19 @@ export const decrementStock = async (
       depth: 0,
       req,
     })
+
+    const available = variantId
+      ? (product.variants?.find((variant) => variant.id === variantId)?.stock ?? 0)
+      : (product.stock ?? 0)
+
+    if (available < quantity) {
+      // Оплата вже пройшла, тож замовлення не скасовуємо — але власниця має
+      // дізнатись про перепродаж одразу, а не з листа покупця.
+      payload.logger.error(
+        { productId, variantId, quantity, available },
+        'Перепродаж: на складі менше, ніж у замовленні',
+      )
+    }
 
     if (variantId && product.variants?.length) {
       const variants = product.variants.map((variant) =>
@@ -299,6 +349,29 @@ export const fulfillOrder = async (payload: Payload, orderId: number | string): 
       overrideAccess: true,
     })
   }
+
+  // Покупка в кабінеті Meta. Подія йде з сервера, тому не залежить від того,
+  // чи повернувся покупець на сайт після оплати і чи стоїть у нього
+  // блокувальник реклами. Дублікат із браузером Meta склеїть за номером
+  // замовлення. `fulfillOrder` захищений `accessGranted`, тож подія одна.
+  await sendPurchase({
+    orderNumber: order.orderNumber,
+    email: order.customerEmail,
+    phone: order.customerPhone,
+    name: order.customerName,
+    total: order.total,
+    items: (order.items ?? []).map((item) => ({
+      id: String(
+        item.kind === 'course'
+          ? (typeof item.course === 'object' ? item.course?.id : item.course)
+          : (typeof item.product === 'object' ? item.product?.id : item.product),
+      ),
+      quantity: item.quantity,
+      price: item.price,
+    })),
+    fbp: order.metaFbp ?? undefined,
+    fbc: order.metaFbc ?? undefined,
+  })
 
   const summary = (order.items ?? [])
     .map((item) => `• ${item.title}${item.variantLabel ? ` (${item.variantLabel})` : ''} × ${item.quantity}`)
