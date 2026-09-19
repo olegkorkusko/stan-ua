@@ -61,7 +61,10 @@ export const POST = async (request: Request) => {
       data: { paymentReference: String(data.authCode ?? '') },
       overrideAccess: true,
     })
-    await fulfillOrder(payload, order.id)
+    // Від WayForPay приходить уже замаскований номер (41****4242). Беремо з
+    // нього лише останні цифри — більше кабінету й не треба показувати.
+    const mask = String(data.cardPan ?? '').replace(/\D/g, '').slice(-4)
+    await fulfillOrder(payload, order.id, { mask: mask.length === 4 ? mask : undefined })
   } else if (['Declined', 'Expired', 'Refunded'].includes(data.transactionStatus)) {
     await payload.update({
       collection: 'orders',

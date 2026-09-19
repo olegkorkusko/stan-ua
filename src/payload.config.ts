@@ -20,6 +20,7 @@ import { Media } from './collections/Media'
 import { Orders } from './collections/Orders'
 import { Products } from './collections/Products'
 import { Users } from './collections/Users'
+import { About } from './globals/About'
 import { Settings } from './globals/Settings'
 
 const filename = fileURLToPath(import.meta.url)
@@ -53,7 +54,7 @@ export default buildConfig({
     Media,
     Users,
   ],
-  globals: [Settings],
+  globals: [About, Settings],
   editor: lexicalEditor(),
   // Мова адмінки — українська. Англійська лишається для розробників.
   i18n: {

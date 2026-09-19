@@ -239,7 +239,12 @@ export const makeOrderNumber = (): string => {
  * Викликається з колбека WayForPay і захищена від повторного запуску:
  * WayForPay може надіслати колбек кілька разів.
  */
-export const fulfillOrder = async (payload: Payload, orderId: number | string): Promise<void> => {
+export const fulfillOrder = async (
+  payload: Payload,
+  orderId: number | string,
+  /** Маска картки з колбека платіжки — останні цифри, які кабінет показує в «Оплаті». */
+  card?: { mask?: string },
+): Promise<void> => {
   const order = await payload.findByID({ collection: 'orders', id: orderId, depth: 1, overrideAccess: true })
   if (order.accessGranted) return
 
@@ -279,43 +284,60 @@ export const fulfillOrder = async (payload: Payload, orderId: number | string): 
     await decrementStock(payload, productId, item.variantId ?? null, item.quantity)
   }
 
-  // Доступи чіпляємо до облікового запису за поштою: покупець побачить їх
-  // у кабінеті й зможе відкрити повторно, навіть якщо загубив листа.
-  if (grants.length > 0) {
-    const existing = await payload.find({
+  /*
+    Обліковий запис чіпляємо за поштою до КОЖНОГО виконаного замовлення, а не
+    лише до того, у якому були курси. Раніше цей блок стояв під
+    `if (grants.length > 0)`, і замовлення самих товарів лишалося без
+    `customer`: покупець не бачив його в кабінеті, а «Дані для доставки» не мали
+    звідки взятися.
+
+    Тут же оновлюємо профіль доставки — те, що кабінет показує на вкладці
+    «Дані для доставки». Пишемо лише заповнене: замовлення самих курсів не має
+    ні міста, ні відділення, і порожні значення стерли б те, що покупець уже
+    вказував раніше.
+  */
+  const existing = await payload.find({
+    collection: 'customers',
+    where: { email: { equals: order.customerEmail } },
+    limit: 1,
+    overrideAccess: true,
+  })
+
+  const customer =
+    existing.docs[0] ??
+    (await payload.create({
       collection: 'customers',
-      where: { email: { equals: order.customerEmail } },
-      limit: 1,
       overrideAccess: true,
-    })
+      data: {
+        email: order.customerEmail,
+        name: order.customerName,
+        phone: order.customerPhone,
+        password: crypto.randomBytes(16).toString('hex'),
+      },
+    }))
 
-    const customer =
-      existing.docs[0] ??
-      (await payload.create({
-        collection: 'customers',
-        overrideAccess: true,
-        data: {
-          email: order.customerEmail,
-          name: order.customerName,
-          phone: order.customerPhone,
-          password: crypto.randomBytes(16).toString('hex'),
-        },
-      }))
+  await payload.update({
+    collection: 'customers',
+    id: customer.id,
+    overrideAccess: true,
+    data: {
+      ...(grants.length > 0 ? { access: [...(customer.access ?? []), ...grants] } : {}),
+      ...(order.customerName ? { name: order.customerName } : {}),
+      ...(order.customerPhone ? { phone: order.customerPhone } : {}),
+      ...(order.deliveryMethod ? { deliveryMethod: order.deliveryMethod } : {}),
+      ...(order.deliveryCity ? { deliveryCity: order.deliveryCity } : {}),
+      ...(order.deliveryBranch ? { deliveryBranch: order.deliveryBranch } : {}),
+      ...(order.paymentMethod ? { paymentMethod: order.paymentMethod } : {}),
+      ...(card?.mask ? { cardMask: card.mask } : {}),
+    },
+  })
 
-    await payload.update({
-      collection: 'customers',
-      id: customer.id,
-      overrideAccess: true,
-      data: { access: [...(customer.access ?? []), ...grants] },
-    })
-
-    await payload.update({
-      collection: 'orders',
-      id: orderId,
-      data: { customer: customer.id },
-      overrideAccess: true,
-    })
-  }
+  await payload.update({
+    collection: 'orders',
+    id: orderId,
+    data: { customer: customer.id },
+    overrideAccess: true,
+  })
 
   const receiptId = await createReceipt({
     orderNumber: order.orderNumber,

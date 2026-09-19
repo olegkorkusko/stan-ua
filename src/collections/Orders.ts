@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { isAdmin } from '@/access'
+import { deliveryMethodOptions, paymentMethodOptions } from '@/lib/delivery'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
@@ -107,17 +108,7 @@ export const Orders: CollectionConfig = {
       type: 'collapsible',
       admin: { condition: (data) => data?.items?.some?.((i: { kind?: string }) => i?.kind === 'product') },
       fields: [
-        {
-          name: 'deliveryMethod',
-          type: 'select',
-          label: 'Спосіб',
-          options: [
-            { label: 'Нова Пошта — відділення', value: 'np_branch' },
-            { label: 'Нова Пошта — поштомат', value: 'np_locker' },
-            { label: "Нова Пошта — кур'єр", value: 'np_courier' },
-            { label: 'Укрпошта', value: 'ukrposhta' },
-          ],
-        },
+        { name: 'deliveryMethod', type: 'select', label: 'Спосіб', options: deliveryMethodOptions },
         {
           type: 'row',
           fields: [
@@ -159,6 +150,12 @@ export const Orders: CollectionConfig = {
               admin: { width: '50%', description: 'Для накладеного платежу — сплачена наперед частина.' },
             },
           ],
+        },
+        {
+          name: 'paymentMethod',
+          type: 'select',
+          label: 'Спосіб оплати',
+          options: paymentMethodOptions,
         },
         { name: 'paymentReference', type: 'text', label: 'Ідентифікатор платежу', admin: { readOnly: true } },
         {
