@@ -1,0 +1,92 @@
+# parity.config.yaml — everything project-specific the figma-parity toolkit reads.
+# Lives at the project root and is committed: the `gates:` block is the team
+# default that CI reads, so a local override can never weaken shared checks.
+# Secrets NEVER go in this file — see figma.token_env / figma.token_command.
+
+version: 1
+
+project:
+  name: mk-store
+  # Where the running app answers during checks. PARITY_BASE_URL overrides per run
+  # (point it at a CI-built localhost or any preview URL — provider-agnostic).
+  dev_url: "http://localhost:3000"
+  # Optional, informational: how a human starts the dev server.
+  dev_command: "npm run dev"
+
+figma:
+  # Logical name -> Figma file key (from the file URL: figma.com/design/<KEY>/...).
+  files:
+    product: "gt19wK3JKDWlBEyNyBDZCY"    # МК — Курси + Магазин
+  # Token provider chain: token_command runs first (e.g. a secrets manager),
+  # then the env var. Missing token = stub mode; parity refuses to claim pass.
+  token_env: FIGMA_TOKEN
+  token_command: null            # e.g. "doppler secrets get FIGMA_TOKEN --plain"
+  # Page-name prefixes that mark design readiness in Figma.
+  # Disabled: this file's pages carry no readiness prefixes, so design finality
+  # is confirmed per freeze with --final-design-confirmed instead.
+  page_status:
+    ready_prefixes: []
+    partial_prefixes: []
+
+breakpoints:
+  # Any number of widths; each needs a Figma frame per screen. The reference
+  # breakpoint is the one components are tagged with — the correspondence
+  # walker re-keys every other breakpoint's tokens onto its node ids.
+  # NOTE: only 1440 frames exist in Figma today. Until a 390 frame is drawn for
+  # a screen, that screen's freeze stops on the missing width — by design.
+  reference: "1440"
+  widths:
+    "390": { name: mobile }
+    "1440": { name: desktop }
+
+dom:
+  # The attribute your components carry to bind DOM elements to Figma nodes.
+  node_attribute: "data-figma-node"
+  state_attribute: "data-figma-state"
+  testid_attribute: "data-testid"
+  # Interaction-gate escape hatch; the value must be a non-empty reason.
+  exempt_attribute: "data-interaction-exempt"
+
+paths:
+  root: ".parity"                # everything below is relative to this
+  snapshots: "state/snapshots"   # frozen Figma manifests + PNG exports (gitignored)
+  reports: "state/parity"        # parity reports + diff heatmaps (gitignored)
+  proofs: "state/proofs"         # sealed proof bundles
+  packets: "packets"             # committed parity packets
+  local_overrides: "local.yaml"  # per-machine gate overrides (gitignored)
+  interaction_baseline: "interaction-baseline.json"  # committed grandfathered debt
+  critical_states: "critical-states.json"            # committed state-coverage manifest
+
+# Calibrated comparison thresholds. These defaults were tuned against real
+# screens; loosen them only with a reason a reviewer would accept.
+tolerances:
+  color: 4                       # max per-channel delta (/255)
+  px: 0.5                        # px tolerance for sizes/spacing/radius
+  line_height: 1.0
+  letter_spacing: 0.2
+  pixel_channel_threshold: 12    # per-pixel max-channel diff that counts as drift
+  pixel_drift_ratio: 0.005       # breakpoint fails above 0.5% drifted pixels
+
+accessibility:
+  enabled: true
+  axe_core_path: null            # null => node_modules/axe-core, else vendored copy
+
+# Committed team defaults for the gate switches. Per-run flags, .parity/local.yaml,
+# and PARITY_* env vars override locally — never for CI. The pixel/token parity
+# gate itself has NO switch: it always runs at full strength.
+gates:
+  interaction_gate: true         # hover/pressed/focus-visible feedback gate
+  state_coverage: false          # critical-states manifest gate (needs stories config)
+
+stories:
+  storybook: false
+  stories_glob: null             # e.g. "src/**/*.stories.tsx"
+
+proof:
+  proof_root_pattern: null       # proof filename regex; null => built-in default
+  required_checks: null          # extra check names; the built-in list is a floor
+
+runtime:
+  venv: ".parity/venv"
+  browser: chromium
+  python: "python3"

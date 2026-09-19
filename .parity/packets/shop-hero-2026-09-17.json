@@ -1,0 +1,43 @@
+{
+  "packet_schema": 1,
+  "packet_id": "shop-hero-2026-09-17",
+  "source": {
+    "file_id": "gt19wK3JKDWlBEyNyBDZCY",
+    "root_node_id": "98:2163",
+    "version": "2400061844225142430"
+  },
+  "platforms": {
+    "web": {
+      "route": "/shop",
+      "targets": {
+        "390": {
+          "node_id": "312:6781"
+        },
+        "1440": {
+          "node_id": "98:2163"
+        }
+      }
+    }
+  },
+  "states": {
+    "default": {
+      "node_id": "98:2163",
+      "platforms": {
+        "web": {
+          "target": "1440",
+          "transition": {
+            "steps": [
+              {
+                "action": "load",
+                "target": "[data-figma-state=\"shop-hero\"]",
+                "focus": {
+                  "outcome": "none"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

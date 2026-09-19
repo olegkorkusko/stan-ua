@@ -1,0 +1,43 @@
+{
+  "packet_schema": 1,
+  "packet_id": "about-intro-2026-09-18",
+  "source": {
+    "file_id": "gt19wK3JKDWlBEyNyBDZCY",
+    "root_node_id": "94:2083",
+    "version": "2400259216252089850"
+  },
+  "platforms": {
+    "web": {
+      "route": "/about",
+      "targets": {
+        "390": {
+          "node_id": "309:5756"
+        },
+        "1440": {
+          "node_id": "94:2083"
+        }
+      }
+    }
+  },
+  "states": {
+    "default": {
+      "node_id": "94:2083",
+      "platforms": {
+        "web": {
+          "target": "1440",
+          "transition": {
+            "steps": [
+              {
+                "action": "load",
+                "target": "[data-figma-state=\"default\"]",
+                "focus": {
+                  "outcome": "none"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

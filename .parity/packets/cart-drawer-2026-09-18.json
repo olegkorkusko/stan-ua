@@ -1,0 +1,44 @@
+{
+  "packet_schema": 1,
+  "packet_id": "cart-drawer-2026-09-18",
+  "source": {
+    "file_id": "gt19wK3JKDWlBEyNyBDZCY",
+    "root_node_id": "121:2951",
+    "version": "2400624016823958351"
+  },
+  "platforms": {
+    "web": {
+      "route": "/shop/catalog",
+      "targets": {
+        "390": {
+          "node_id": "315:7174"
+        },
+        "1440": {
+          "node_id": "121:2951"
+        }
+      }
+    }
+  },
+  "states": {
+    "cart-open": {
+      "node_id": "121:2951",
+      "platforms": {
+        "web": {
+          "target": "1440",
+          "transition": {
+            "steps": [
+              {
+                "action": "click",
+                "trigger": "[data-testid=\"cart-button\"]",
+                "target": "[data-figma-state=\"cart-open\"]",
+                "focus": {
+                  "outcome": "within-target"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

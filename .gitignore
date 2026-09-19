@@ -57,3 +57,14 @@ next-env.d.ts
 /docs_interal
 /docs_internal
 /internal_docs
+/.info
+
+# figma-parity (added by /figma-parity:init)
+.parity/venv/
+.parity/state/
+.parity/local.yaml
+.parity/vendor/
+# Робочі знімки екрана прогонів — десятки мегабайтів, які нікому не потрібні
+# в історії. Самі пакети (.parity/packets) навпаки лишаються: це заморожені
+# зліпки макета, з якими звіряється верстка.
+.parity/scratch/

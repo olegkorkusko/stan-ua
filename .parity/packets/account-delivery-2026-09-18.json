@@ -1,0 +1,43 @@
+{
+  "packet_schema": 1,
+  "packet_id": "account-delivery-2026-09-18",
+  "source": {
+    "file_id": "gt19wK3JKDWlBEyNyBDZCY",
+    "root_node_id": "138:3085",
+    "version": "2400259216252089850"
+  },
+  "platforms": {
+    "web": {
+      "route": "/account/delivery",
+      "targets": {
+        "390": {
+          "node_id": "309:5406"
+        },
+        "1440": {
+          "node_id": "138:3085"
+        }
+      }
+    }
+  },
+  "states": {
+    "default": {
+      "node_id": "138:3085",
+      "platforms": {
+        "web": {
+          "target": "1440",
+          "transition": {
+            "steps": [
+              {
+                "action": "load",
+                "target": "[data-figma-state=\"default\"]",
+                "focus": {
+                  "outcome": "none"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

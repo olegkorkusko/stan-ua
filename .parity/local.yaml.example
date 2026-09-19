@@ -1,0 +1,9 @@
+# Per-machine gate overrides. Copy to .parity/local.yaml (gitignored).
+# Resolution order, first that speaks wins:
+#   per-run flag  >  this file  >  PARITY_* env  >  parity.config.yaml gates:
+# A local override can only turn a gate OFF for your own runs — CI reads the
+# committed config, so the team's checks can never be weakened from here.
+
+# gates:
+#   interaction_gate: false   # skip the hover/pressed/focus-visible gate locally
+#   state_coverage: false     # skip the critical-states manifest gate locally
