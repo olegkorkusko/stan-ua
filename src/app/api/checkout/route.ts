@@ -9,13 +9,8 @@ import {
   priceCart,
   type CartLineInput,
 } from '@/lib/orders'
+import { asDeliveryMethod } from '@/lib/delivery'
 import { buildPurchaseForm, isConfigured } from '@/lib/wayforpay'
-
-const DELIVERY_METHODS = ['np_branch', 'np_locker', 'np_courier', 'ukrposhta'] as const
-type DeliveryMethod = (typeof DELIVERY_METHODS)[number]
-
-const asDeliveryMethod = (value: unknown): DeliveryMethod | undefined =>
-  DELIVERY_METHODS.includes(value as DeliveryMethod) ? (value as DeliveryMethod) : undefined
 
 type Body = {
   items: CartLineInput[]
@@ -52,13 +47,26 @@ export const POST = async (request: Request) => {
     const lines = await priceCart(payload, body.items)
     const hasPhysical = lines.some((line) => line.kind === 'product')
 
+    // Спосіб доставки перевіряємо нарівні з містом і відділенням. Раніше його
+    // просто проганяли через asDeliveryMethod уже при створенні запису, і
+    // невідоме значення мовчки ставало порожнім: замовлення з'являлося в
+    // адмінці з містом, відділенням і БЕЗ способу доставки — відправити його
+    // неможливо, а покупець при цьому бачив «дякуємо». З форми таке не
+    // приходить, але API відкритий, і мовчки втрачати спосіб доставки не
+    // можна: це межа довіри, а не внутрішній виклик.
+    const deliveryMethod = asDeliveryMethod(body.deliveryMethod)
+
+    if (hasPhysical && !deliveryMethod) {
+      return NextResponse.json({ error: 'Оберіть спосіб доставки' }, { status: 400 })
+    }
+
     if (hasPhysical && (!body.deliveryCity?.trim() || !body.deliveryBranch?.trim())) {
       return NextResponse.json({ error: 'Вкажіть місто й відділення' }, { status: 400 })
     }
 
     // Укрпошта доставляє за індексом, а не за номером відділення: без нього
     // посилку не оформити, тож просимо одразу, а не листуванням потім.
-    if (hasPhysical && body.deliveryMethod === 'ukrposhta' && !/^\d{5}$/.test(body.deliveryPostcode ?? '')) {
+    if (hasPhysical && deliveryMethod === 'ukrposhta' && !/^\d{5}$/.test(body.deliveryPostcode ?? '')) {
       return NextResponse.json({ error: 'Вкажіть поштовий індекс — пʼять цифр' }, { status: 400 })
     }
 
@@ -105,16 +113,17 @@ export const POST = async (request: Request) => {
         customerName: body.customerName.trim(),
         customerPhone: body.customerPhone.trim(),
         customerEmail: body.customerEmail.trim().toLowerCase(),
-        deliveryMethod: hasPhysical ? asDeliveryMethod(body.deliveryMethod) : undefined,
+        deliveryMethod: hasPhysical ? deliveryMethod : undefined,
         deliveryCity: body.deliveryCity,
         deliveryBranch: body.deliveryBranch,
-        deliveryPostcode: body.deliveryMethod === 'ukrposhta' ? body.deliveryPostcode : undefined,
+        deliveryPostcode: deliveryMethod === 'ukrposhta' ? body.deliveryPostcode : undefined,
         comment: body.comment,
         subtotal,
         discount,
         deliveryCost: 0,
         total,
         prepaidAmount: prepaid,
+        paymentMethod: isCod ? 'cod' : 'card',
         promoCode: promoId,
         // Приходять, лише якщо покупець дав згоду на cookie й піксель встиг
         // їх поставити. Порожні — серверна подія просто піде без них.
