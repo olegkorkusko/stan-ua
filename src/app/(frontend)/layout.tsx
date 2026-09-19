@@ -2,12 +2,9 @@ import type { Metadata } from 'next'
 import { Manrope, Unbounded } from 'next/font/google'
 
 import { Analytics } from '@/components/site/Analytics'
-import { CartDrawer } from '@/components/site/CartDrawer'
-import { Footer } from '@/components/site/Footer'
-import { Header } from '@/components/site/Header'
 import { LocaleProvider } from '@/components/site/LocaleLink'
-import { dictionary } from '@/lib/i18n'
-import { getLocale, getPathname } from '@/lib/locale'
+import { SiteChrome } from '@/components/site/SiteChrome'
+import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 import { CartProvider } from '@/providers/CartProvider'
 
@@ -43,44 +40,37 @@ export const metadata: Metadata = {
   openGraph: { type: 'website', locale: 'uk_UA', siteName: 'МК' },
 }
 
-const RootLayout = async ({ children }: { children: React.ReactNode }) => {
+/*
+  Напрями курсів звідси прибрані разом зі старою шухлядою меню: у макеті
+  мобільного меню (302:4484) рівно чотири розділи, напрямів серед них немає.
+  Список тягнувся запитом до Payload на КОЖНОМУ рендері будь-якої сторінки —
+  і жодна з них його вже не показувала.
+*/
+const loadChrome = async (locale: Awaited<ReturnType<typeof getLocale>>) => {
   const payload = await payloadClient()
+  const settings = await payload
+    .findGlobal({ locale, slug: 'settings', depth: 0 })
+    .catch(() => null)
+  return { settings }
+}
+
+// Дані для chrome тягнемо завжди, навіть для порталу, де він не показується.
+// Раніше їх пропускали за поточним шляхом, але шлях тут читався із заголовка
+// запиту — а це не працює двічі: на статичних сторінках заголовків немає
+// взагалі, і layout не перерендерюється при переходах. Ціна рішення — один
+// запит до Payload на порталі; показувати chrome чи ні, вирішує SiteChrome.
+const RootLayout = async ({ children }: { children: React.ReactNode }) => {
   const locale = await getLocale()
-  const pathname = await getPathname()
-  const t = dictionary(locale)
-
-  const [directions, settings] = await Promise.all([
-    payload
-      .find({
-        locale,
-        collection: 'course-directions',
-        limit: 12,
-        sort: 'order',
-        depth: 0,
-      })
-      .catch(() => ({ docs: [] })),
-    payload.findGlobal({ locale, slug: 'settings', depth: 0 }).catch(() => null),
-  ])
-
-  const navDirections = directions.docs.map((doc) => ({
-    title: doc.title,
-    slug: doc.slug ?? '',
-  }))
+  const chrome = await loadChrome(locale)
 
   return (
     <html lang={locale} className={`${unbounded.variable} ${manrope.variable}`}>
       <body className="min-h-screen">
         <LocaleProvider locale={locale}>
           <CartProvider>
-            {settings?.announcement && (
-              <p className="bg-indigo px-4 py-2 text-center text-[0.6875rem] uppercase tracking-[0.16em] text-paper">
-                {settings.announcement}
-              </p>
-            )}
-            <Header directions={navDirections} locale={locale} pathname={pathname} />
-            <main>{children}</main>
-            <Footer settings={settings} t={t} />
-            <CartDrawer />
+            <SiteChrome locale={locale} settings={chrome.settings}>
+              {children}
+            </SiteChrome>
             <Analytics ga={process.env.NEXT_PUBLIC_GA_ID} pixel={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
           </CartProvider>
         </LocaleProvider>

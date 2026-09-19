@@ -80,6 +80,8 @@ const hydrate = async (payload: Payload, lines: Line[]) => {
       variantId: variant?.id ?? undefined,
       title: product.title,
       variantLabel: [color?.title, size?.title].filter(Boolean).join(' · ') || undefined,
+      color: color?.title ?? undefined,
+      size: size?.title ?? undefined,
       price: variant?.price ?? product.price,
       quantity: Math.min(line.quantity, stock),
       image: imageUrl(variant?.image ?? images[0], 'thumbnail') ?? undefined,
@@ -126,11 +128,96 @@ const withCookie = (body: unknown, token: string) => {
   return response
 }
 
+/**
+ * «Може сподобатись» у шухляді кошика (макет 123:2734): найдешевший
+ * опублікований товар у наявності, якого ще немає в кошику. Дешевий — бо це
+ * додача до вже набраного, а не друга покупка.
+ */
+const suggest = async (payload: Payload, items: { id: string }[]) => {
+  const chosen = new Set(items.map((item) => item.id))
+
+  const found = await payload.find({
+    collection: 'products',
+    where: { status: { equals: 'published' } },
+    sort: 'price',
+    limit: chosen.size + 1,
+    depth: 2,
+  })
+
+  const product = found.docs.find((doc) => !chosen.has(String(doc.id)))
+  if (!product) return null
+
+  const images = Array.isArray(product.images) ? product.images : []
+
+  return {
+    kind: 'product' as const,
+    id: String(product.id),
+    title: product.title,
+    price: product.price,
+    image: imageUrl(images[0], 'thumbnail') ?? undefined,
+    href: `/shop/${product.slug}`,
+  }
+}
+
+/*
+  Запасний кошик для перевірки parity — той самий підхід, що й
+  PARITY_DEMO_ACCOUNT у `src/lib/account.ts`: перевірка ходить на сторінку
+  звичайним браузером, без cookie й без набраного кошика, і бачила б порожню
+  шухляду замість кадру «Кошик» 121:2951.
+
+  Вмикати треба явно (`PARITY_DEMO_CART=braslet-polyn,kolie-biser npm run dev`),
+  у продакшен-збірці не працює. Слаги — товарів і курсів, через кому.
+*/
+const parityDemoLines = async (payload: Payload): Promise<Line[]> => {
+  const raw = process.env.PARITY_DEMO_CART
+  if (!raw || process.env.NODE_ENV === 'production') return []
+
+  const slugs = raw
+    .split(',')
+    .map((slug) => slug.trim())
+    .filter(Boolean)
+
+  const lines: Line[] = []
+
+  for (const slug of slugs) {
+    for (const kind of ['product', 'course'] as const) {
+      const found = await payload.find({
+        collection: kind === 'product' ? 'products' : 'courses',
+        where: { slug: { equals: slug } },
+        limit: 1,
+        depth: 1,
+      })
+
+      const doc = found.docs[0]
+      if (!doc) continue
+
+      // Товар із варіаціями без variantId не пройшов би hydrate.
+      const variantId =
+        kind === 'product' && 'variants' in doc ? doc.variants?.[0]?.id ?? undefined : undefined
+
+      lines.push({ kind, itemId: String(doc.id), variantId: variantId ?? undefined, quantity: 1 })
+      break
+    }
+  }
+
+  return lines
+}
+
 export const GET = async () => {
   const { payload, token, customerId } = await context()
   const cart = await resolveCart(payload, token, customerId)
-  const items = await hydrate(payload, (cart?.items as Line[] | undefined) ?? [])
-  return withCookie({ items }, cart?.token ?? token)
+
+  const stored = (cart?.items as Line[] | undefined) ?? []
+  const lines = stored.length > 0 ? stored : await parityDemoLines(payload)
+
+  const items = await hydrate(payload, lines)
+  const suggestion = await suggest(payload, items)
+
+  // Прапорець для перевірки parity: вона знімає кадр одразу після завантаження
+  // і не вміє клікати, тож шухляда має бути вже відкритою.
+  const parityDemo = stored.length === 0 && lines.length > 0
+
+  return withCookie({ items, suggestion, parityDemo }, cart?.token ?? token)
 }
 
 export const PUT = async (request: Request) => {

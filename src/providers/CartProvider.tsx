@@ -21,6 +21,11 @@ export type CartItem = {
   variantId?: string
   title: string
   variantLabel?: string
+  /* Колір і розмір окремо: шухляда кошика підписує їх («Колір: Полин ·
+     Розмір S», макет 122:2733), а `variantLabel` лишається коротким — він
+     іде в оформлення й у лист замовлення. */
+  color?: string
+  size?: string
   price: number
   quantity: number
   image?: string
@@ -29,8 +34,12 @@ export type CartItem = {
   maxQuantity?: number
 }
 
+/** «Може сподобатись»: додача, яку сервер радить до вже набраного. */
+export type CartSuggestion = Omit<CartItem, 'key' | 'quantity'>
+
 type CartContext = {
   items: CartItem[]
+  suggestion: CartSuggestion | null
   count: number
   total: number
   isOpen: boolean
@@ -58,6 +67,7 @@ const toLines = (items: CartItem[]) =>
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([])
+  const [suggestion, setSuggestion] = useState<CartSuggestion | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [ready, setReady] = useState(false)
   const skipNextSave = useRef(true)
@@ -79,8 +89,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       try {
         const response = await fetch('/api/cart', { cache: 'no-store' })
         if (!response.ok) return
-        const data = (await response.json()) as { items: CartItem[] }
+        const data = (await response.json()) as {
+          items: CartItem[]
+          suggestion?: CartSuggestion | null
+          parityDemo?: boolean
+        }
         if (cancelled) return
+        setSuggestion(data.suggestion ?? null)
+        // Демо-кошик перевірки parity приходить уже відкритим — див. PARITY_DEMO_CART.
+        if (data.parityDemo) setIsOpen(true)
 
         const local = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '[]') as CartItem[]
 
@@ -175,6 +192,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo<CartContext>(
     () => ({
       items,
+      suggestion,
       count: items.reduce((sum, i) => sum + i.quantity, 0),
       total: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
       isOpen,
@@ -186,7 +204,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
     }),
-    [items, isOpen, ready, add, remove, setQuantity],
+    [items, suggestion, isOpen, ready, add, remove, setQuantity],
   )
 
   return <Context.Provider value={value}>{children}</Context.Provider>
