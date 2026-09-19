@@ -19,7 +19,7 @@ export const LogoutButton = () => {
         await fetch('/api/customers/logout', { method: 'POST' })
         router.refresh()
       }}
-      className="thread-link text-sm text-muted"
+      className="thread-link text-sm text-muted transition-colors hover:text-ink active:text-ink/70"
     >
       {busy ? '…' : t.logout}
     </button>

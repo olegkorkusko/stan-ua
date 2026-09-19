@@ -1,22 +1,60 @@
 import type { Metadata } from 'next'
-import { headers } from 'next/headers'
 import Image from 'next/image'
-import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
-import { AuthForm } from '@/components/site/AuthForm'
+import { AccountGuest } from '@/components/site/AccountGuest'
+import { AccountShell, type AccountShellNodes } from '@/components/site/AccountShell'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { LogoutButton } from '@/components/site/LogoutButton'
 import { ResendAccess } from '@/components/site/ResendAccess'
-import { imageAlt, imageUrl } from '@/lib/media'
+import { accountCustomer } from '@/lib/account'
+import { plural } from '@/lib/format'
+import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
-import { payloadClient } from '@/lib/payload'
+import { imageAlt, imageUrl } from '@/lib/media'
 import type { Course } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Кабінет',
+  title: 'Мої доступи',
   robots: { index: false },
 }
+
+/*
+  «Мої доступи» за макетом (93:1928 на 1440, 306:4757 на 390).
+
+  Рядок курсу: на десктопі обкладинка 112×140, опис і кнопка в один ряд із
+  кроком 24; на мобільному та сама трійця колонкою з кроком 14, обкладинка на
+  всю ширину заввишки 220. Поля рядка 24 зверху й знизу на обох ширинах.
+
+  Рядки розділені волосінню ЗВЕРХУ, крім першого — у Figma в першого рядка
+  stroke вимкнено. Межа висить на самих рядках за індексом, а не через
+  `divide-y`: у Tailwind v4 той малює межу ЗНИЗУ всім, крім останнього. Лінії
+  на екрані стають ті самі, але звіряння дивиться на конкретні вузли, і рядок,
+  у якому межа мала бути зверху, віддавав нуль.
+
+  Поза макетом тут лишились «Вийти», «Видати посилання ще раз» і примітка про
+  персональні посилання — свідоме рішення: функції потрібні, намальованого
+  місця для них немає. Через них висота кадру більша за намальовану, і пікселі
+  на цьому кадрі не збігаються за розміром.
+*/
+
+const SHELL_NODES: AccountShellNodes = {
+  root: '93:1928',
+  heading: '93:1929',
+  label: '93:1930',
+  title: '93:1931',
+  tabs: '137:2930',
+  tabAccess: '137:2931',
+  tabSaved: '137:2932',
+  tabDelivery: '137:2933',
+}
+
+const ROW_NODES = [
+  { row: '93:1933', cover: '93:1934', body: '93:1935', title: '93:1936', details: '93:1937', action: '93:1938' },
+  { row: '93:1940', cover: '93:1941', body: '93:1942', title: '93:1943', details: '93:1944', action: '93:1945' },
+  { row: '93:1947', cover: '93:1948', body: '93:1949', title: '93:1950', details: '93:1951', action: '93:1952' },
+]
 
 const courseHref = (course: Course): string => {
   const direction = typeof course.direction === 'object' ? course.direction?.slug : null
@@ -24,124 +62,113 @@ const courseHref = (course: Course): string => {
 }
 
 const AccountPage = async () => {
-  const payload = await payloadClient()
-  const locale = await getLocale()
-  const { user } = await payload.auth({ headers: await headers() })
+  const t = dictionary(await getLocale())
+  const customer = await accountCustomer()
 
-  if (!user || user.collection !== 'customers') {
-    return (
-      <div className="shell py-32">
-        <p className="label text-center">Кабінет</p>
-        <h1 className="mt-3 text-center text-[clamp(1.75rem,3.5vw,2.75rem)]">Ваші курси й обране</h1>
-        <div className="mt-12">
-          <AuthForm />
-        </div>
-      </div>
-    )
-  }
-
-  const customer = await payload.findByID({ locale,
-    collection: 'customers',
-    id: user.id,
-    depth: 2,
-    overrideAccess: true,
-  })
+  if (!customer) return <AccountGuest t={t} />
 
   const access = customer.access ?? []
-  const saved = (customer.savedCourses ?? []).filter((item): item is Course => typeof item === 'object')
 
   return (
-    <div className="shell pb-24 pt-28 md:pt-36">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="label">Кабінет</p>
-          <h1 className="mt-3 text-[clamp(1.75rem,3.5vw,2.75rem)]">{customer.name || customer.email}</h1>
+    <AccountShell t={t} active="access" nodes={SHELL_NODES} aside={<LogoutButton />}>
+      {access.length === 0 ? (
+        <div className="border border-flax px-6 py-12 text-center">
+          <p className="text-sm text-muted">{t.account.accessEmpty}</p>
+          <Link href="/courses" className="btn btn-outline mt-6">
+            {t.account.chooseCourse}
+          </Link>
         </div>
-        <LogoutButton />
-      </div>
+      ) : (
+        <div data-figma-node="93:1932" className="flex flex-col">
+          {access.map((item, index) => {
+            const course = typeof item.course === 'object' ? item.course : null
+            if (!course) return null
 
-      <section className="mt-16">
-        <p className="label">Мої доступи</p>
+            const nodes = ROW_NODES[index]
+            const cover = imageUrl(course.cover, 'card')
+            const lessons = course.lessons?.length ?? 0
+            const details = [
+              lessons > 0 ? plural(lessons, 'МК', 'МК', 'МК') : null,
+              t.account.accessForever,
+            ]
+              .filter(Boolean)
+              .join(' · ')
 
-        {access.length === 0 ? (
-          <div className="mt-6 border border-flax px-6 py-12 text-center">
-            <p className="text-sm text-muted">Тут зʼявляться курси, які ви купите.</p>
-            <Link href="/courses" className="btn btn-outline mt-6">
-              Обрати курс
-            </Link>
-          </div>
-        ) : (
-          <ul className="mt-6 divide-y divide-flax border-y border-flax">
-            {access.map((item, index) => {
-              const course = typeof item.course === 'object' ? item.course : null
-              if (!course) return null
-              const cover = imageUrl(course.cover, 'thumbnail')
+            return (
+              <div
+                key={item.id ?? index}
+                data-figma-node={nodes?.row}
+                className={`flex flex-col gap-3.5 py-6 md:flex-row md:items-center md:gap-6 ${
+                  index > 0 ? 'border-t border-hairline' : ''
+                }`}
+              >
+                <Link
+                  href={courseHref(course)}
+                  className="relative block h-[220px] w-full shrink-0 overflow-hidden bg-paper-deep transition-opacity hover:opacity-85 active:opacity-70 md:h-[140px] md:w-[112px]"
+                >
+                  {cover ? (
+                    <Image
+                      src={cover}
+                      alt={imageAlt(course.cover, course.title)}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 112px"
+                      data-figma-node={nodes?.cover}
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div data-figma-node={nodes?.cover} className="weave h-full w-full" />
+                  )}
+                </Link>
 
-              return (
-                <li key={item.id ?? index} className="flex flex-wrap items-center gap-5 py-5">
-                  <Link href={courseHref(course)} className="shrink-0">
-                    {cover ? (
-                      <Image
-                        src={cover}
-                        alt={imageAlt(course.cover, course.title)}
-                        width={72}
-                        height={90}
-                        className="h-22 w-18 object-cover"
-                      />
-                    ) : (
-                      <div className="weave h-22 w-18" />
-                    )}
-                  </Link>
-
-                  <div className="min-w-50 flex-1">
-                    <Link href={courseHref(course)} className="text-base">
+                <div
+                  data-figma-node={nodes?.body}
+                  className="flex min-w-0 flex-1 flex-col gap-2"
+                >
+                  <p
+                    data-figma-node={nodes?.title}
+                    className="font-display text-[17px] font-normal leading-[22px] tracking-[-0.005em] text-ink"
+                  >
+                    <Link
+                      href={courseHref(course)}
+                      className="thread-link transition-opacity hover:opacity-70 active:opacity-50"
+                    >
                       {course.title}
                     </Link>
-                    <p className="mt-1 text-xs text-muted">Доступ безтерміновий</p>
-                    <div className="mt-1.5">
-                      <ResendAccess courseId={course.id} />
-                    </div>
-                  </div>
+                  </p>
+                  <p
+                    data-figma-node={nodes?.details}
+                    className="text-[13px] font-normal leading-5 text-muted"
+                  >
+                    {details}
+                  </p>
+                  <ResendAccess courseId={course.id} />
+                </div>
 
-                  {item.telegramInviteLink ? (
-                    <a
-                      href={item.telegramInviteLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn btn-outline"
-                    >
-                      Відкрити матеріали
-                    </a>
-                  ) : (
-                    <span className="text-xs text-muted">Посилання готується</span>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        )}
-
-        <p className="mt-4 text-xs text-muted">
-          Посилання персональні — не пересилайте їх іншим.
-        </p>
-      </section>
-
-      {saved.length > 0 && (
-        <section className="mt-20">
-          <p className="label">Збережені курси</p>
-          <ul className="mt-6 divide-y divide-flax border-y border-flax">
-            {saved.map((course) => (
-              <li key={course.id} className="flex items-center justify-between gap-5 py-4">
-                <Link href={courseHref(course)} className="text-base">
-                  {course.title}
-                </Link>
-                <span className="price text-brass">{course.price} ₴</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+                {item.telegramInviteLink ? (
+                  <a
+                    href={item.telegramInviteLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    data-figma-node={nodes?.action}
+                    className="btn btn-outline w-full md:w-auto"
+                  >
+                    <span data-figma-node={`I${nodes?.action};10:15`}>
+                      {t.account.openTelegram.toUpperCase()}
+                    </span>
+                  </a>
+                ) : (
+                  <span className="text-[13px] leading-5 text-muted">
+                    {t.account.preparing}
+                  </span>
+                )}
+              </div>
+            )
+          })}
+        </div>
       )}
-    </div>
+
+      <p className="text-xs text-muted">{t.account.personalNote}</p>
+    </AccountShell>
   )
 }
 

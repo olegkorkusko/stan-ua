@@ -1,6 +1,11 @@
 import type { CollectionConfig } from 'payload'
 
 import { isAdmin } from '@/access'
+import {
+  deliveryMethodOptions,
+  paymentMethodOptions,
+  receiptChannelOptions,
+} from '@/lib/delivery'
 
 const isSelfOrAdmin = ({ req }: { req: { user?: { collection?: string; id?: string | number } | null } }) => {
   if (req.user?.collection === 'users') return true
@@ -53,6 +58,13 @@ export const Customers: CollectionConfig = {
       label: 'Збережені курси',
     },
     {
+      name: 'savedProducts',
+      type: 'relationship',
+      relationTo: 'products',
+      hasMany: true,
+      label: 'Збережені товари',
+    },
+    {
       name: 'access',
       type: 'array',
       label: 'Куплені доступи',
@@ -64,6 +76,60 @@ export const Customers: CollectionConfig = {
         { name: 'relatedOrder', type: 'relationship', relationTo: 'orders', label: 'Замовлення' },
         { name: 'grantedAt', type: 'date', label: 'Видано' },
         { name: 'telegramInviteLink', type: 'text', label: 'Запрошення в Telegram' },
+      ],
+    },
+    /*
+      Профіль доставки — те, що кабінет показує на вкладці «Дані для доставки»
+      (138:3085). Заповнюється сам після кожного замовлення (`fulfillOrder`),
+      покупець може виправити його з кабінету.
+
+      Свідомо ЛИШЕ ті поля, які намальовані: спосіб, місто, відділення, спосіб
+      оплати й канал чека. Індексу Укрпошти тут немає — у макеті його не
+      показують, а зберігати про запас те, чого ніде не видно, немає сенсу.
+    */
+    {
+      label: 'Дані для доставки',
+      type: 'collapsible',
+      admin: { initCollapsed: true },
+      fields: [
+        { name: 'deliveryMethod', type: 'select', label: 'Спосіб', options: deliveryMethodOptions },
+        {
+          type: 'row',
+          fields: [
+            { name: 'deliveryCity', type: 'text', label: 'Місто', admin: { width: '50%' } },
+            { name: 'deliveryBranch', type: 'text', label: 'Відділення / адреса', admin: { width: '50%' } },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'paymentMethod',
+              type: 'select',
+              label: 'Спосіб оплати',
+              options: paymentMethodOptions,
+              admin: { width: '50%' },
+            },
+            {
+              name: 'receiptChannel',
+              type: 'select',
+              label: 'Чек',
+              defaultValue: 'email',
+              options: receiptChannelOptions,
+              admin: { width: '50%' },
+            },
+          ],
+        },
+        {
+          name: 'cardMask',
+          type: 'text',
+          label: 'Картка',
+          admin: {
+            readOnly: true,
+            description:
+              'Останні цифри картки, якою платили. Приходить від WayForPay — ми номера не бачимо й не зберігаємо.',
+          },
+        },
       ],
     },
     {

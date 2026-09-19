@@ -15,7 +15,7 @@ const ResetPage = async ({ searchParams }: { searchParams: SearchParams }) => {
   return (
     <div className="shell py-32">
       <p className="label text-center">Кабінет</p>
-      <h1 className="mt-3 text-center text-[clamp(1.75rem,3.5vw,2.75rem)]">Задайте пароль</h1>
+      <h1 className="mt-3 text-center text-page">Задайте пароль</h1>
       <p className="mx-auto mt-4 max-w-sm text-center text-sm leading-relaxed text-muted">
         Далі заходитимете з ним — або знову через посилання на пошту, як зручніше.
       </p>

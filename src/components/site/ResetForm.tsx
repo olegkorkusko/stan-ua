@@ -4,9 +4,6 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-const field =
-  'w-full border border-flax bg-paper px-3.5 py-3 text-sm outline-none transition-colors focus:border-ink'
-
 export const ResetForm = ({ token }: { token?: string }) => {
   const router = useRouter()
   const [password, setPassword] = useState('')
@@ -59,7 +56,7 @@ export const ResetForm = ({ token }: { token?: string }) => {
         required
         type="password"
         autoComplete="new-password"
-        className={field}
+        className="field"
         placeholder="Новий пароль"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
