@@ -3,6 +3,7 @@ import { headers as nextHeaders } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 
+import { hasCourseAccess } from '@/lib/access'
 import { createCourseInvite } from '@/lib/telegram'
 
 /**
@@ -21,13 +22,11 @@ export const POST = async (request: Request) => {
   if (!courseId) return NextResponse.json({ error: 'Не вказано курс' }, { status: 400 })
 
   const customer = await payload.findByID({ collection: 'customers', id: user.id, depth: 0, overrideAccess: true })
-  const records = customer.access ?? []
+  if (!hasCourseAccess(customer, courseId)) {
+    return NextResponse.json({ error: 'Цього курсу немає у ваших доступах' }, { status: 403 })
+  }
 
-  const owns = records.some((record) => {
-    const id = typeof record.course === 'object' ? record.course?.id : record.course
-    return String(id) === String(courseId)
-  })
-  if (!owns) return NextResponse.json({ error: 'Цього курсу немає у ваших доступах' }, { status: 403 })
+  const records = customer.access ?? []
 
   const course = await payload.findByID({ collection: 'courses', id: courseId, depth: 0 })
 
