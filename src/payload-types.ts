@@ -119,9 +119,11 @@ export interface Config {
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('uk' | 'en') | ('uk' | 'en')[];
   globals: {
+    about: About;
     settings: Setting;
   };
   globalsSelect: {
+    about: AboutSelect<false> | AboutSelect<true>;
     settings: SettingsSelect<false> | SettingsSelect<true>;
   };
   locale: 'uk' | 'en';
@@ -487,6 +489,7 @@ export interface Order {
    * Для накладеного платежу — сплачена наперед частина.
    */
   prepaidAmount?: number | null;
+  paymentMethod?: ('card' | 'cod') | null;
   paymentReference?: string | null;
   /**
    * ID чека в Checkbox. Порожньо — ПРРО ще не підключено.
@@ -509,6 +512,7 @@ export interface Customer {
   name?: string | null;
   phone?: string | null;
   savedCourses?: (number | Course)[] | null;
+  savedProducts?: (number | Product)[] | null;
   /**
    * Заповнюється автоматично після оплати. Доступ безтерміновий.
    */
@@ -521,6 +525,15 @@ export interface Customer {
         id?: string | null;
       }[]
     | null;
+  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta') | null;
+  deliveryCity?: string | null;
+  deliveryBranch?: string | null;
+  paymentMethod?: ('card' | 'cod') | null;
+  receiptChannel?: ('email' | 'sms') | null;
+  /**
+   * Останні цифри картки, якою платили. Приходить від WayForPay — ми номера не бачимо й не зберігаємо.
+   */
+  cardMask?: string | null;
   subscribedToNewsletter?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -626,6 +639,7 @@ export interface Broadcast {
 export interface Review {
   id: number;
   authorName: string;
+  city?: string | null;
   rating: number;
   text: string;
   photos?: (number | Media)[] | null;
@@ -1070,6 +1084,7 @@ export interface OrdersSelect<T extends boolean = true> {
   total?: T;
   promoCode?: T;
   prepaidAmount?: T;
+  paymentMethod?: T;
   paymentReference?: T;
   fiscalReceipt?: T;
   fulfillmentStatus?: T;
@@ -1109,6 +1124,7 @@ export interface CustomersSelect<T extends boolean = true> {
   name?: T;
   phone?: T;
   savedCourses?: T;
+  savedProducts?: T;
   access?:
     | T
     | {
@@ -1118,6 +1134,12 @@ export interface CustomersSelect<T extends boolean = true> {
         telegramInviteLink?: T;
         id?: T;
       };
+  deliveryMethod?: T;
+  deliveryCity?: T;
+  deliveryBranch?: T;
+  paymentMethod?: T;
+  receiptChannel?: T;
+  cardMask?: T;
   subscribedToNewsletter?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1175,6 +1197,7 @@ export interface BroadcastsSelect<T extends boolean = true> {
  */
 export interface ReviewsSelect<T extends boolean = true> {
   authorName?: T;
+  city?: T;
   rating?: T;
   text?: T;
   photos?: T;
@@ -1360,6 +1383,39 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about".
+ */
+export interface About {
+  id: number;
+  /**
+   * Показується капслоком. У макеті — «ПРО БРЕНД».
+   */
+  label?: string | null;
+  title: string;
+  /**
+   * Основний текст, темний.
+   */
+  lead?: string | null;
+  /**
+   * Продовження, приглушеним кольором.
+   */
+  body?: string | null;
+  photo?: (number | null) | Media;
+  /**
+   * Рівно три: у макеті вони стоять в один ряд по третині ширини.
+   */
+  values?:
+    | {
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "settings".
  */
 export interface Setting {
@@ -1404,6 +1460,27 @@ export interface Setting {
   } | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about_select".
+ */
+export interface AboutSelect<T extends boolean = true> {
+  label?: T;
+  title?: T;
+  lead?: T;
+  body?: T;
+  photo?: T;
+  values?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
