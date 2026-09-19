@@ -84,11 +84,20 @@ const COURSES = [
   'kolie-chokery',
   'makrame-baza',
   'panno-kashpo',
+  'zhakardovi-svetry',
+  'broshi-biser',
+  'velyki-panno',
 ]
 
+// Знімків у seed-assets рівно шість, а курсів більше, тож обкладинки йдуть
+// по колу. Для демонстраційних даних це прийнятно: клієнтка все одно замінить
+// їх власними фото.
+const COURSE_PHOTOS = 6
+
 for (const [index, slug] of COURSES.entries()) {
-  const cover = await upload(`course-${index + 1}.jpg`, 'Майстер-клас')
-  const gallery = await upload(`product2-${index + 1}.jpg`, 'Робота учениці')
+  const photo = (index % COURSE_PHOTOS) + 1
+  const cover = await upload(`course-${photo}.jpg`, 'Майстер-клас')
+  const gallery = await upload(`product2-${photo}.jpg`, 'Робота учениці')
   if (cover) await setIfEmpty('courses', slug, { cover, gallery: gallery ? [gallery] : [] })
 }
 
@@ -116,8 +125,10 @@ for (const [index, slug] of POSTS.entries()) {
   if (cover) await setIfEmpty('posts', slug, { cover })
 }
 
-const aboutCover = await upload('page-1.jpg', 'Майстерня')
-if (aboutCover) await setIfEmpty('pages', 'about', { cover: aboutCover })
+// Про бренд живе глобалом, а не сторінкою в колекції: у макеті (94:2011)
+// в неї власна верстка, якої rich text не описує.
+const aboutPhoto = await upload('page-1.jpg', 'Майстерня')
+if (aboutPhoto) await payload.updateGlobal({ slug: 'about', data: { photo: aboutPhoto } })
 
 const deliveryCover = await upload('page-2.jpg', 'Пакування замовлення')
 if (deliveryCover) await setIfEmpty('pages', 'delivery', { cover: deliveryCover })
