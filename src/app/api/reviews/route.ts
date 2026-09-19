@@ -6,6 +6,7 @@ import { notifyAdmin } from '@/lib/telegram'
 
 type Body = {
   authorName?: string
+  city?: string
   text?: string
   rating?: number
   product?: number
@@ -35,6 +36,9 @@ export const POST = async (request: Request) => {
     overrideAccess: true,
     data: {
       authorName: authorName.slice(0, 80),
+      // Місто не обовʼязкове: у підписі «ОКСАНА · КИЇВ» воно просто зникає,
+      // якщо його не вказали.
+      city: body.city?.trim().slice(0, 60) || undefined,
       text: text.slice(0, 2000),
       rating,
       product: body.product,

@@ -97,6 +97,9 @@ export const Reviews: CollectionConfig = {
   },
   fields: [
     { name: 'authorName', type: 'text', label: "Ім'я", required: true },
+    // У макеті автор підписаний «ОКСАНА · КИЇВ» — місто там частина підпису.
+    // Необовʼязкове: якщо його не вказали, лишається саме імʼя.
+    { name: 'city', type: 'text', label: 'Місто' },
     {
       name: 'rating',
       type: 'number',

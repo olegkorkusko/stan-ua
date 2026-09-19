@@ -1,5 +1,7 @@
 'use client'
 
+import type { ReactNode } from 'react'
+
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 import { useLocale } from '@/components/site/LocaleLink'
@@ -12,6 +14,12 @@ type Props = {
   price: number
   oldPrice?: number | null
   image?: string
+  /**
+   * Серце «Обране» — стає в один рядок із кнопкою купівлі, як на сторінці
+   * товару (148:3561). Приходить ззовні, бо стан «збережено» читається на
+   * сервері, а цей компонент клієнтський.
+   */
+  save?: ReactNode
 }
 
 /**
@@ -19,7 +27,7 @@ type Props = {
  * оформлення. Це головне, заради чого робився сайт — щоб не пересилати
  * реквізити руками.
  */
-export const CourseBuy = ({ courseId, title, href, price, oldPrice, image }: Props) => {
+export const CourseBuy = ({ courseId, title, href, price, oldPrice, image, save }: Props) => {
   const { add } = useCart()
   const t = dictionary(useLocale()).courses
 
@@ -30,25 +38,31 @@ export const CourseBuy = ({ courseId, title, href, price, oldPrice, image }: Pro
         {oldPrice ? <span className="text-sm text-muted line-through">{formatPrice(oldPrice)}</span> : null}
       </div>
 
-      <button
-        type="button"
-        onClick={() =>
-          add({
-            key: `course:${courseId}`,
-            kind: 'course',
-            id: courseId,
-            title,
-            price,
-            image,
-            href,
-          })
-        }
-        className="btn btn-primary mt-5 w-full"
-      >
-        {t.buy}
-      </button>
+      {/* Кнопка й серце — в один рядок, як на товарі. */}
+      <div className="mt-5 flex items-stretch gap-2">
+        <button
+          type="button"
+          onClick={() =>
+            add({
+              key: `course:${courseId}`,
+              kind: 'course',
+              id: courseId,
+              title,
+              price,
+              image,
+              href,
+            })
+          }
+          className="btn btn-primary w-full flex-1"
+        >
+          {t.buy}
+        </button>
+        {save}
+      </div>
 
-      <ul className="mt-5 space-y-2 text-xs leading-relaxed text-muted">
+      {/* list-disc явно: Tailwind у preflight скидає маркери всім спискам,
+          тож <ul> без нього виглядає як звичайні рядки. */}
+      <ul className="mt-5 list-disc space-y-2 pl-4 text-xs leading-relaxed text-muted marker:text-ink/40">
         {t.perks.map((perk) => (
           <li key={perk}>{perk}</li>
         ))}
