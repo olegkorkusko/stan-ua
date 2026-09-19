@@ -39,7 +39,10 @@ export const Sizes: CollectionConfig = {
   admin: { useAsTitle: 'title', group: 'Магазин' },
   access,
   fields: [
-    { name: 'title', type: 'text', label: 'Розмір', required: true },
+    // Локалізований, як назви категорій і кольорів. Сьогодні тут коди S/M/L,
+    // які перекладати нема потреби, але поле вільне: щойно зʼявиться
+    // «Універсальний», англійська версія має показати «One size», а не його.
+    { name: 'title', type: 'text', label: 'Розмір', required: true, localized: true },
     slugField(),
     {
       name: 'order',
