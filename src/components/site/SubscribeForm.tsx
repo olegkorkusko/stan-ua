@@ -37,7 +37,8 @@ export const SubscribeForm = ({ cta, done }: { cta: string; done: string }) => {
         }
       }}
     >
-      <div className="flex border-b border-ink">
+      {/* Однорядкова форма з нижньою лінією — як «Форма підписки» 19:13 у макеті. */}
+      <div className="flex items-center gap-4 border-b border-ink">
         <input
           required
           type="email"
@@ -45,7 +46,7 @@ export const SubscribeForm = ({ cta, done }: { cta: string; done: string }) => {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="ваша@пошта.com"
           aria-label="Ваша пошта"
-          className="w-full bg-transparent py-2 text-sm outline-none placeholder:text-muted"
+          className="w-full bg-transparent py-2 text-[13px] leading-[19.5px] outline-none placeholder:text-muted"
         />
         <button type="submit" disabled={state === 'busy'} className="label py-2 text-ink">
           {state === 'busy' ? '…' : cta}

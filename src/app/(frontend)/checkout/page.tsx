@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 }
 
 const CheckoutPage = () => (
-  <div className="shell pb-24 pt-28 md:pt-36">
+  <div className="shell page-y">
     <p className="label">Оформлення</p>
-    <h1 className="mt-3 text-[clamp(1.75rem,3.5vw,2.75rem)]">Ще один крок</h1>
+    <h1 className="mt-3 text-page">Ще один крок</h1>
     <div className="mt-12">
       <CheckoutForm />
     </div>

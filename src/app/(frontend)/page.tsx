@@ -1,200 +1,157 @@
 import Image from 'next/image'
-import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
-import { ProductCard } from '@/components/site/ProductCard'
-import { ThreadFork } from '@/components/site/ThreadFork'
-import { formatPrice, plural } from '@/lib/format'
-import { imageAlt, imageUrl } from '@/lib/media'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
-import { payloadClient } from '@/lib/payload'
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-static'
 
+// Splash-портал. Дві гілки бренду (навчання і магазин) розходяться від
+// центрального лого. Розмітка тримає layer-порядок Figma-фрейму (80:1375),
+// щоб figma-parity бачив пряме відповідання нод.
+//
+// Висота: портал тягнеться на весь екран, інакше під ним лишається смуга фону.
+// На десктопі мінімум у 900px тримає компоновку на низьких вікнах і дає рівно
+// висоту Figma-фрейму в раннера, який завжди міряє при висоті 900.
+//
+// На мобільному тут стояли жорсткі 844px — висота кадру 390×844. Це збігалося
+// рівно з одним апаратом: на будь-якому вищому екрані (iPhone 16 Pro Max — 956)
+// під порталом лишалася біла смуга. 844 — це розмір телефона, на якому малювали
+// макет, а не властивість екрана, тож жорстке число тут було хибним прочитанням
+// макета. dvh дає ті самі 844 при перевірці на 390×844 і заповнює решту апаратів.
+//
+// Прокрутки на цій сторінці немає (overflow-hidden, вміст рівно у висоту), тож
+// dvh не «дихає» разом зі згортанням адресного рядка — стрибати нема від чого.
 const HomePage = async () => {
-  const payload = await payloadClient()
   const locale = await getLocale()
-  const t = dictionary(locale)
-
-  const [settings, directions, products, courses, reviews] = await Promise.all([
-    payload.findGlobal({ locale, slug: 'settings' }).catch(() => null),
-    payload
-      .find({ collection: 'course-directions', sort: 'order', limit: 3 })
-      .catch(() => ({ docs: [] as never[] })),
-    payload
-      .find({
-        collection: 'products',
-        where: { status: { equals: 'published' }, featured: { equals: true } },
-        limit: 4,
-        depth: 2,
-      })
-      .catch(() => ({ docs: [] as never[] })),
-    payload
-      .find({ collection: 'courses', where: { status: { equals: 'published' } }, limit: 100, depth: 0 })
-      .catch(() => ({ docs: [] as never[] })),
-    payload
-      .find({ collection: 'reviews', where: { status: { equals: 'approved' } }, limit: 3, depth: 0 })
-      .catch(() => ({ docs: [] as never[] })),
-  ])
-
-  const heroImage = imageUrl(settings?.heroMedia, 'hero')
-
-  // Скільки курсів у кожному напрямі й від якої ціни — щоб картка напряму
-  // одразу відповідала на «а що там і скільки коштує».
-  const stats = new Map<number, { count: number; from: number }>()
-  for (const course of courses.docs) {
-    const id = typeof course.direction === 'object' ? course.direction?.id : course.direction
-    if (typeof id !== 'number') continue
-    const current = stats.get(id) ?? { count: 0, from: Infinity }
-    stats.set(id, { count: current.count + 1, from: Math.min(current.from, course.price ?? Infinity) })
-  }
+  const dict = dictionary(locale)
+  const t = dict.portal
 
   return (
-    <>
-      {/* Головний екран. Фон повільно дрейфує — те саме «рухоме зображення»,
-          яке сподобалось клієнтці на mejuri. */}
-      <section className="relative flex h-[86svh] min-h-125 items-end overflow-hidden">
-        <div className="absolute inset-0">
-          {heroImage ? (
-            <Image
-              src={heroImage}
-              alt={imageAlt(settings?.heroMedia, '')}
-              fill
-              priority
-              sizes="100vw"
-              className="drift object-cover"
-            />
-          ) : (
-            <div className="weave drift h-full w-full" />
-          )}
-          <div className="absolute inset-0 bg-linear-to-t from-ink/70 via-ink/25 to-ink/30" />
+    <div
+      data-figma-node="80:1375"
+      data-figma-state="default"
+      className="relative grid h-dvh w-full grid-rows-[1fr_4px_1fr] overflow-hidden bg-white md:min-h-[900px] md:grid-cols-[1fr_4px_1fr] md:grid-rows-none"
+    >
+      <PortalBranch
+        href="/courses"
+        label={t.learnLabel}
+        imageSrc="/home/learning.jpg"
+        imageAlt={t.learnAlt}
+        variant="learn"
+        panelNodeId="80:1379"
+        buttonNodeId="283:4385"
+        buttonTestId="portal-learn"
+      />
+
+      <div data-figma-node="172:4240" className="bg-white" aria-hidden="true" />
+
+      <PortalBranch
+        href="/shop"
+        label={t.shopLabel}
+        imageSrc="/home/finished-goods.jpg"
+        imageAlt={t.shopAlt}
+        variant="shop"
+        panelNodeId="80:1376"
+        buttonNodeId="283:4395"
+        buttonTestId="portal-shop"
+      />
+
+      {/* Лого перекриває межу двох панелей, тож мусить перехоплювати клік сам:
+          інакше він провалюється на панель під ним і веде в магазин. */}
+      <Link
+        href="/"
+        aria-label={dict.header.home}
+        data-figma-node="80:1382"
+        data-interaction-exempt="portal-logo-is-a-static-plate-in-design"
+        className="absolute left-1/2 top-1/2 z-10 block -translate-x-1/2 -translate-y-1/2 md:top-[11%] md:translate-y-0"
+      >
+        <div
+          data-figma-node="80:1383"
+          className="relative flex items-center justify-center rounded-[2px] bg-white px-[19px] py-[16px] md:rounded-[3px] md:px-[26px] md:py-[21px]"
+        >
+          <Image
+            data-figma-node="80:1384"
+            src="/home/logo.png"
+            alt={t.logoAlt}
+            width={222}
+            height={63}
+            priority
+            unoptimized
+            className="h-auto w-[162px] md:w-[222px]"
+          />
         </div>
+      </Link>
+    </div>
+  )
+}
 
-        <div className="shell relative pb-14 text-paper md:pb-20">
-          <p className="label rise text-paper/70">{t.home.eyebrow}</p>
-          <h1 className="rise mt-4 max-w-4xl text-[clamp(2.25rem,6vw,4.75rem)]">
-            {settings?.heroTitle ?? t.home.heroTitle}
-          </h1>
-          <p className="rise mt-5 max-w-md text-[0.9375rem] leading-relaxed text-paper/80">
-            {settings?.heroSubtitle ?? t.home.heroSubtitle}
-          </p>
-          <div className="rise mt-8 flex flex-wrap gap-3">
-            <Link href="/courses" className="btn bg-paper text-ink hover:bg-flax">
-              {t.home.ctaCourses}
-            </Link>
-            <Link href="/shop" className="btn border border-paper text-paper hover:bg-paper hover:text-ink">
-              {t.home.ctaShop}
-            </Link>
-          </div>
-        </div>
-      </section>
+type BranchProps = {
+  href: string
+  label: string
+  imageSrc: string
+  imageAlt: string
+  variant: 'learn' | 'shop'
+  panelNodeId: string
+  buttonNodeId: string
+  buttonTestId: string
+}
 
-      {/* Три напрями. Нитка приходить згори однією лінією й ділиться на три. */}
-      <section id="directions" className="shell pt-16 md:pt-20">
-        <div className="text-center">
-          <p className="label">{t.home.directionsLabel}</p>
-          <h2 className="mt-3 text-[clamp(1.75rem,3.5vw,2.75rem)]">{t.home.directionsTitle}</h2>
-        </div>
+const PortalBranch = ({
+  href,
+  label,
+  imageSrc,
+  imageAlt,
+  variant,
+  panelNodeId,
+  buttonNodeId,
+  buttonTestId,
+}: BranchProps) => {
+  // Прозорість кнопки у Figma різна: 36% для «Готові вироби», 26% для «Навчання».
+  const buttonBg = variant === 'shop' ? 'bg-white/[.36]' : 'bg-white/[.26]'
+  // Розмір кнопки у Figma фіксований — 209×48 для «Готові вироби», 162×48 для «Навчання».
+  const buttonSize = variant === 'shop' ? 'w-[209px]' : 'w-[162px]'
+  // Кнопка «Навчання» у desktop-фреймі зсунута лівіше центру (250/719 = 34.77%),
+  // «Готові вироби» — центрована. На mobile обидві по центру.
+  const buttonPlacement =
+    variant === 'learn'
+      ? 'left-1/2 -translate-x-1/2 md:left-[34.77%] md:translate-x-0'
+      : 'left-1/2 -translate-x-1/2'
 
-        <ThreadFork />
+  // Жива лише кнопка: і наведення, і перехід починаються з неї. Курсор над фото
+  // нічого не рухає, клік по фото нікуди не веде.
+  return (
+    <div className="group relative overflow-hidden transition-[filter] duration-300 has-[[data-portal-cta]:hover]:brightness-[.95] motion-reduce:transition-none">
+      <Image
+        data-figma-node={panelNodeId}
+        src={imageSrc}
+        alt={imageAlt}
+        fill
+        sizes="(min-width: 768px) 50vw, 100vw"
+        priority
+        unoptimized
+        className="object-cover transition-transform duration-700 ease-out group-has-[[data-portal-cta]:hover]:scale-105 motion-reduce:transition-none motion-reduce:group-has-[[data-portal-cta]:hover]:scale-100"
+      />
+      {/* Дві градієнтні поволоки з Figma: темна зверху й глибша знизу. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 transition-opacity duration-500 group-has-[[data-portal-cta]:hover]:opacity-80 motion-reduce:transition-none"
+        style={{
+          backgroundImage:
+            'linear-gradient(to bottom, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0) 55%), linear-gradient(to bottom, rgba(0,0,0,0) 28%, rgba(0,0,0,0.98) 100%)',
+        }}
+      />
 
-        <div className="mt-8 grid gap-x-6 gap-y-10 md:mt-0 md:grid-cols-3">
-          {directions.docs.map((direction) => {
-            const stat = stats.get(direction.id)
-            const cover = imageUrl(direction.image, 'card')
-
-            return (
-              <Link key={direction.id} href={`/courses/${direction.slug}`} className="group block">
-                <div className="relative aspect-4/5 overflow-hidden bg-paper-deep">
-                  {cover ? (
-                    <Image
-                      src={cover}
-                      alt={imageAlt(direction.image, direction.title)}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="weave h-full w-full transition-transform duration-700 group-hover:scale-105" />
-                  )}
-                </div>
-                <h3 className="mt-4 text-xl">{direction.title}</h3>
-                {direction.tagline && <p className="mt-1.5 text-sm text-muted">{direction.tagline}</p>}
-                <p className="mt-3 text-xs text-muted">
-                  {stat
-                    ? `${t.home.coursesCount(stat.count)} · ${formatPrice(stat.from)}`
-                    : t.home.soon}
-                </p>
-              </Link>
-            )
-          })}
-        </div>
-      </section>
-
-      {/* Як це працює. Нумерація тут по суті: це послідовність кроків. */}
-      <section className="mt-24 border-y border-flax bg-paper-deep py-16 md:py-20">
-        <div className="shell">
-          <p className="label">{t.home.stepsLabel}</p>
-          <h2 className="mt-3 max-w-2xl text-[clamp(1.75rem,3.5vw,2.75rem)]">
-            {t.home.stepsTitle}
-          </h2>
-
-          <ol className="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
-            {t.home.steps.map((step, index) => (
-              <li key={step.title}>
-                <span className="font-display text-sm text-brass">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <hr className="thread my-4 bg-ink/15" />
-                <h3 className="font-body text-base font-medium tracking-normal">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{step.text}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* Магазин */}
-      {products.docs.length > 0 && (
-        <section className="shell mt-24">
-          <div className="flex items-end justify-between gap-6">
-            <div>
-              <p className="label">{t.home.shopLabel}</p>
-              <h2 className="mt-3 text-[clamp(1.75rem,3.5vw,2.75rem)]">{t.home.shopTitle}</h2>
-            </div>
-            <Link href="/shop" className="thread-link hidden text-sm md:inline-block">
-              {t.nav.allProducts}
-            </Link>
-          </div>
-
-          <div className="mt-10 grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-4 md:gap-x-6">
-            {products.docs.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-
-          <Link href="/shop" className="btn btn-outline mt-10 w-full md:hidden">
-            {t.nav.allProducts}
-          </Link>
-        </section>
-      )}
-
-      {/* Відгуки */}
-      {reviews.docs.length > 0 && (
-        <section className="shell mt-24">
-          <p className="label text-center">{t.home.reviewsLabel}</p>
-          <div className="mt-10 grid gap-10 md:grid-cols-3">
-            {reviews.docs.map((review) => (
-              <figure key={review.id}>
-                <hr className="thread mb-5" />
-                <blockquote className="text-[0.9375rem] leading-relaxed">«{review.text}»</blockquote>
-                <figcaption className="label mt-4">{review.authorName}</figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-      )}
-    </>
+      <Link
+        href={href}
+        data-figma-node={buttonNodeId}
+        data-testid={buttonTestId}
+        data-portal-cta=""
+        className={`absolute top-[44.29%] md:top-[47.33%] ${buttonPlacement} ${buttonSize} inline-flex items-center justify-center rounded-[2px] px-8 py-[15px] text-ink transition-[background-color,transform] duration-300 ${buttonBg} hover:bg-white/70 active:translate-y-px motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/70`}
+      >
+        <span className="text-[15px] font-semibold leading-[18px] tracking-normal">{label}</span>
+      </Link>
+    </div>
   )
 }
 

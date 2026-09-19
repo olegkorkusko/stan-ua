@@ -66,9 +66,6 @@ const useSuggestions = (type: 'city' | 'branch', query: string, cityRef?: string
   return { items, manual }
 }
 
-const field =
-  'w-full border border-flax bg-paper px-3.5 py-3 text-sm outline-none transition-colors focus:border-ink'
-
 export const CheckoutForm = () => {
   const { items, total, clear } = useCart()
   const t = dictionary(useLocale()).checkout
@@ -214,7 +211,7 @@ export const CheckoutForm = () => {
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <input
               required
-              className={field}
+              className="field"
               placeholder={t.name}
               value={form.customerName}
               onChange={(e) => set('customerName')(e.target.value)}
@@ -222,7 +219,7 @@ export const CheckoutForm = () => {
             <input
               required
               type="tel"
-              className={field}
+              className="field"
               placeholder="+380"
               value={form.customerPhone}
               onChange={(e) => set('customerPhone')(e.target.value)}
@@ -230,7 +227,7 @@ export const CheckoutForm = () => {
             <input
               required
               type="email"
-              className={`${field} sm:col-span-2`}
+              className="field sm:col-span-2"
               placeholder={t.email}
               value={form.customerEmail}
               onChange={(e) => set('customerEmail')(e.target.value)}
@@ -270,7 +267,7 @@ export const CheckoutForm = () => {
             <div className="mt-4 grid gap-3">
               <div className="relative">
                 <input
-                  className={field}
+                  className="field"
                   placeholder={t.city}
                   value={cityQuery}
                   onChange={(e) => {
@@ -301,7 +298,7 @@ export const CheckoutForm = () => {
 
               <div className="relative">
                 <input
-                  className={field}
+                  className="field"
                   placeholder={
                     form.deliveryMethod === 'np_courier' || isUkrposhta ? t.address : t.branch
                   }
@@ -330,7 +327,7 @@ export const CheckoutForm = () => {
               {isUkrposhta && (
                 <div>
                   <input
-                    className={field}
+                    className="field"
                     placeholder={t.postcode}
                     inputMode="numeric"
                     maxLength={5}
@@ -392,7 +389,7 @@ export const CheckoutForm = () => {
           <p className="label">{t.comment}</p>
           <textarea
             rows={3}
-            className={`${field} mt-4 resize-none`}
+            className="field mt-4 resize-none"
             placeholder={t.commentPlaceholder}
             value={form.comment}
             onChange={(e) => set('comment')(e.target.value)}
@@ -423,7 +420,7 @@ export const CheckoutForm = () => {
             </label>
             <input
               id="promo"
-              className={`${field} mt-2 uppercase`}
+              className="field mt-2 uppercase"
               placeholder={t.promoPlaceholder}
               value={form.promoCode}
               onChange={(e) => set('promoCode')(e.target.value)}

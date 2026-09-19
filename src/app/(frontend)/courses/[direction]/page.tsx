@@ -7,6 +7,7 @@ import { CourseCard } from '@/components/site/CourseCard'
 import { imageAlt, imageUrl } from '@/lib/media'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
+import { savedItems } from '@/lib/saved'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,6 +46,7 @@ const DirectionPage = async ({ params }: { params: Params }) => {
   })
 
   const cover = imageUrl(direction.image, 'hero')
+  const saved = await savedItems()
 
   return (
     <div className="pb-24">
@@ -69,7 +71,11 @@ const DirectionPage = async ({ params }: { params: Params }) => {
           <Link href="/courses" className="label text-paper/70 hover:text-paper">
             Курси
           </Link>
-          <h1 className="mt-3 text-[clamp(2rem,5vw,3.75rem)]">{direction.title}</h1>
+          {/* Той самий герой, що на лендингах магазину й курсів: підпис
+              і великий заголовок поверх темного фото. Тому й кегль спільний —
+              токен --text-hero, а не власний clamp, який тут стояв і давав
+              на мобільному 32 проти 30 у сусідів. */}
+          <h1 className="mt-3 font-display text-hero font-normal">{direction.title}</h1>
           {direction.tagline && <p className="mt-2 text-sm text-paper/80">{direction.tagline}</p>}
         </div>
       </section>
@@ -82,7 +88,13 @@ const DirectionPage = async ({ params }: { params: Params }) => {
         {courses.docs.length > 0 ? (
           <div className="mt-12 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
             {courses.docs.map((course) => (
-              <CourseCard key={course.id} course={course} directionSlug={direction.slug ?? ''} />
+              <CourseCard
+                key={course.id}
+                course={course}
+                directionSlug={direction.slug ?? ''}
+                saved={saved.courses.has(course.id)}
+                authorized={saved.authorized}
+              />
             ))}
           </div>
         ) : (

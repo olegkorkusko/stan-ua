@@ -7,6 +7,7 @@ import { plural } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
+import { savedItems } from '@/lib/saved'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,9 +50,10 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
     : [{ docs: [] }, { docs: [] }]
 
   const total = products.docs.length + courses.docs.length
+  const saved = await savedItems()
 
   return (
-    <div className="shell pb-24 pt-28 md:pt-36">
+    <div className="shell page-y">
       <p className="label">{t.search.label}</p>
 
       <form action="/search" className="mt-4 max-w-xl">
@@ -95,6 +97,8 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
                 key={course.id}
                 course={course}
                 directionSlug={typeof course.direction === 'object' ? (course.direction?.slug ?? '') : ''}
+                saved={saved.courses.has(course.id)}
+                authorized={saved.authorized}
               />
             ))}
           </div>
@@ -106,7 +110,12 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
           <p className="label">Товари</p>
           <div className="mt-8 grid grid-cols-2 gap-x-5 gap-y-12 md:grid-cols-4 md:gap-x-6">
             {products.docs.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+              key={product.id}
+              product={product}
+              saved={saved.products.has(product.id)}
+              authorized={saved.authorized}
+            />
             ))}
           </div>
         </section>

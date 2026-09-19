@@ -45,9 +45,9 @@ const StaticPage = async ({ params }: { params: Params }) => {
   const cover = imageUrl(page.cover, 'wide')
 
   return (
-    <article className="pb-24 pt-28 md:pt-36">
+    <article className="page-y">
       <header className="shell max-w-3xl">
-        <h1 className="text-[clamp(2rem,4.5vw,3.25rem)]">{page.title}</h1>
+        <h1 className="text-page">{page.title}</h1>
         {page.intro && <p className="mt-5 text-[0.9375rem] leading-relaxed text-muted">{page.intro}</p>}
       </header>
 

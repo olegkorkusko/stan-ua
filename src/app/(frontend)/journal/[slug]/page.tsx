@@ -9,6 +9,7 @@ import { ProductCard } from '@/components/site/ProductCard'
 import { imageAlt, imageUrl } from '@/lib/media'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
+import { savedItems } from '@/lib/saved'
 import type { Course, Product } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -46,14 +47,15 @@ const PostPage = async ({ params }: { params: Params }) => {
   const cover = imageUrl(post.cover, 'hero')
   const products = (post.relatedProducts ?? []).filter((item): item is Product => typeof item === 'object')
   const courses = (post.relatedCourses ?? []).filter((item): item is Course => typeof item === 'object')
+  const saved = await savedItems()
 
   return (
-    <article className="pb-24 pt-28 md:pt-36">
+    <article className="page-y">
       <header className="shell max-w-3xl">
         <Link href="/journal" className="label hover:text-ink">
           Журнал
         </Link>
-        <h1 className="mt-4 text-[clamp(2rem,4.5vw,3.25rem)]">{post.title}</h1>
+        <h1 className="mt-4 text-page">{post.title}</h1>
         {post.excerpt && <p className="mt-5 text-[0.9375rem] leading-relaxed text-muted">{post.excerpt}</p>}
       </header>
 
@@ -83,7 +85,12 @@ const PostPage = async ({ params }: { params: Params }) => {
           <p className="label">Зі статті</p>
           <div className="mt-8 grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-4 md:gap-x-6">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+              key={product.id}
+              product={product}
+              saved={saved.products.has(product.id)}
+              authorized={saved.authorized}
+            />
             ))}
           </div>
         </section>
@@ -98,6 +105,8 @@ const PostPage = async ({ params }: { params: Params }) => {
                 key={course.id}
                 course={course}
                 directionSlug={typeof course.direction === 'object' ? (course.direction?.slug ?? '') : ''}
+                saved={saved.courses.has(course.id)}
+                authorized={saved.authorized}
               />
             ))}
           </div>

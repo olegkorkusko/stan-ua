@@ -50,7 +50,7 @@ const ThanksPage = async ({ searchParams }: { searchParams: SearchParams }) => {
 
       <p className="label">{orderNumber ?? 'Замовлення'}</p>
 
-      <h1 className="mt-4 max-w-2xl text-[clamp(1.75rem,4vw,3rem)]">
+      <h1 className="mt-4 max-w-2xl text-page">
         {paid ? 'Дякуємо! Замовлення оплачено' : 'Замовлення прийнято'}
       </h1>
 
