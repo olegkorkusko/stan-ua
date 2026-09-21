@@ -2,7 +2,6 @@
 
 import { Menu, Search, ShoppingBag, User, X } from 'lucide-react'
 import Image from 'next/image'
-import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
@@ -138,12 +137,23 @@ export const Header = ({ locale, announcement }: Props) => {
               {LOCALE_LABELS[option]}
             </span>
           ) : (
-            <NextLink
+            /*
+              Звичайне <a>, а не NextLink — свідомо.
+
+              Middleware переписує /en/shop на /shop, тобто обидві мови ведуть
+              на один внутрішній маршрут. Клієнтський роутер бачить, що
+              маршрут не змінився, і не йде на сервер: адреса ставала /en/shop,
+              а текст і підсвітка мови лишалися українськими. Повне
+              перезавантаження — єдиний спосіб дати middleware виставити мову.
+
+              Переходів це не сповільнює: мову перемикають раз, а не постійно.
+            */
+            <a
               href={localePath(option, barePath)}
               className="transition-colors hover:text-ink active:text-ink/70"
             >
               {LOCALE_LABELS[option]}
-            </NextLink>
+            </a>
           )}
         </span>
       ))}
