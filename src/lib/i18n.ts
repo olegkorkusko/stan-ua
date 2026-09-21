@@ -35,7 +35,6 @@ type Dictionary = {
   header: { menu: string; closeMenu: string; search: string; account: string; cart: string; home: string }
   cart: {
     title: string
-    saved: string
     empty: string
     chooseCourse: string
     total: string
@@ -358,7 +357,6 @@ const uk: Dictionary = {
   },
   cart: {
     title: 'Кошик',
-    saved: 'Обране',
     empty: 'Тут поки порожньо.',
     chooseCourse: 'Обрати курс',
     total: 'Разом',
@@ -847,7 +845,6 @@ const en: Dictionary = {
   },
   cart: {
     title: 'Cart',
-    saved: 'Saved',
     empty: 'Nothing here yet.',
     chooseCourse: 'Browse courses',
     total: 'Total',

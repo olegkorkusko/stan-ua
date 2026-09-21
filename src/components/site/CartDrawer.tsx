@@ -147,23 +147,15 @@ export const CartDrawer = () => {
           data-figma-node="122:2719"
           className="flex flex-col gap-6.5 px-4 py-8 md:w-3/5 md:overflow-y-auto md:p-8"
         >
-          <div data-figma-node="122:2720" className="flex gap-6">
-            <span
-              data-figma-node="122:2721"
-              className="label text-ink underline underline-offset-2"
-            >
-              {t.title.toUpperCase()}
-            </span>
-            <Link
-              href="/account/saved"
-              data-figma-node="122:2722"
-              className="label transition-opacity hover:opacity-70"
-              onClick={close}
-            >
-              {t.saved.toUpperCase()}
-            </Link>
-          </div>
+          {/*
+            Рядка «КОШИК / ЗБЕРЕЖЕНІ» тут немає свідомо: у «Шухляді кошика»
+            (121:2951) його вже немає й у макеті — фрейм «Позиції» (122:2719)
+            починається одразу зі смуги безкоштовної доставки. Код тягнув його
+            зі старої версії дизайну, вузлів 122:2720–2722 у файлі не лишилось.
 
+            Назву шухляди тримає aria-label на <aside>, тож для читача екрана
+            нічого не загубилось.
+          */}
           <div data-figma-node="122:2723" className="flex flex-col gap-2.5">
             <p data-figma-node="122:2724" className="text-[13px]/[19.5px] text-ink">
               {left > 0
