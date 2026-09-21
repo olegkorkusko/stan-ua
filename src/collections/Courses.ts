@@ -1,7 +1,9 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
+import { ValidationError } from 'payload'
 
 import { anyone, isAdmin, publishedOrAdmin } from '@/access'
 import { slugField } from '@/fields/slug'
+import { courseChannelProblem } from '@/lib/telegram'
 
 /** Напрями: вʼязання, бісероплетіння, макраме. Додаються з адмінки, не в коді. */
 export const CourseDirections: CollectionConfig = {
@@ -19,9 +21,43 @@ export const CourseDirections: CollectionConfig = {
   ],
 }
 
+const fail = (message: string) =>
+  new ValidationError({ collection: 'courses', errors: [{ message, path: 'telegramChatId' }] })
+
+/*
+  Не дати опублікувати курс, доступ до якого нікому буде видати.
+
+  Помилка в id каналу або незданий ботові доступ інакше виявляються аж після
+  першого продажу: гроші списано, лист пішов без посилання, покупець пише «а де
+  курс?». Тому перевіряємо тут, поки курс ще в руках власниці.
+
+  Перевіряємо не на кожне збереження, а коли є що перевіряти: змінився канал або
+  курс саме зараз публікують. Інакше кожне редагування опису ходило б у Telegram.
+*/
+const verifyChannel: CollectionBeforeChangeHook = async ({ data, originalDoc }) => {
+  if (!['telegram', 'both'].includes(data.accessType)) return data
+
+  const chatId = typeof data.telegramChatId === 'string' ? data.telegramChatId.trim() : ''
+  const publishing = data.status === 'published' && originalDoc?.status !== 'published'
+
+  if (!chatId) {
+    // Чернетку без каналу лишаємо: курс заводять поступово.
+    if (publishing) throw fail('Вкажіть ID каналу — інакше після оплати покупець не отримає доступу')
+    return data
+  }
+
+  if (!publishing && chatId === originalDoc?.telegramChatId) return data
+
+  const problem = await courseChannelProblem(chatId)
+  if (problem) throw fail(problem)
+
+  return data
+}
+
 export const Courses: CollectionConfig = {
   slug: 'courses',
   labels: { singular: 'Курс', plural: 'Курси' },
+  hooks: { beforeChange: [verifyChannel] },
   admin: {
     useAsTitle: 'title',
     group: 'Курси',

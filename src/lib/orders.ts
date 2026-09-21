@@ -249,6 +249,13 @@ export const fulfillOrder = async (
   if (order.accessGranted) return
 
   const invites: string[] = []
+  /*
+    Курси, за які заплачено, але доступ видати не вдалось: бот втратив права в
+    каналі, канал видалили, Telegram лежить. Мовчки пропустити це не можна —
+    гроші вже списано. Власниця дізнається з того ж сповіщення про замовлення,
+    покупець — із листа, щоб не думав, що отримав усе.
+  */
+  const undelivered: string[] = []
   const grants: { course: number; relatedOrder: number; grantedAt: string; telegramInviteLink?: string }[] = []
 
   for (const item of order.items ?? []) {
@@ -258,13 +265,22 @@ export const fulfillOrder = async (
       const course = await payload.findByID({ collection: 'courses', id: courseId, depth: 0 })
       let inviteLink: string | undefined
 
-      if (['telegram', 'both'].includes(course.accessType) && course.telegramChatId) {
+      const needsTelegram = ['telegram', 'both'].includes(course.accessType)
+
+      if (needsTelegram && course.telegramChatId) {
         const link = await createCourseInvite(course.telegramChatId, course.title)
         if (link) {
           inviteLink = link
           invites.push(`${course.title}: ${link}`)
+        } else {
+          undelivered.push(course.title)
         }
+      } else if (needsTelegram) {
+        // Канал не вказано взагалі — публікацію таке вже не проходить, але
+        // старі курси могли лишитись без нього.
+        undelivered.push(course.title)
       }
+
       if (['canva', 'both'].includes(course.accessType) && course.canvaUrl) {
         inviteLink = inviteLink ?? course.canvaUrl
         invites.push(`${course.title}: ${course.canvaUrl}`)
@@ -399,8 +415,14 @@ export const fulfillOrder = async (
     .map((item) => `• ${item.title}${item.variantLabel ? ` (${item.variantLabel})` : ''} × ${item.quantity}`)
     .join('\n')
 
+  const alarm = undelivered.length
+    ? `\n\n⚠️ <b>Доступ НЕ видано:</b>\n${undelivered.map((title) => `• ${title}`).join('\n')}\n` +
+      'Перевірте, чи бот адміністратор каналу з правом запрошувати через посилання. ' +
+      'Покупцеві надішліть доступ вручну.'
+    : ''
+
   await notifyAdmin(
-    `<b>Оплачено ${order.orderNumber}</b>\n${summary}\n\n${formatPrice(order.total)}\n${order.customerName}, ${order.customerPhone}`,
+    `<b>Оплачено ${order.orderNumber}</b>\n${summary}\n\n${formatPrice(order.total)}\n${order.customerName}, ${order.customerPhone}${alarm}`,
   )
 
   await payload
@@ -415,7 +437,12 @@ export const fulfillOrder = async (
         invites.length ? 'Доступ до курсів:' : '',
         ...invites,
         '',
-        'Посилання персональні — не пересилайте їх іншим.',
+        invites.length ? 'Посилання персональні — не пересилайте їх іншим.' : '',
+        // Краще чесно сказати про затримку, ніж лишити покупця гадати, чому
+        // в листі немає курсу, за який він щойно заплатив.
+        undelivered.length
+          ? `Доступ до «${undelivered.join('», «')}» надішлемо окремо найближчим часом — вибачте за затримку.`
+          : '',
       ]
         .filter(Boolean)
         .join('\n'),
