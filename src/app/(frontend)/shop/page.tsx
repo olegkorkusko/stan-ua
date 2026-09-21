@@ -6,7 +6,8 @@ import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
-export const dynamic = 'force-static'
+// Не `force-static`: сторінка читає мову з заголовка запиту — див. lib/locale.ts
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Магазин',

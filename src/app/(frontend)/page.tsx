@@ -4,7 +4,8 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
-export const dynamic = 'force-static'
+// Не `force-static`: сторінка читає мову з заголовка запиту — див. lib/locale.ts
+export const dynamic = 'force-dynamic'
 
 // Splash-портал. Дві гілки бренду (навчання і магазин) розходяться від
 // центрального лого. Розмітка тримає layer-порядок Figma-фрейму (80:1375),
