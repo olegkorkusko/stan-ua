@@ -14,6 +14,7 @@ import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 import { savedItems } from '@/lib/saved'
+import type { Product } from '@/payload-types'
 import { SectionTitle } from '@/components/site/Typography'
 
 export const dynamic = 'force-dynamic'
@@ -83,6 +84,11 @@ const ProductPage = async ({ params }: { params: Params }) => {
   ])
 
   const saved = await savedItems()
+
+  // Склад набору: з depth 2 сюди приходять самі товари, а не їхні числа.
+  const kitItems = (product.kitItems ?? []).filter(
+    (item): item is Product => typeof item === 'object' && item !== null,
+  )
 
   const images = Array.isArray(product.images) ? product.images : []
   const galleryImages = images
@@ -267,6 +273,29 @@ const ProductPage = async ({ params }: { params: Params }) => {
                 />
               )}
             */}
+
+            {/*
+              Склад набору. Поле «Що входить у набір» заповнювали в адмінці,
+              а сторінка його не показувала — покупець бачив ціну набору й не
+              знав, за що платить.
+
+              Не плутати з прихованим блоком вище: там апсел «докупити», тут
+              те, що вже входить у ціну.
+            */}
+            {product.isKit && kitItems.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="label">{t.product.kitIncludes}</p>
+                <ul className="flex flex-col gap-1 text-[13px] leading-[19.5px] text-muted">
+                  {kitItems.map((item) => (
+                    <li key={item.id}>
+                      <Link href={`/shop/${item.slug}`} className="thread-link text-ink">
+                        {item.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {product.description && (
               <div className="prose prose-sm max-w-none text-[13px] leading-[19.5px] text-muted">

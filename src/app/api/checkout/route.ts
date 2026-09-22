@@ -23,6 +23,7 @@ type Body = {
   deliveryBranch?: string
   deliveryPostcode?: string
   comment?: string
+  newsletter?: boolean
   paymentMethod: 'card' | 'cod'
   fbp?: string
   fbc?: string
@@ -118,6 +119,9 @@ export const POST = async (request: Request) => {
         deliveryBranch: body.deliveryBranch,
         deliveryPostcode: deliveryMethod === 'ukrposhta' ? body.deliveryPostcode : undefined,
         comment: body.comment,
+        // Згода на розсилку живе в замовленні, бо покупця ще немає: його
+        // заводить fulfillOrder уже після підтвердженої оплати.
+        newsletter: body.newsletter === true,
         subtotal,
         discount,
         deliveryCost: 0,

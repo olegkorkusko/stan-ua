@@ -343,6 +343,9 @@ export const fulfillOrder = async (
       ...(order.deliveryMethod ? { deliveryMethod: order.deliveryMethod } : {}),
       ...(order.deliveryCity ? { deliveryCity: order.deliveryCity } : {}),
       ...(order.deliveryBranch ? { deliveryBranch: order.deliveryBranch } : {}),
+      // Згоду лише проставляємо, ніколи не знімаємо: відмову від розсилки
+      // покупець робить сам, і нове замовлення без галочки її не скасовує.
+      ...(order.newsletter ? { subscribedToNewsletter: true } : {}),
       ...(order.paymentMethod ? { paymentMethod: order.paymentMethod } : {}),
       ...(card?.mask ? { cardMask: card.mask } : {}),
     },

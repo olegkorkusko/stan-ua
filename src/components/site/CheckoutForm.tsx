@@ -79,6 +79,7 @@ export const CheckoutForm = () => {
     promoCode: '',
     deliveryMethod: 'np_branch',
     paymentMethod: 'card' as 'card' | 'cod',
+    newsletter: false,
   })
   const [city, setCity] = useState({ label: '', ref: '' })
   const [branch, setBranch] = useState('')
@@ -394,6 +395,21 @@ export const CheckoutForm = () => {
             value={form.comment}
             onChange={(e) => set('comment')(e.target.value)}
           />
+
+          {/*
+            Галочка знята за замовчуванням — згода має бути дією, а не
+            наслідком неуважності. Без неї покупець отримає лише листи про
+            власне замовлення, і нічого більше.
+          */}
+          <label className="mt-4 flex cursor-pointer items-start gap-2.5 text-[13px] leading-[19.5px] text-muted">
+            <input
+              type="checkbox"
+              className="mt-0.5 size-4 shrink-0 accent-ink"
+              checked={form.newsletter}
+              onChange={(e) => setForm((prev) => ({ ...prev, newsletter: e.target.checked }))}
+            />
+            {t.newsletter}
+          </label>
         </section>
       </div>
 

@@ -185,6 +185,8 @@ type Dictionary = {
     madeByValue: string
     related: string
     addonsTitle: string
+    /** Склад набору на сторінці товару — поле «Що входить у набір». */
+    kitIncludes: string
     addonsNote: string
     addonsEmpty: string
     addonsAdd: (count: number, sum: string) => string
@@ -246,6 +248,8 @@ type Dictionary = {
     codNote: string
     comment: string
     commentPlaceholder: string
+    /** Згода на розсилку при оформленні — галочка знята за замовчуванням. */
+    newsletter: string
     order: string
     promo: string
     promoPlaceholder: string
@@ -471,6 +475,7 @@ const uk: Dictionary = {
     madeByValue: '2–3 дні',
     related: 'Схоже',
     addonsTitle: 'Докупити до набору',
+    kitIncludes: 'Що входить у набір',
     addonsNote: 'Дрібниці, яких зазвичай не вистачає.',
     addonsEmpty: 'Оберіть, що додати',
     addonsAdd: (count: number, sum: string) => `Додати ${count} · ${sum}`,
@@ -533,6 +538,7 @@ const uk: Dictionary = {
     codNote: 'Зараз сплачуєте передплату, решту — при отриманні на пошті.',
     comment: 'Коментар',
     commentPlaceholder: 'Побажання до замовлення',
+    newsletter: 'Хочу отримувати новини про нові курси й товари',
     order: 'Замовлення',
     promo: 'Промокод',
     promoPlaceholder: 'Якщо є',
@@ -959,6 +965,7 @@ const en: Dictionary = {
     madeByValue: 'By hand',
     related: 'You may also like',
     addonsTitle: 'Add to your kit',
+    kitIncludes: 'What’s in the kit',
     addonsNote: 'The small things people usually run out of.',
     addonsEmpty: 'Choose what to add',
     addonsAdd: (count: number, sum: string) => `Add ${count} · ${sum}`,
@@ -1021,6 +1028,7 @@ const en: Dictionary = {
     codNote: 'You pay the deposit now and the rest on collection.',
     comment: 'Note',
     commentPlaceholder: 'Anything we should know',
+    newsletter: 'Send me news about new courses and products',
     order: 'Your order',
     promo: 'Promo code',
     promoPlaceholder: 'If you have one',

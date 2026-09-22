@@ -1,10 +1,48 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
 
 import { isAdmin } from '@/access'
 import { deliveryMethodOptions, paymentMethodOptions } from '@/lib/delivery'
 
+/*
+  Лист із номером накладної.
+
+  Клієнтка вписує ТТН в адмінці, коли віддала посилку в перевізника. Досі це
+  число просто лежало в базі: покупець його не бачив ніде й мусив питати в
+  дірект. Тепер воно саме їде йому на пошту.
+
+  Надсилаємо рівно раз — коли номер щойно з'явився або змінився. Інакше
+  кожне збереження замовлення (змінили статус, дописали коментар) слало б
+  покупцеві той самий лист заново.
+*/
+const notifyTracking: CollectionAfterChangeHook = async ({ doc, previousDoc, operation, req }) => {
+  if (operation !== 'update') return doc
+
+  const number = typeof doc.trackingNumber === 'string' ? doc.trackingNumber.trim() : ''
+  if (!number || number === previousDoc?.trackingNumber?.trim?.()) return doc
+  if (!doc.customerEmail) return doc
+
+  const carrier = doc.deliveryMethod === 'ukrposhta' ? 'Укрпошта' : 'Нова Пошта'
+
+  await req.payload
+    .sendEmail({
+      to: doc.customerEmail,
+      subject: `Замовлення ${doc.orderNumber} відправлено`,
+      text: [
+        `Вітаємо! Замовлення ${doc.orderNumber} уже в дорозі.`,
+        '',
+        `${carrier}, накладна: ${number}`,
+        '',
+        'За цим номером можна відстежити посилку на сайті перевізника.',
+      ].join('\n'),
+    })
+    .catch((error: unknown) => req.payload.logger.error({ err: error }, 'Лист про ТТН не пішов'))
+
+  return doc
+}
+
 export const Orders: CollectionConfig = {
   slug: 'orders',
+  hooks: { afterChange: [notifyTracking] },
   labels: { singular: 'Замовлення', plural: 'Замовлення' },
   admin: {
     useAsTitle: 'orderNumber',
@@ -181,6 +219,12 @@ export const Orders: CollectionConfig = {
       admin: { position: 'sidebar' },
     },
     { name: 'trackingNumber', type: 'text', label: 'ТТН', admin: { position: 'sidebar' } },
+    {
+      name: 'newsletter',
+      type: 'checkbox',
+      label: 'Погодився на розсилку',
+      admin: { readOnly: true, description: 'Галочка з форми оформлення.' },
+    },
     {
       name: 'accessGranted',
       type: 'checkbox',

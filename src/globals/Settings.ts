@@ -72,7 +72,6 @@ export const Settings: GlobalConfig = {
                 },
               ],
             },
-            { name: 'deliveryInfo', type: 'richText', label: 'Текст про доставку', localized: true },
           ],
         },
         {

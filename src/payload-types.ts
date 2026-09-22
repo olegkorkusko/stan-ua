@@ -503,6 +503,10 @@ export interface Order {
   fiscalReceipt?: string | null;
   fulfillmentStatus?: ('new' | 'packing' | 'shipped' | 'done' | 'cancelled') | null;
   trackingNumber?: string | null;
+  /**
+   * Галочка з форми оформлення.
+   */
+  newsletter?: boolean | null;
   accessGranted?: boolean | null;
   metaFbp?: string | null;
   metaFbc?: string | null;
@@ -1095,6 +1099,7 @@ export interface OrdersSelect<T extends boolean = true> {
   fiscalReceipt?: T;
   fulfillmentStatus?: T;
   trackingNumber?: T;
+  newsletter?: T;
   accessGranted?: T;
   metaFbp?: T;
   metaFbc?: T;
@@ -1576,21 +1581,6 @@ export interface Setting {
    * Для фіксованої — гривні (напр. 200). Для відсотка — число від 1 до 100.
    */
   prepaymentAmount?: number | null;
-  deliveryInfo?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
   /**
    * Те, що видно в пошуку й на вкладці браузера. Порожньо — береться назва з коду.
    */
@@ -1759,7 +1749,6 @@ export interface SettingsSelect<T extends boolean = true> {
   freeDeliveryFrom?: T;
   prepaymentType?: T;
   prepaymentAmount?: T;
-  deliveryInfo?: T;
   seoTitle?: T;
   seoDescription?: T;
   seoImage?: T;

@@ -28,7 +28,17 @@ const send: CollectionAfterChangeHook = async ({ doc, previousDoc, req, operatio
   }
 
   if (doc.audience === 'customers' || doc.audience === 'all') {
-    const customers = await payload.find({ collection: 'customers', limit: 1000, overrideAccess: true })
+    /*
+      Лише ті, хто погодився. Досі розсилка йшла всім покупцям підряд, а
+      поле «Підписаний на розсилку» стояло в картці покупця без діла — тобто
+      згода питалась і не питалась одночасно.
+    */
+    const customers = await payload.find({
+      collection: 'customers',
+      where: { subscribedToNewsletter: { equals: true } },
+      limit: 1000,
+      overrideAccess: true,
+    })
     for (const item of customers.docs) recipients.add(item.email)
   }
 
