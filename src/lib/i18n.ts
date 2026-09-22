@@ -70,6 +70,7 @@ type Dictionary = {
     subscribeCta: string
     subscribed: string
     offer: string
+    privacy: string
     columns: { courses: string; shop: string; brand: string }
     links: {
       allDirections: string
@@ -396,6 +397,7 @@ const uk: Dictionary = {
     subscribeCta: 'Підписатись',
     subscribed: 'Готово. Тепер новинки приходитимуть вам першою.',
     offer: 'Публічна оферта',
+    privacy: 'Політика конфіденційності',
     columns: { courses: 'Курси', shop: 'Магазин', brand: 'Бренд' },
     links: {
       allDirections: 'Усі напрями',
@@ -887,6 +889,7 @@ const en: Dictionary = {
     subscribeCta: 'Subscribe',
     subscribed: 'Done. You will hear about new pieces first.',
     offer: 'Terms of sale',
+    privacy: 'Privacy policy',
     columns: { courses: 'Courses', shop: 'Shop', brand: 'Brand' },
     links: {
       allDirections: 'All directions',

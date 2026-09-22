@@ -46,6 +46,7 @@ export const Footer = ({ settings, t }: Props) => {
         { href: '/journal', title: t.footer.links.journal },
         { href: '/faq', title: t.footer.links.faq },
         { href: '/offer', title: t.footer.offer },
+        { href: '/privacy', title: t.footer.privacy },
       ],
     },
   ]
