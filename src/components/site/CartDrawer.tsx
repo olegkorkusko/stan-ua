@@ -79,7 +79,12 @@ const ITEM_NODES: readonly Record<string, string | undefined>[] = [
 
 const muted = 'text-[13px]/[19.5px] text-muted'
 
-export const CartDrawer = () => {
+type Props = {
+  /** Поріг безкоштовної доставки з «Налаштувань сайту». */
+  freeDeliveryFrom?: number | null
+}
+
+export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
   const { items, suggestion, total, isOpen, close, remove, setQuantity, add } = useCart()
   const t = dictionary(useLocale()).cart
 
@@ -91,8 +96,17 @@ export const CartDrawer = () => {
     return () => window.removeEventListener('keydown', onKey)
   }, [close])
 
-  const left = Math.max(0, FREE_DELIVERY_FROM - total)
-  const progress = Math.min(1, FREE_DELIVERY_FROM > 0 ? total / FREE_DELIVERY_FROM : 1)
+  /*
+    Поріг — із адмінки, число з коду лишається запасним варіантом.
+
+    Раніше кошик рахував по коду (2500), а в налаштуваннях лежало власне поле
+    (1500), якого не читав ніхто. Клієнтка міняла його й не розуміла, чому
+    нічого не відбувається, — а рядок-оголошення вгорі сайту тим часом обіцяв
+    одну суму, кошик рахував іншу.
+  */
+  const threshold = freeDeliveryFrom ?? FREE_DELIVERY_FROM
+  const left = Math.max(0, threshold - total)
+  const progress = Math.min(1, threshold > 0 ? total / threshold : 1)
 
   /*
     Підпис позиції: у курсу — як приходить доступ, у товару — колір і розмір

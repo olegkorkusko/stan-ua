@@ -26,9 +26,14 @@ export const generateMetadata = async ({ params }: { params: Params }): Promise<
   const { slug } = await params
   const page = await findPage(slug)
   if (!page) return {}
+  // Картинка для соцмереж: своя для сторінки, інакше обкладинка, інакше та,
+  // що задана для всього сайту в «Налаштуваннях».
+  const image = imageUrl(page.ogImage, 'wide') ?? imageUrl(page.cover, 'wide')
+
   return {
     title: page.metaTitle || page.title,
     description: page.metaDescription || page.intro || undefined,
+    ...(image ? { openGraph: { images: [image] } } : {}),
   }
 }
 

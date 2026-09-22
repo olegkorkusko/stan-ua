@@ -57,7 +57,7 @@ export const SiteChrome = ({ locale, settings, children }: Props) => {
         {children}
       </main>
       <Footer settings={settings} t={t} />
-      <CartDrawer />
+      <CartDrawer freeDeliveryFrom={settings?.freeDeliveryFrom} />
     </>
   )
 }

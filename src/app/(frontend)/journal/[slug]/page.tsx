@@ -32,10 +32,17 @@ export const generateMetadata = async ({ params }: { params: Params }): Promise<
   const { slug } = await params
   const post = await findPost(slug)
   if (!post) return {}
+  // Те саме, що й у сторінок: власна картинка, інакше обкладинка статті.
+  const image = imageUrl(post.ogImage, 'wide') ?? imageUrl(post.cover, 'wide')
+
   return {
     title: post.metaTitle || post.title,
     description: post.metaDescription || post.excerpt || undefined,
-    openGraph: { type: 'article', publishedTime: post.publishedAt ?? undefined },
+    openGraph: {
+      type: 'article',
+      publishedTime: post.publishedAt ?? undefined,
+      ...(image ? { images: [image] } : {}),
+    },
   }
 }
 
