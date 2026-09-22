@@ -253,6 +253,10 @@ export interface Product {
   status?: ('draft' | 'published') | null;
   featured?: boolean | null;
   /**
+   * Блок «Може сподобатись» у кошику. Якщо не відмічено жодного товару, показується найдешевший із наявних.
+   */
+  suggestInCart?: boolean | null;
+  /**
    * Заповнюється автоматично з назви. Змінюйте, тільки якщо розумієте наслідки для SEO.
    */
   slug?: string | null;
@@ -965,6 +969,7 @@ export interface ProductsSelect<T extends boolean = true> {
   category?: T;
   status?: T;
   featured?: T;
+  suggestInCart?: T;
   slug?: T;
   priceFrom?: T;
   inStock?: T;

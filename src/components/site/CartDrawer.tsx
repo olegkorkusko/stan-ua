@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 
 import { LocaleLink as Link, useLocale } from '@/components/site/LocaleLink'
@@ -104,6 +105,26 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
     нічого не відбувається, — а рядок-оголошення вгорі сайту тим часом обіцяв
     одну суму, кошик рахував іншу.
   */
+  /*
+    Кнопка в порожньому кошику веде туди, звідки людина прийшла. Раніше вона
+    завжди пропонувала обрати курс — навіть тому, хто стоїть у каталозі
+    товарів і курси його взагалі не цікавлять.
+
+    Шлях, а не остання переглянута сторінка: він завжди під рукою і не
+    потребує зайвого стану.
+  */
+  const inShop = /^\/(en\/)?shop(\/|$)/.test(usePathname())
+  const empty = inShop
+    ? { href: '/shop/catalog', label: t.chooseProduct }
+    : { href: '/courses', label: t.chooseCourse }
+
+  /*
+    Доставка стосується лише фізичних товарів. Курс приходить у Telegram, і
+    смуга «до безкоштовної доставки» в кошику з самими курсами обіцяла те,
+    чого взагалі не буде, — як і рядок «Доставка» в підсумку.
+  */
+  const hasPhysical = items.some((item) => item.kind === 'product')
+
   const threshold = freeDeliveryFrom ?? FREE_DELIVERY_FROM
   const left = Math.max(0, threshold - total)
   const progress = Math.min(1, threshold > 0 ? total / threshold : 1)
@@ -170,26 +191,28 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
             Назву шухляди тримає aria-label на <aside>, тож для читача екрана
             нічого не загубилось.
           */}
-          <div data-figma-node="122:2723" className="flex flex-col gap-2.5">
-            <p data-figma-node="122:2724" className="text-[13px]/[19.5px] text-ink">
-              {left > 0
-                ? t.freeDeliveryLeft.replace('{sum}', formatPrice(left))
-                : t.freeDeliveryReached}
-            </p>
-            <div data-figma-node="122:2725" className="h-0.75 w-full bg-flax">
-              <div
-                data-figma-node="122:2726"
-                className="h-full bg-ink"
-                style={{ width: `${progress * 100}%` }}
-              />
+          {hasPhysical && (
+            <div data-figma-node="122:2723" className="flex flex-col gap-2.5">
+              <p data-figma-node="122:2724" className="text-[13px]/[19.5px] text-ink">
+                {left > 0
+                  ? t.freeDeliveryLeft.replace('{sum}', formatPrice(left))
+                  : t.freeDeliveryReached}
+              </p>
+              <div data-figma-node="122:2725" className="h-0.75 w-full bg-flax">
+                <div
+                  data-figma-node="122:2726"
+                  className="h-full bg-ink"
+                  style={{ width: `${progress * 100}%` }}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {items.length === 0 ? (
             <div className="flex flex-col items-start gap-4 py-8">
               <p className="text-sm text-muted">{t.empty}</p>
-              <Link href="/courses" className="btn btn-outline" onClick={close}>
-                {t.chooseCourse}
+              <Link href={empty.href} className="btn btn-outline" onClick={close}>
+                {empty.label}
               </Link>
             </div>
           ) : (
@@ -346,14 +369,16 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
               </span>
             </div>
 
-            <div data-figma-node="123:2728" className="flex items-center justify-between gap-3">
-              <span data-figma-node="123:2729" className={muted}>
-                {t.delivery}
-              </span>
-              <span data-figma-node="123:2730" className="text-[13px]/[19.5px] text-ink">
-                {t.deliveryAtCheckout}
-              </span>
-            </div>
+            {hasPhysical && (
+              <div data-figma-node="123:2728" className="flex items-center justify-between gap-3">
+                <span data-figma-node="123:2729" className={muted}>
+                  {t.delivery}
+                </span>
+                <span data-figma-node="123:2730" className="text-[13px]/[19.5px] text-ink">
+                  {t.deliveryAtCheckout}
+                </span>
+              </div>
+            )}
 
             <div
               data-figma-node="123:2731"

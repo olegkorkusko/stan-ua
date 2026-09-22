@@ -37,6 +37,8 @@ type Dictionary = {
     title: string
     empty: string
     chooseCourse: string
+    /** Те саме, але для магазину: кнопка в порожньому кошику залежить від розділу. */
+    chooseProduct: string
     total: string
     deliveryNote: string
     checkout: string
@@ -363,6 +365,7 @@ const uk: Dictionary = {
     title: 'Кошик',
     empty: 'Тут поки порожньо.',
     chooseCourse: 'Обрати курс',
+    chooseProduct: 'Обрати товар',
     total: 'Разом',
     deliveryNote: 'Вартість доставки рахується на наступному кроці.',
     checkout: 'Оформити',
@@ -853,6 +856,7 @@ const en: Dictionary = {
     title: 'Cart',
     empty: 'Nothing here yet.',
     chooseCourse: 'Browse courses',
+    chooseProduct: 'Browse products',
     total: 'Total',
     deliveryNote: 'Shipping is calculated at the next step.',
     checkout: 'Checkout',

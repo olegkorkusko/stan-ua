@@ -332,6 +332,16 @@ export const Products: CollectionConfig = {
       label: 'Показувати на головній',
       admin: { position: 'sidebar' },
     },
+    {
+      name: 'suggestInCart',
+      type: 'checkbox',
+      label: 'Пропонувати в кошику',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Блок «Може сподобатись» у кошику. Якщо не відмічено жодного товару, показується найдешевший із наявних.',
+      },
+    },
     slugField(),
     // Службові поля: заповнюються автоматично, потрібні для фільтрів.
     {

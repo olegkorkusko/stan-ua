@@ -133,18 +133,35 @@ const withCookie = (body: unknown, token: string) => {
  * опублікований товар у наявності, якого ще немає в кошику. Дешевий — бо це
  * додача до вже набраного, а не друга покупка.
  */
+/*
+  Блок «Може сподобатись» у кошику (123:2734).
+
+  Спершу — те, що клієнтка сама відмітила галочкою «Пропонувати в кошику».
+  Це головне: раніше сюди просто потрапляв найдешевший товар у магазині,
+  без жодного звʼязку з тим, що людина купує, і вплинути на це було ніяк.
+
+  Якщо не відмічено нічого — лишається стара поведінка, найдешевший із
+  наявних. Порожнім блок не лишаємо: у макеті він є, і дірка на його місці
+  виглядала б як поломка.
+*/
 const suggest = async (payload: Payload, items: { id: string }[]) => {
   const chosen = new Set(items.map((item) => item.id))
 
-  const found = await payload.find({
-    collection: 'products',
-    where: { status: { equals: 'published' } },
-    sort: 'price',
-    limit: chosen.size + 1,
-    depth: 2,
-  })
+  const pick = async (suggested: boolean) => {
+    const found = await payload.find({
+      collection: 'products',
+      where: {
+        status: { equals: 'published' },
+        ...(suggested ? { suggestInCart: { equals: true } } : {}),
+      },
+      sort: 'price',
+      limit: chosen.size + 1,
+      depth: 2,
+    })
+    return found.docs.find((doc) => !chosen.has(String(doc.id))) ?? null
+  }
 
-  const product = found.docs.find((doc) => !chosen.has(String(doc.id)))
+  const product = (await pick(true)) ?? (await pick(false))
   if (!product) return null
 
   const images = Array.isArray(product.images) ? product.images : []
