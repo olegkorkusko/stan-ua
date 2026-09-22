@@ -143,15 +143,29 @@ const PortalBranch = ({
         }}
       />
 
-      <Link
-        href={href}
-        data-figma-node={buttonNodeId}
-        data-testid={buttonTestId}
-        data-portal-cta=""
-        className={`absolute top-[44.29%] md:top-[47.33%] ${buttonPlacement} ${buttonSize} inline-flex items-center justify-center rounded-[2px] px-8 py-[15px] text-ink transition-[background-color,transform] duration-300 ${buttonBg} hover:bg-white/70 active:translate-y-px motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/70`}
-      >
-        <span className="text-[15px] font-semibold leading-[18px] tracking-normal">{label}</span>
-      </Link>
+      {/*
+        Позиціювання винесене на обгортку, а не лишилось на самій кнопці, і це
+        не косметика: центрування по вертикалі — це -translate-y-1/2, а натиск
+        кнопки — active:translate-y-px. На одному елементі друге затирає перше,
+        і кнопка при кліку підстрибувала б на пів своєї висоти вгору замість
+        зсуву на піксель вниз.
+
+        Відхід від макета, свідомий. Там кнопка стоїть на 44.29% висоти
+        (mobile) і 47.33% (desktop) — але це відсоток від кадру фіксованої
+        висоти. На живому екрані він їде: на низькому ноутбуці кнопка
+        притискається догори, на високому моніторі провисає.
+      */}
+      <div className={`absolute top-1/2 -translate-y-1/2 ${buttonPlacement}`}>
+        <Link
+          href={href}
+          data-figma-node={buttonNodeId}
+          data-testid={buttonTestId}
+          data-portal-cta=""
+          className={`${buttonSize} inline-flex items-center justify-center rounded-[2px] px-8 py-[15px] text-ink transition-[background-color,transform] duration-300 ${buttonBg} hover:bg-white/70 active:translate-y-px motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/70`}
+        >
+          <span className="text-[15px] font-semibold leading-[18px] tracking-normal">{label}</span>
+        </Link>
+      </div>
     </div>
   )
 }

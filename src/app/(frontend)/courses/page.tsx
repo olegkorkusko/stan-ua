@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 
+import { HeroCta } from '@/components/site/HeroCta'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -83,13 +84,9 @@ const CoursesPage = async () => {
               {t.hero.body}
             </p>
             <div data-figma-node="100:2181" className="mt-3 flex items-center gap-3">
-              <Link
-                href="/courses/catalog"
-                data-figma-node="100:2182"
-                className="inline-flex items-center justify-center rounded-[2px] border border-white bg-ink px-8 py-[15px] text-[10px] font-semibold uppercase leading-[12px] tracking-[0.16em] text-paper transition-colors hover:bg-paper hover:text-ink"
-              >
-                <span data-figma-node="I100:2182;10:13">{t.hero.cta}</span>
-              </Link>
+              <HeroCta href="/courses/catalog" node="100:2182" labelNode="I100:2182;10:13" filled>
+                {t.hero.cta}
+              </HeroCta>
             </div>
           </div>
         </div>
