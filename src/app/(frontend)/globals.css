@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /*
   MK — дизайн-система.
@@ -35,8 +35,8 @@
   --color-hairline-strong: #16150f29;
   --color-hairline-bold: #16150f2e;
 
-  --font-display: var(--font-unbounded), 'Trebuchet MS', sans-serif;
-  --font-body: var(--font-manrope), 'Segoe UI', system-ui, sans-serif;
+  --font-display: var(--font-unbounded), "Trebuchet MS", sans-serif;
+  --font-body: var(--font-manrope), "Segoe UI", system-ui, sans-serif;
 
   /*
     Кеглі, що змінюються між мобільним і десктопом. Замість пари
@@ -150,7 +150,7 @@
     переставали виглядати клікабельними. Повертаємо, окрім вимкнених.
   */
   button:not(:disabled),
-  [role='button']:not(:disabled) {
+  [role="button"]:not(:disabled) {
     cursor: pointer;
   }
 
@@ -211,7 +211,7 @@
   }
 
   .thread-link::after {
-    content: '';
+    content: "";
     position: absolute;
     left: 0;
     bottom: 0;
@@ -302,8 +302,16 @@
   .weave {
     background-color: var(--color-paper-deep);
     background-image:
-      repeating-linear-gradient(90deg, rgb(0 0 0 / 0.035) 0 1px, transparent 1px 14px),
-      repeating-linear-gradient(0deg, rgb(0 0 0 / 0.035) 0 1px, transparent 1px 14px);
+      repeating-linear-gradient(
+        90deg,
+        rgb(0 0 0 / 0.035) 0 1px,
+        transparent 1px 14px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        rgb(0 0 0 / 0.035) 0 1px,
+        transparent 1px 14px
+      );
   }
 
   .price {
@@ -395,6 +403,28 @@
 
   .rise {
     animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /*
+    Проявлення сторінки. Висить на <main> у SiteChrome, тому діє скрізь, а не
+    додається до кожної сторінки окремо.
+
+    Тут, у шарі utilities, а не поруч із keyframes нижче: звичайний CSS поза
+    шаром переважає будь-яку утиліту Tailwind, і тоді `animate-none` на окремій
+    сторінці нічого б не вимкнув.
+  */
+  .show-slow {
+    animation: showSlow 0.5s ease-in-out;
+  }
+}
+
+@keyframes showSlow {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
   }
 }
 

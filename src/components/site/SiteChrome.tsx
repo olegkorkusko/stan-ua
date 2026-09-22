@@ -31,7 +31,20 @@ export const SiteChrome = ({ locale, settings, children }: Props) => {
   const pathname = usePathname()
   const isPortal = pathname === '/' || pathname === '/en'
 
-  if (isPortal) return <main>{children}</main>
+  /*
+    key зі шляху — щоб проявлення повторювалось на кожному переході, а не лише
+    при першому завантаженні. CSS-анімація запускається на появі елемента; без
+    key React лишає той самий <main> і переграти її нічим.
+
+    Шлях без параметрів запиту — навмисно: фільтри в каталозі міняють лише їх,
+    і блимати сіткою товарів на кожну галочку не треба.
+  */
+  if (isPortal)
+    return (
+      <main key={pathname} className="show-slow">
+        {children}
+      </main>
+    )
 
   const t = dictionary(locale)
 
@@ -40,7 +53,9 @@ export const SiteChrome = ({ locale, settings, children }: Props) => {
       {/* Промо-смуга — верхній поверх самої шапки, як у макеті, тому йде
           всередину Header, а не окремим блоком над ним. */}
       <Header locale={locale} announcement={settings?.announcement} />
-      <main>{children}</main>
+      <main key={pathname} className="show-slow">
+        {children}
+      </main>
       <Footer settings={settings} t={t} />
       <CartDrawer />
     </>
