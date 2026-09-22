@@ -5,7 +5,8 @@ import { Analytics } from '@/components/site/Analytics'
 import { LocaleProvider } from '@/components/site/LocaleLink'
 import { SiteChrome } from '@/components/site/SiteChrome'
 import { getLocale } from '@/lib/locale'
-import { payloadClient } from '@/lib/payload'
+import { imageUrl } from '@/lib/media'
+import { siteSettings } from '@/lib/settings'
 import { CartProvider } from '@/providers/CartProvider'
 
 import './globals.css'
@@ -30,28 +31,39 @@ const manrope = Manrope({
   display: 'swap',
 })
 
-export const metadata: Metadata = {
-  title: {
-    default: 'МК — прикраси ручної роботи та майстер-класи',
-    template: '%s · МК',
-  },
-  description:
-    'Вʼязання, бісероплетіння, макраме: курси з доступом назавжди і прикраси ручної роботи. Доставка Новою Поштою по Україні.',
-  openGraph: { type: 'website', locale: 'uk_UA', siteName: 'МК' },
-}
+const DEFAULT_TITLE = 'МК — прикраси ручної роботи та майстер-класи'
+const DEFAULT_DESCRIPTION =
+  'Вʼязання, бісероплетіння, макраме: курси з доступом назавжди і прикраси ручної роботи. Доставка Новою Поштою по Україні.'
 
 /*
-  Напрями курсів звідси прибрані разом зі старою шухлядою меню: у макеті
-  мобільного меню (302:4484) рівно чотири розділи, напрямів серед них немає.
-  Список тягнувся запитом до Payload на КОЖНОМУ рендері будь-якої сторінки —
-  і жодна з них його вже не показувала.
+  Заголовок, опис і картинка для соцмереж беруться з «Налаштувань сайту», а
+  коди лічильників і заборона індексації — звідти ж. Тексти з коду лишаються
+  запасним варіантом: поки клієнтка не заповнила поле, сайт виглядає в пошуку
+  так само, як раніше, а не порожньо.
+
+  Окремі заголовки конкретних сторінок це не перебиває — вони мають власний
+  блок «SEO» і підставляються через шаблон «%s · МК».
 */
-const loadChrome = async (locale: Awaited<ReturnType<typeof getLocale>>) => {
-  const payload = await payloadClient()
-  const settings = await payload
-    .findGlobal({ locale, slug: 'settings', depth: 0 })
-    .catch(() => null)
-  return { settings }
+export const generateMetadata = async (): Promise<Metadata> => {
+  const locale = await getLocale()
+  const settings = await siteSettings(locale)
+  const image = imageUrl(settings?.seoImage, 'wide')
+
+  return {
+    title: { default: settings?.seoTitle || DEFAULT_TITLE, template: '%s · МК' },
+    description: settings?.seoDescription || DEFAULT_DESCRIPTION,
+    openGraph: {
+      type: 'website',
+      locale: locale === 'en' ? 'en_US' : 'uk_UA',
+      siteName: 'МК',
+      ...(image ? { images: [image] } : {}),
+    },
+    // Галочка знята — сайт закритий від пошуку, поки його наповнюють.
+    ...(settings?.searchVisible === false ? { robots: { index: false, follow: false } } : {}),
+    ...(settings?.googleVerification
+      ? { verification: { google: settings.googleVerification } }
+      : {}),
+  }
 }
 
 // Дані для chrome тягнемо завжди, навіть для порталу, де він не показується.
@@ -61,17 +73,26 @@ const loadChrome = async (locale: Awaited<ReturnType<typeof getLocale>>) => {
 // запит до Payload на порталі; показувати chrome чи ні, вирішує SiteChrome.
 const RootLayout = async ({ children }: { children: React.ReactNode }) => {
   const locale = await getLocale()
-  const chrome = await loadChrome(locale)
+  const settings = await siteSettings(locale)
 
   return (
     <html lang={locale} className={`${unbounded.variable} ${manrope.variable}`}>
       <body className="min-h-screen">
         <LocaleProvider locale={locale}>
           <CartProvider>
-            <SiteChrome locale={locale} settings={chrome.settings}>
+            <SiteChrome locale={locale} settings={settings}>
               {children}
             </SiteChrome>
-            <Analytics ga={process.env.NEXT_PUBLIC_GA_ID} pixel={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
+            {/*
+              Коди лічильників — з адмінки, змінні оточення лишаються запасним
+              варіантом. Інакше клієнтка не може під'єднати аналітику сама:
+              NEXT_PUBLIC_* запікаються в збірку, тож кожна правка означала б
+              деплой.
+            */}
+            <Analytics
+              ga={settings?.gaId || process.env.NEXT_PUBLIC_GA_ID}
+              pixel={settings?.metaPixelId || process.env.NEXT_PUBLIC_META_PIXEL_ID}
+            />
           </CartProvider>
         </LocaleProvider>
       </body>

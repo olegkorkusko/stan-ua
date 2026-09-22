@@ -1556,6 +1556,34 @@ export interface Setting {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Те, що видно в пошуку й на вкладці браузера. Порожньо — береться назва з коду.
+   */
+  seoTitle?: string | null;
+  /**
+   * До 160 символів — далі пошук обрізає.
+   */
+  seoDescription?: string | null;
+  /**
+   * Показується, коли посилання на сайт кидають у Instagram, Telegram чи Facebook. Найкраще 1200×630.
+   */
+  seoImage?: (number | null) | Media;
+  /**
+   * Зніміть галочку, поки сайт наповнюється: Google його не покаже. Не забудьте повернути на запуску.
+   */
+  searchVisible?: boolean | null;
+  /**
+   * search.google.com/search-console → Додати ресурс → HTML-тег. Потрібен лише вміст content="…".
+   */
+  googleVerification?: string | null;
+  /**
+   * Ідентифікатор виду G-XXXXXXX.
+   */
+  gaId?: string | null;
+  /**
+   * Число з 15–16 цифр із Events Manager.
+   */
+  metaPixelId?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1677,6 +1705,13 @@ export interface SettingsSelect<T extends boolean = true> {
   prepaymentType?: T;
   prepaymentAmount?: T;
   deliveryInfo?: T;
+  seoTitle?: T;
+  seoDescription?: T;
+  seoImage?: T;
+  searchVisible?: T;
+  googleVerification?: T;
+  gaId?: T;
+  metaPixelId?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

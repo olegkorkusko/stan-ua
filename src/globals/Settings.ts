@@ -80,6 +80,82 @@ export const Settings: GlobalConfig = {
             { name: 'deliveryInfo', type: 'richText', label: 'Текст про доставку', localized: true },
           ],
         },
+        {
+          label: 'SEO та аналітика',
+          description:
+            'Як сайт виглядає в пошуку й соцмережах, і чим рахуються продажі. Окремі заголовки для конкретних сторінок задаються в самій сторінці, у блоці «SEO».',
+          fields: [
+            {
+              name: 'seoTitle',
+              type: 'text',
+              label: 'Заголовок сайту для Google',
+              localized: true,
+              admin: {
+                description:
+                  'Те, що видно в пошуку й на вкладці браузера. Порожньо — береться назва з коду.',
+              },
+            },
+            {
+              name: 'seoDescription',
+              type: 'textarea',
+              label: 'Опис сайту для Google',
+              localized: true,
+              admin: { description: 'До 160 символів — далі пошук обрізає.' },
+            },
+            {
+              name: 'seoImage',
+              type: 'upload',
+              relationTo: 'media',
+              label: 'Картинка для соцмереж',
+              admin: {
+                description:
+                  'Показується, коли посилання на сайт кидають у Instagram, Telegram чи Facebook. Найкраще 1200×630.',
+              },
+            },
+            {
+              name: 'searchVisible',
+              type: 'checkbox',
+              label: 'Дозволити пошуковикам індексувати сайт',
+              defaultValue: true,
+              admin: {
+                description:
+                  'Зніміть галочку, поки сайт наповнюється: Google його не покаже. Не забудьте повернути на запуску.',
+              },
+            },
+            {
+              name: 'googleVerification',
+              type: 'text',
+              label: 'Код підтвердження Google Search Console',
+              admin: {
+                description:
+                  'search.google.com/search-console → Додати ресурс → HTML-тег. Потрібен лише вміст content="…".',
+              },
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'gaId',
+                  type: 'text',
+                  label: 'Google Analytics',
+                  admin: {
+                    width: '50%',
+                    description: 'Ідентифікатор виду G-XXXXXXX.',
+                  },
+                },
+                {
+                  name: 'metaPixelId',
+                  type: 'text',
+                  label: 'Meta Pixel',
+                  admin: {
+                    width: '50%',
+                    description: 'Число з 15–16 цифр із Events Manager.',
+                  },
+                },
+              ],
+            },
+          ],
+        },
       ],
     },
   ],
