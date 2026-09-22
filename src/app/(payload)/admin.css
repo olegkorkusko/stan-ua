@@ -1,0 +1,120 @@
+/*
+  Меню адмінки.
+
+  Типово Payload малює групи й пункти майже однаково: назва групи — просто
+  сіріший рядок, а пункти під нею нічим із нею не зв'язані. Коли розділів
+  сімнадцять, око не бачить, де закінчується «Магазин» і починаються «Курси»,
+  і чи взагалі група розкрита.
+
+  Тому три речі: рейка, що тримає пункти при їхній групі; назва групи, яка не
+  сперечається з пунктами за увагу; і помітний активний пункт.
+
+  Усе на змінних теми Payload (--theme-elevation-*), а не на власних кольорах:
+  адмінка вміє світлу й темну тему, і при перемиканні це має жити само.
+*/
+
+/* ── Назва групи ─────────────────────────────────────────────────────── */
+
+.nav-group__toggle {
+  border-radius: var(--style-radius-s);
+  transition: background-color 0.15s ease;
+}
+
+.nav-group__toggle:hover {
+  background-color: var(--theme-elevation-100);
+}
+
+.nav-group__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  /*
+    Назва групи — це підпис, а не пункт меню: по ній не переходять. Тому вона
+    тьмяніша за пункти, а не яскравіша, як було.
+  */
+  color: var(--theme-elevation-400);
+}
+
+/* Згорнута група тьмяніє ще — видно з одного погляду, що там сховано. */
+.nav-group__toggle--collapsed .nav-group__label {
+  opacity: 0.65;
+}
+
+/* Payload сам повертає стрілку на 180°, але робить це стрибком. */
+.nav-group__indicator svg {
+  transition: transform 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-group__indicator svg,
+  .nav-group__toggle,
+  .nav__link {
+    transition: none;
+  }
+}
+
+/* ── Рейка групи ─────────────────────────────────────────────────────── */
+
+/*
+  Вертикальна лінія ліворуч від пунктів — те саме, що відступ у списку:
+  показує, що все це належить заголовку вище. Без неї пункти двох сусідніх
+  груп зливаються в один стовпчик.
+*/
+.nav-group__content {
+  /*
+    Два відступи тримаються в змінних, бо від них залежить і засічка активного
+    пункту. Розійдуться — засічка з'їде з рейки, і ніхто не зрозуміє чому.
+  */
+  --rail-indent: 0.75rem;
+  --link-inset: 0.5rem;
+
+  margin-left: 0.5rem;
+  padding-left: var(--rail-indent);
+  border-left: 1px solid var(--theme-elevation-150);
+}
+
+/* Повітря між групами — щоб рейки не склеювались в одну довгу лінію. */
+.nav-group + .nav-group {
+  margin-top: 0.75rem;
+}
+
+/* ── Пункт ───────────────────────────────────────────────────────────── */
+
+.nav__link {
+  position: relative;
+  padding: 0.3125rem var(--link-inset);
+  margin-left: calc(var(--link-inset) * -1);
+  border-radius: var(--style-radius-s);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.nav__link:hover {
+  background-color: var(--theme-elevation-100);
+}
+
+/*
+  Активний пункт Payload віддає як <div>, а не <a> — посилання самого на себе
+  не буває. Це єдина ознака, за яку можна вчепитися: власного класу-модифікатора
+  тут немає.
+*/
+div.nav__link {
+  background-color: var(--theme-elevation-100);
+  font-weight: 600;
+}
+
+/*
+  Засічка активного пункту. Payload уже малює її сам, але ліворуч від рейки —
+  окремою рискою, що висить у порожнечі. Свою не додаємо: посуваємо його на
+  саму рейку, щоб вона читалась як «ось цей пункт цієї групи», а не як друга
+  вертикальна лінія поруч із першою.
+*/
+.nav__link-indicator {
+  left: calc((var(--rail-indent) - var(--link-inset)) * -1 - 1px);
+  top: 0.375rem;
+  bottom: 0.375rem;
+  height: auto;
+  border-radius: 1px;
+}

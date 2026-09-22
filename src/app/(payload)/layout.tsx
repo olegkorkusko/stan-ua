@@ -6,6 +6,9 @@ import React from 'react'
 
 import { importMap } from './admin/importMap.js'
 
+// Після стилів Payload, не до них: тут ми їх доповнюємо, а не переозначуємо.
+import './admin.css'
+
 const serverFunction: ServerFunctionClient = async function (args) {
   'use server'
   return handleServerFunctions({ ...args, config, importMap })
