@@ -119,10 +119,14 @@ export interface Config {
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('uk' | 'en') | ('uk' | 'en')[];
   globals: {
+    'shop-page': ShopPage;
+    'courses-page': CoursesPage;
     about: About;
     settings: Setting;
   };
   globalsSelect: {
+    'shop-page': ShopPageSelect<false> | ShopPageSelect<true>;
+    'courses-page': CoursesPageSelect<false> | CoursesPageSelect<true>;
     about: AboutSelect<false> | AboutSelect<true>;
     settings: SettingsSelect<false> | SettingsSelect<true>;
   };
@@ -1382,6 +1386,100 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Тексти на /shop. Картки товарів і категорій сюди не входять — вони беруться з «Товарів» і «Категорій».
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shop-page".
+ */
+export interface ShopPage {
+  id: number;
+  hero?: {
+    label?: string | null;
+    /**
+     * Перенесення рядка в цьому полі стає перенесенням на сайті.
+     */
+    title?: string | null;
+    body?: string | null;
+    cta?: string | null;
+  };
+  categories?: {
+    label?: string | null;
+    title?: string | null;
+  };
+  /**
+   * Блок із трьома кроками: як оформити, як пакуємо, як отримати.
+   */
+  delivery?: {
+    label?: string | null;
+    title?: string | null;
+    /**
+     * У макеті їх три в ряд. Більше — перенесуться на наступний рядок.
+     */
+    steps?:
+      | {
+          /**
+           * Як у макеті: 01, 02, 03.
+           */
+          number?: string | null;
+          title?: string | null;
+          body?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  journal?: {
+    label?: string | null;
+    title?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Тексти на /courses. Самі курси й напрями редагуються в розділі «Курси».
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses-page".
+ */
+export interface CoursesPage {
+  id: number;
+  hero?: {
+    label?: string | null;
+    /**
+     * Перенесення рядка в цьому полі стає перенесенням на сайті.
+     */
+    title?: string | null;
+    body?: string | null;
+    cta?: string | null;
+  };
+  directions?: {
+    label?: string | null;
+    title?: string | null;
+  };
+  /**
+   * Блок із трьома кроками: як купити, як приходить доступ, як дивитись.
+   */
+  afterPayment?: {
+    label?: string | null;
+    title?: string | null;
+    /**
+     * У макеті їх три в ряд. Більше — перенесуться на наступний рядок.
+     */
+    steps?:
+      | {
+          /**
+           * Як у макеті: 01, 02, 03.
+           */
+          number?: string | null;
+          title?: string | null;
+          body?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "about".
  */
@@ -1460,6 +1558,86 @@ export interface Setting {
   } | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shop-page_select".
+ */
+export interface ShopPageSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        label?: T;
+        title?: T;
+        body?: T;
+        cta?: T;
+      };
+  categories?:
+    | T
+    | {
+        label?: T;
+        title?: T;
+      };
+  delivery?:
+    | T
+    | {
+        label?: T;
+        title?: T;
+        steps?:
+          | T
+          | {
+              number?: T;
+              title?: T;
+              body?: T;
+              id?: T;
+            };
+      };
+  journal?:
+    | T
+    | {
+        label?: T;
+        title?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses-page_select".
+ */
+export interface CoursesPageSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        label?: T;
+        title?: T;
+        body?: T;
+        cta?: T;
+      };
+  directions?:
+    | T
+    | {
+        label?: T;
+        title?: T;
+      };
+  afterPayment?:
+    | T
+    | {
+        label?: T;
+        title?: T;
+        steps?:
+          | T
+          | {
+              number?: T;
+              title?: T;
+              body?: T;
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

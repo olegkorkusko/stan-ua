@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { HeroCta } from '@/components/site/HeroCta'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { dictionary } from '@/lib/i18n'
+import { landingCopy } from '@/lib/landing'
 import { getLocale } from '@/lib/locale'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
@@ -48,7 +49,8 @@ const JOURNAL_CARD_BODIES_TEXT = ['I99:2189;97:6', 'I99:2194;97:6', 'I99:2199;97
 
 const ShopPage = async () => {
   const locale = await getLocale()
-  const t = dictionary(locale).shopLanding
+  // Тексти з адмінки поверх текстів із коду — див. lib/landing.ts
+  const t = await landingCopy('shop-page', locale, dictionary(locale).shopLanding)
 
   return (
     <div data-figma-node="70:1050" className="bg-paper">

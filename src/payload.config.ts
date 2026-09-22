@@ -21,6 +21,7 @@ import { Orders } from './collections/Orders'
 import { Products } from './collections/Products'
 import { Users } from './collections/Users'
 import { About } from './globals/About'
+import { CoursesPage, ShopPage } from './globals/Landing'
 import { Settings } from './globals/Settings'
 
 const filename = fileURLToPath(import.meta.url)
@@ -59,7 +60,7 @@ export default buildConfig({
     Media,
     Users,
   ],
-  globals: [About, Settings],
+  globals: [ShopPage, CoursesPage, About, Settings],
   editor: lexicalEditor(),
   // Мова адмінки — українська. Англійська лишається для розробників.
   i18n: {

@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { HeroCta } from '@/components/site/HeroCta'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { dictionary } from '@/lib/i18n'
+import { landingCopy } from '@/lib/landing'
 import { getLocale } from '@/lib/locale'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
@@ -41,7 +42,8 @@ const STEP_BODIES = ['102:2186', '102:2191', '102:2196']
 
 const CoursesPage = async () => {
   const locale = await getLocale()
-  const t = dictionary(locale).coursesLanding
+  // Тексти з адмінки поверх текстів із коду — див. lib/landing.ts
+  const t = await landingCopy('courses-page', locale, dictionary(locale).coursesLanding)
 
   return (
     <div data-figma-node="81:1377" data-figma-state="default" className="flex flex-col bg-paper">
