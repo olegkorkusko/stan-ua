@@ -84,7 +84,7 @@ const CoursesPage = async () => {
               {t.hero.body}
             </p>
             <div data-figma-node="100:2181" className="mt-3 flex items-center gap-3">
-              <HeroCta href="/courses/catalog" node="100:2182" labelNode="I100:2182;10:13" filled>
+              <HeroCta href="/courses/catalog" node="100:2182" labelNode="I100:2182;10:13">
                 {t.hero.cta}
               </HeroCta>
             </div>
