@@ -34,6 +34,11 @@ export default buildConfig({
     meta: {
       titleSuffix: ' · MK',
     },
+    components: {
+      // Змінив компонент — одразу `npm run generate:importmap`, інакше
+      // адмінка відкриється білим екраном.
+      graphics: { Logo: '@/components/admin/Logo#Logo' },
+    },
   },
   collections: [
     Products,
