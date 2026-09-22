@@ -2,6 +2,8 @@ import Image from 'next/image'
 
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { dictionary } from '@/lib/i18n'
+import { imageUrl } from '@/lib/media'
+import { payloadClient } from '@/lib/payload'
 import { getLocale } from '@/lib/locale'
 
 // Не `force-static`: сторінка читає мову з заголовка запиту — див. lib/locale.ts
@@ -28,6 +30,21 @@ const HomePage = async () => {
   const dict = dictionary(locale)
   const t = dict.portal
 
+  /*
+    Написи й фото гілок — з адмінки («Контент» → «Сторінка "Головна"»), а те,
+    чого там ще немає, лишається з коду. Так сторінка не порожніє, поки
+    клієнтка не дійшла до цього розділу.
+
+    Фото окремо від текстів: у медіатеці лежить запис, а не рядок, тож
+    imageUrl має розгорнути його у справжню адресу. Порожньо — файл із public.
+  */
+  const home = await payloadClient().then((payload) =>
+    payload.findGlobal({ slug: 'home-page', locale, depth: 1 }).catch(() => null),
+  )
+
+  const learnImage = imageUrl(home?.learn?.image, 'wide') ?? '/home/learning.jpg'
+  const shopImage = imageUrl(home?.shop?.image, 'wide') ?? '/home/finished-goods.jpg'
+
   return (
     <div
       data-figma-node="80:1375"
@@ -36,9 +53,9 @@ const HomePage = async () => {
     >
       <PortalBranch
         href="/courses"
-        label={t.learnLabel}
-        imageSrc="/home/learning.jpg"
-        imageAlt={t.learnAlt}
+        label={home?.learn?.label || t.learnLabel}
+        imageSrc={learnImage}
+        imageAlt={home?.learn?.alt || t.learnAlt}
         variant="learn"
         panelNodeId="80:1379"
         buttonNodeId="283:4385"
@@ -49,9 +66,9 @@ const HomePage = async () => {
 
       <PortalBranch
         href="/shop"
-        label={t.shopLabel}
-        imageSrc="/home/finished-goods.jpg"
-        imageAlt={t.shopAlt}
+        label={home?.shop?.label || t.shopLabel}
+        imageSrc={shopImage}
+        imageAlt={home?.shop?.alt || t.shopAlt}
         variant="shop"
         panelNodeId="80:1376"
         buttonNodeId="283:4395"

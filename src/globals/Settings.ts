@@ -12,23 +12,18 @@ export const Settings: GlobalConfig = {
       type: 'tabs',
       tabs: [
         {
-          label: 'Головна',
+          label: 'Загальне',
+          description: 'Те, що видно на всіх сторінках одразу.',
           fields: [
             {
               name: 'announcement',
               type: 'text',
               label: 'Рядок-оголошення вгорі сайту',
               localized: true,
-              admin: { description: 'Наприклад: «Безкоштовна доставка від 1500 ₴». Порожньо — рядок не показується.' },
-            },
-            { name: 'heroTitle', type: 'text', label: 'Заголовок на головній', localized: true },
-            { name: 'heroSubtitle', type: 'textarea', label: 'Підзаголовок', localized: true },
-            {
-              name: 'heroMedia',
-              type: 'upload',
-              relationTo: 'media',
-              label: 'Фон головної',
-              admin: { description: 'Фото або коротке відео. Саме воно повільно рухається на фоні.' },
+              admin: {
+                description:
+                  'Наприклад: «Безкоштовна доставка від 1500 ₴». Порожньо — рядок не показується. На головній його немає: там сторінка без шапки.',
+              },
             },
           ],
         },

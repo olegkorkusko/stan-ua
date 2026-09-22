@@ -97,6 +97,54 @@ const landing = (
   fields: [...heroFields, ...sections],
 })
 
+/** Одна з двох гілок порталу: напис на кнопці й фото на весь екран. */
+const branch = (name: string, label: string, description: string): Field => ({
+  name,
+  type: 'group',
+  label,
+  admin: { description },
+  fields: [
+    { name: 'label', type: 'text', label: 'Напис на кнопці', localized: true },
+    {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Фото',
+      admin: { description: 'Вертикальне, від 1200 px по довшій стороні. Порожньо — фото з коду.' },
+    },
+    {
+      name: 'alt',
+      type: 'text',
+      label: 'Опис фото',
+      localized: true,
+      admin: { description: 'Читають ті, хто користується екранним диктором, і Google.' },
+    },
+  ],
+})
+
+/*
+  Головна — не сторінка з текстами, а розвилка: два фото на весь екран і дві
+  кнопки. Заголовка немає взагалі, його роль грає лого посередині.
+
+  Раніше ці поля лежали в «Налаштуваннях сайту», у вкладці «Головна», і
+  жодне з них сторінка не читала: заголовок, підзаголовок і фон писалися в
+  базу сідом і там і лишалися. Тепер поля справжні.
+*/
+export const HomePage: GlobalConfig = {
+  slug: 'home-page',
+  label: 'Сторінка «Головна»',
+  admin: {
+    group: 'Контент',
+    description:
+      'Розвилка на вході: дві гілки бренду. Заголовка тут немає — посередині стоїть лого.',
+  },
+  access: { read: anyone, update: isAdmin },
+  fields: [
+    branch('learn', 'Гілка «Навчання»', 'Ліворуч на комп’ютері, зверху на телефоні. Веде на /courses.'),
+    branch('shop', 'Гілка «Магазин»', 'Праворуч на комп’ютері, знизу на телефоні. Веде на /shop.'),
+  ],
+}
+
 export const ShopPage = landing(
   'shop-page',
   'Сторінка «Магазин»',

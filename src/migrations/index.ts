@@ -1,6 +1,7 @@
 import * as migration_20260918_184300_initial from './20260918_184300_initial';
 import * as migration_20260922_095804_landing_globals from './20260922_095804_landing_globals';
 import * as migration_20260922_100314_seo_settings from './20260922_100314_seo_settings';
+import * as migration_20260922_103230_home_page from './20260922_103230_home_page';
 
 export const migrations = [
   {
@@ -16,6 +17,11 @@ export const migrations = [
   {
     up: migration_20260922_100314_seo_settings.up,
     down: migration_20260922_100314_seo_settings.down,
-    name: '20260922_100314_seo_settings'
+    name: '20260922_100314_seo_settings',
+  },
+  {
+    up: migration_20260922_103230_home_page.up,
+    down: migration_20260922_103230_home_page.down,
+    name: '20260922_103230_home_page'
   },
 ];

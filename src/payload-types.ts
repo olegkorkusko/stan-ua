@@ -119,12 +119,14 @@ export interface Config {
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('uk' | 'en') | ('uk' | 'en')[];
   globals: {
+    'home-page': HomePage;
     'shop-page': ShopPage;
     'courses-page': CoursesPage;
     about: About;
     settings: Setting;
   };
   globalsSelect: {
+    'home-page': HomePageSelect<false> | HomePageSelect<true>;
     'shop-page': ShopPageSelect<false> | ShopPageSelect<true>;
     'courses-page': CoursesPageSelect<false> | CoursesPageSelect<true>;
     about: AboutSelect<false> | AboutSelect<true>;
@@ -1386,6 +1388,45 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Розвилка на вході: дві гілки бренду. Заголовка тут немає — посередині стоїть лого.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page".
+ */
+export interface HomePage {
+  id: number;
+  /**
+   * Ліворуч на комп’ютері, зверху на телефоні. Веде на /courses.
+   */
+  learn?: {
+    label?: string | null;
+    /**
+     * Вертикальне, від 1200 px по довшій стороні. Порожньо — фото з коду.
+     */
+    image?: (number | null) | Media;
+    /**
+     * Читають ті, хто користується екранним диктором, і Google.
+     */
+    alt?: string | null;
+  };
+  /**
+   * Праворуч на комп’ютері, знизу на телефоні. Веде на /shop.
+   */
+  shop?: {
+    label?: string | null;
+    /**
+     * Вертикальне, від 1200 px по довшій стороні. Порожньо — фото з коду.
+     */
+    image?: (number | null) | Media;
+    /**
+     * Читають ті, хто користується екранним диктором, і Google.
+     */
+    alt?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * Тексти на /shop. Картки товарів і категорій сюди не входять — вони беруться з «Товарів» і «Категорій».
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1519,15 +1560,9 @@ export interface About {
 export interface Setting {
   id: number;
   /**
-   * Наприклад: «Безкоштовна доставка від 1500 ₴». Порожньо — рядок не показується.
+   * Наприклад: «Безкоштовна доставка від 1500 ₴». Порожньо — рядок не показується. На головній його немає: там сторінка без шапки.
    */
   announcement?: string | null;
-  heroTitle?: string | null;
-  heroSubtitle?: string | null;
-  /**
-   * Фото або коротке відео. Саме воно повільно рухається на фоні.
-   */
-  heroMedia?: (number | null) | Media;
   phone?: string | null;
   email?: string | null;
   instagram?: string | null;
@@ -1586,6 +1621,29 @@ export interface Setting {
   metaPixelId?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page_select".
+ */
+export interface HomePageSelect<T extends boolean = true> {
+  learn?:
+    | T
+    | {
+        label?: T;
+        image?: T;
+        alt?: T;
+      };
+  shop?:
+    | T
+    | {
+        label?: T;
+        image?: T;
+        alt?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1694,9 +1752,6 @@ export interface AboutSelect<T extends boolean = true> {
  */
 export interface SettingsSelect<T extends boolean = true> {
   announcement?: T;
-  heroTitle?: T;
-  heroSubtitle?: T;
-  heroMedia?: T;
   phone?: T;
   email?: T;
   instagram?: T;

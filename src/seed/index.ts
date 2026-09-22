@@ -639,8 +639,6 @@ await payload.updateGlobal({
   slug: 'settings',
   data: {
     announcement: 'Безкоштовна доставка від 1500 ₴',
-    heroTitle: 'Прикраси ручної роботи. І курси, щоб зробити свою.',
-    heroSubtitle: 'Вʼязання, бісероплетіння й макраме — від першої петлі до готової прикраси.',
     instagram: 'https://instagram.com/',
     telegram: 'https://t.me/',
     phone: '+38 (000) 000-00-00',

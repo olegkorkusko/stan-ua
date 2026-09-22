@@ -61,8 +61,9 @@ const setIfEmpty = async <T extends 'course-directions' | 'courses' | 'products'
 }
 
 // --- Головна ------------------------------------------------------------
-const heroId = await upload('hero.jpg', 'Робота з макраме')
-if (heroId) await payload.updateGlobal({ slug: 'settings', data: { heroMedia: heroId } })
+// Фото гілок порталу лежать у public/home і фону в «Налаштуваннях» більше
+// немає — hero.jpg вантажимо в медіатеку як заготовку для клієнтки.
+await upload('hero.jpg', 'Робота з макраме')
 
 // --- Напрями ------------------------------------------------------------
 const DIRECTIONS: [string, string, string][] = [
