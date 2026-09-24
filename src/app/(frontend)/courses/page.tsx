@@ -119,7 +119,11 @@ const CoursesPage = async () => {
                   data-figma-node={DIRECTION_CARDS[index]}
                   className="group flex flex-1 flex-col gap-5 bg-[#F4F4F4] transition-colors hover:bg-[#EBEBEB] active:bg-[#E0E0E0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
-                  <div className="relative aspect-[358/480] w-full overflow-hidden md:aspect-[668/480]">
+                  {/* На телефоні пропорція та сама, що в категорій магазину (398/294):
+                      картки напрямів і категорій стоять в одному ритмі, а
+                      висока 358/480 з'їдала півекрана на кожну. На десктопі
+                      лишається 668/480 з макета. */}
+                  <div className="relative aspect-398/294 w-full overflow-hidden md:aspect-[668/480]">
                     <Image
                       data-figma-node={inner(index, '19:3')}
                       src={DIRECTION_IMAGES[index]}
