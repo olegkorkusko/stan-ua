@@ -230,24 +230,32 @@ export const DeliveryProfile = ({
                 </div>
               ))}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setForm(values)
-                  setOpen(true)
-                }}
-                data-figma-node={map?.edit}
-                /* -mb: .thread-link тримає під написом 2 px під нитку. У макеті
-                   коробка «Змінити» рівно 20, і ці 2 px піднімали кожен із трьох
-                   блоків — на мобільному сторінка виходила на 6 px вищою. */
-                className="thread-link -mb-[2px] self-start text-[13px] font-normal leading-5 text-ink transition-opacity hover:opacity-60 active:opacity-40"
-              >
-                {t.edit}
-              </button>
             </div>
           )
         })}
       </div>
+
+      {/*
+        Одна кнопка на всі три блоки, а не три однакові.
+
+        У макеті «Змінити» стоїть під кожним (138:3280, 3292, 3304), але
+        шухляда одна й відкриває всі поля одразу — хоч на що натисни. Три
+        кнопки обіцяли три різні дії, а робили одну.
+
+        -mb: .thread-link тримає під написом 2 px під нитку, і без цього
+        сторінка виходила на 2 px вищою, ніж у макеті.
+      */}
+      <button
+        type="button"
+        onClick={() => {
+          setForm(values)
+          setOpen(true)
+        }}
+        data-figma-node={nodes.blocks[0]?.edit}
+        className="thread-link -mb-[2px] mt-6 self-start text-[13px] font-normal leading-5 text-ink transition-opacity hover:opacity-60 active:opacity-40"
+      >
+        {t.edit}
+      </button>
 
       <SideDrawer
         open={open}

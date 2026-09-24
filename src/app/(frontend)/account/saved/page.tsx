@@ -77,16 +77,21 @@ const SavedCoursesPage = async () => {
           </Link>
         </div>
       ) : (
-        // Колонка на мобільному, ряд із перенесенням на десктопі — саме так
-        // це описано в макеті, і звіряння дивиться на flex-direction. Ширина
-        // картки рахується від четвірки з проміжками 24, тож пʼята спокійно
-        // переходить на другий рядок замість того, щоб стиснути решту.
+        /*
+          Курси й товари в ОДНІЙ сітці, а не двома блоками поспіль: інакше
+          товари починали власний ряд, і під курсами зяяла дірка на пів
+          екрана. Тепер картки шикуються підряд і переносяться разом.
+
+          Колонка на мобільному, ряд із перенесенням на десктопі — так це
+          описано в макеті, і звіряння дивиться на flex-direction. Ширина
+          картки рахується від четвірки з проміжками 24.
+        */
         <div
           data-figma-node="137:3119"
           className="flex flex-col gap-8 md:flex-row md:flex-wrap md:gap-6"
         >
           {saved.map((course, index) => (
-            <div key={course.id} className="md:w-[calc((100%-72px)/4)]">
+            <div key={`course-${course.id}`} className="md:w-[calc((100%-72px)/4)]">
               <CourseCard
                 course={course}
                 directionSlug={
@@ -98,18 +103,15 @@ const SavedCoursesPage = async () => {
               />
             </div>
           ))}
-        </div>
-      )}
 
-      {savedProducts.length > 0 && (
-        <div className="mt-8 flex flex-col gap-8 md:mt-6 md:flex-row md:flex-wrap md:gap-6">
           {savedProducts.map((product) => (
-            <div key={product.id} className="md:w-[calc((100%-72px)/4)]">
+            <div key={`product-${product.id}`} className="md:w-[calc((100%-72px)/4)]">
               <ProductCard product={product} saved authorized />
             </div>
           ))}
         </div>
       )}
+
     </AccountShell>
   )
 }

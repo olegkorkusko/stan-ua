@@ -70,7 +70,16 @@ export const CourseCard = ({
 
   return (
     <article data-figma-node={nodes?.root} className="group relative flex flex-col gap-4 bg-[#F4F4F4]">
-      <div data-figma-node={nodes?.frame} className="relative h-[294px] overflow-hidden bg-paper-deep">
+      {/*
+          Пропорція та сама, що в картці товару (190/228 на мобільному,
+          348/400 на десктопі), а не жорсткі 294 px із макета. У «Збережених»
+          курси й товари вперше стоять в одному ряду, і фото різної висоти
+          читалося як поломка: 294 проти 369.
+        */}
+      <div
+        data-figma-node={nodes?.frame}
+        className="relative aspect-[190/228] overflow-hidden bg-paper-deep md:aspect-[348/400]"
+      >
         {cover ? (
           <Image
             src={cover}
