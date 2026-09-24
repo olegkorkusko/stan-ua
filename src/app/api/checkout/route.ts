@@ -165,8 +165,13 @@ export const POST = async (request: Request) => {
 
       await notifyAdmin(text.replace(orderNumber, `<b>${orderNumber}</b>`)).catch(() => {})
 
-      // Окрема адреса для сповіщень; порожня — падаємо на публічну.
-      const notifyTo = settings?.orderNotifyEmail || settings?.email
+      /*
+        Лист — доповнення, не заміна: у Telegram повідомлення йде завжди, а
+        пошта вмикається тим, що клієнтка вписала адресу. На публічну з
+        «Контактів» не падаємо навмисно — її бачать покупці, і службові листи
+        там недоречні.
+      */
+      const notifyTo = settings?.orderNotifyEmail
       if (notifyTo) {
         await payload
           .sendEmail({ to: notifyTo, subject: `Замовлення ${orderNumber} очікує оплати`, text })

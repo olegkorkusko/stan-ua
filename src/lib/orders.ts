@@ -429,12 +429,12 @@ export const fulfillOrder = async (
   )
 
   /*
-    Те саме на пошту. Telegram бачать не всі й не завжди: у власниці може
-    бути вимкнений звук, а замовлення треба зібрати сьогодні. Адреса та сама,
-    що й для неоплачених — одне місце, куди приходить усе про продажі.
+    Те саме на пошту — але лише якщо клієнтка вписала адресу для сповіщень.
+    Telegram бачать не всі й не завжди: звук буває вимкнений, а замовлення
+    треба зібрати сьогодні. Порожнє поле означає «досить Telegram».
   */
   const settings = await payload.findGlobal({ slug: 'settings', depth: 0 }).catch(() => null)
-  const notifyTo = settings?.orderNotifyEmail || settings?.email
+  const notifyTo = settings?.orderNotifyEmail
   if (notifyTo) {
     await payload
       .sendEmail({
