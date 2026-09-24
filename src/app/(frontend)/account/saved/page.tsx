@@ -2,23 +2,26 @@ import type { Metadata } from 'next'
 
 import { AccountGuest } from '@/components/site/AccountGuest'
 import { AccountShell, type AccountShellNodes } from '@/components/site/AccountShell'
+import { ProductCard } from '@/components/site/ProductCard'
 import { CourseCard, courseCardNodes } from '@/components/site/CourseCard'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { LogoutButton } from '@/components/site/LogoutButton'
 import { accountCustomer } from '@/lib/account'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
-import type { Course } from '@/payload-types'
+import type { Course, Product } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Збережені курси',
+  title: 'Збережені',
   robots: { index: false },
 }
 
 /*
-  «Збережені курси» за макетом (137:2936 на 1440, 309:5044 на 390).
+  «Збережені» за макетом (137:2936 на 1440, 309:5044 на 390). У макеті
+  розділ зветься «Збережені курси», але серце стоїть і на картках товарів,
+  і вони теж потрапляють сюди — назва з макета вводила б в оману.
 
   Вміст вкладки — та сама «Картка курсу», що стоїть у каталозі, на напрямах
   і в пошуку; свого компонента тут немає й не треба. У макеті чотири картки
@@ -54,9 +57,19 @@ const SavedCoursesPage = async () => {
     (item): item is Course => typeof item === 'object',
   )
 
+  /*
+    Товари теж зберігаються — серце стоїть і на їхніх картках, — але сторінка
+    їх не показувала взагалі: читала лише savedCourses. Людина тиснула серце
+    на браслеті, поверталась у «Збережені» й бачила порожньо.
+  */
+  const savedProducts = (customer.savedProducts ?? []).filter(
+    (item): item is Product => typeof item === 'object',
+  )
+  const empty = saved.length === 0 && savedProducts.length === 0
+
   return (
     <AccountShell t={t} active="saved" nodes={SHELL_NODES} aside={<LogoutButton />}>
-      {saved.length === 0 ? (
+      {empty ? (
         <div className="border border-flax px-6 py-12 text-center">
           <p className="text-sm text-muted">{t.account.savedEmpty}</p>
           <Link href="/courses" className="btn btn-outline mt-6">
@@ -83,6 +96,16 @@ const SavedCoursesPage = async () => {
                 authorized
                 nodes={CARD_NODES[index] ? courseCardNodes(CARD_NODES[index]) : undefined}
               />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {savedProducts.length > 0 && (
+        <div className="mt-8 flex flex-col gap-8 md:mt-6 md:flex-row md:flex-wrap md:gap-6">
+          {savedProducts.map((product) => (
+            <div key={product.id} className="md:w-[calc((100%-72px)/4)]">
+              <ProductCard product={product} saved authorized />
             </div>
           ))}
         </div>

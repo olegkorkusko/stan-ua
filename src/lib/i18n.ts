@@ -408,7 +408,7 @@ const uk: Dictionary = {
     links: {
       allDirections: 'Усі напрями',
       myAccess: 'Мої доступи',
-      savedCourses: 'Збережені курси',
+      savedCourses: 'Збережені',
       faq: 'Часті питання',
       howAccess: 'Як я отримаю доступ',
       allProducts: 'Усі товари',
@@ -566,7 +566,7 @@ const uk: Dictionary = {
     label: 'Кабінет',
     guestTitle: 'Ваші курси й обране',
     title: 'Кабінет',
-    tabs: { access: 'Мої доступи', saved: 'Збережені курси', delivery: 'Дані для доставки' },
+    tabs: { access: 'Мої доступи', saved: 'Збережені', delivery: 'Дані для доставки' },
     accessEmpty: 'Тут зʼявляться курси, які ви купите.',
     // З малої: у макеті це середина рядка «12 МК · доступ назавжди».
     accessForever: 'доступ назавжди',
@@ -904,7 +904,7 @@ const en: Dictionary = {
     links: {
       allDirections: 'All directions',
       myAccess: 'My access',
-      savedCourses: 'Saved courses',
+      savedCourses: 'Saved',
       faq: 'FAQ',
       howAccess: 'How access works',
       allProducts: 'All products',
@@ -1062,7 +1062,7 @@ const en: Dictionary = {
     label: 'Account',
     guestTitle: 'Your courses and saved items',
     title: 'Account',
-    tabs: { access: 'My access', saved: 'Saved courses', delivery: 'Delivery details' },
+    tabs: { access: 'My access', saved: 'Saved', delivery: 'Delivery details' },
     accessEmpty: 'Courses you buy will appear here.',
     accessForever: 'lifetime access',
     openTelegram: 'Open in Telegram',
