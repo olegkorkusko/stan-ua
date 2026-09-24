@@ -257,6 +257,9 @@ type Dictionary = {
     promo: string
     promoPlaceholder: string
     toPay: string
+    /** Накладений платіж: скільки списується зараз і скільки при отриманні. */
+    payNow: string
+    onDelivery: string
     submit: string
     submitting: string
     terms: string
@@ -551,6 +554,8 @@ const uk: Dictionary = {
     promo: 'Промокод',
     promoPlaceholder: 'Якщо є',
     toPay: 'До сплати',
+    payNow: 'Сплатити зараз',
+    onDelivery: 'При отриманні',
     submit: 'Перейти до оплати',
     submitting: 'Готуємо оплату…',
     terms: 'Натискаючи кнопку, ви приймаєте умови',
@@ -1045,6 +1050,8 @@ const en: Dictionary = {
     promo: 'Promo code',
     promoPlaceholder: 'If you have one',
     toPay: 'Total',
+    payNow: 'Pay now',
+    onDelivery: 'On delivery',
     submit: 'Go to payment',
     submitting: 'Preparing payment…',
     terms: 'By continuing you accept the',

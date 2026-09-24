@@ -9,7 +9,7 @@ import {
   priceCart,
   type CartLineInput,
 } from '@/lib/orders'
-import { asDeliveryMethod } from '@/lib/delivery'
+import { asDeliveryMethod, prepaymentFor } from '@/lib/delivery'
 import { buildPurchaseForm, isConfigured } from '@/lib/wayforpay'
 
 type Body = {
@@ -82,14 +82,10 @@ export const POST = async (request: Request) => {
     const codAllowed = hasPhysical && !lines.some((line) => line.kind === 'course')
     const isCod = body.paymentMethod === 'cod' && codAllowed
 
-    // Передплата — або фіксована сума, або відсоток від замовлення: як саме,
-    // вирішується в налаштуваннях, без правок у коді.
-    const prepaymentValue = settings?.prepaymentAmount ?? 200
-    const rawPrepaid =
-      settings?.prepaymentType === 'percent'
-        ? Math.round((total * Math.min(Math.max(prepaymentValue, 0), 100)) / 100)
-        : prepaymentValue
-    const prepaid = isCod ? Math.min(Math.max(rawPrepaid, 0), total) : 0
+    // Формула одна на сервер і на форму — див. prepaymentFor у lib/delivery.
+    const prepaid = isCod
+      ? prepaymentFor(total, settings?.prepaymentType, settings?.prepaymentAmount)
+      : 0
     const payNow = isCod ? prepaid : total
 
     const orderNumber = makeOrderNumber()

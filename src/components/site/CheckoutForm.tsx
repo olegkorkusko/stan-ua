@@ -4,6 +4,7 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { useEffect, useRef, useState } from 'react'
 
 import { track } from '@/components/site/Analytics'
+import { prepaymentFor } from '@/lib/delivery'
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 import { useLocale } from '@/components/site/LocaleLink'
@@ -80,7 +81,14 @@ export type CheckoutProfile = {
   paymentMethod: 'card' | 'cod' | null
 }
 
-export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) => {
+export const CheckoutForm = ({
+  profile,
+  prepayment,
+}: {
+  profile?: CheckoutProfile | null
+  /** Налаштування передплати за накладений платіж із «Налаштувань сайту». */
+  prepayment?: { type: string | null; amount: number | null }
+}) => {
   const { items, total, clear } = useCart()
   const t = dictionary(useLocale()).checkout
   const formRef = useRef<HTMLFormElement>(null)
@@ -117,6 +125,18 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
   const hasPhysical = items.some((item) => item.kind === 'product')
   const hasCourse = items.some((item) => item.kind === 'course')
   const codAllowed = hasPhysical && !hasCourse
+
+  /*
+    Накладений платіж ділить суму надвоє: частина списується карткою зараз,
+    решта платиться при отриманні. Досі форма показувала тільки повну суму —
+    людина бачила «до сплати 2 240 ₴», хоча онлайн з неї брали 200.
+
+    Формула спільна з сервером (prepaymentFor), інакше показане й списане
+    неминуче розійшлися б.
+  */
+  const isCod = form.paymentMethod === 'cod' && codAllowed
+  const payNow = isCod ? prepaymentFor(total, prepayment?.type, prepayment?.amount) : total
+  const rest = total - payNow
 
   // Укрпошта має власну адресну логіку: місто, вулиця й індекс, без довідника
   // відділень Нової Пошти.
@@ -469,9 +489,17 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
             />
           </div>
 
-          <div className="mt-5 flex items-baseline justify-between border-t border-flax pt-5">
-            <span className="label">{t.toPay}</span>
-            <span className="price text-lg text-brass">{formatPrice(total)}</span>
+          <div className="mt-5 flex flex-col gap-2 border-t border-flax pt-5">
+            <div className="flex items-baseline justify-between">
+              <span className="label">{isCod ? t.payNow : t.toPay}</span>
+              <span className="price text-lg text-brass">{formatPrice(payNow)}</span>
+            </div>
+            {isCod && (
+              <div className="flex items-baseline justify-between text-[13px] leading-[19.5px] text-muted">
+                <span>{t.onDelivery}</span>
+                <span>{formatPrice(rest)}</span>
+              </div>
+            )}
           </div>
 
           {error && <p className="mt-4 border border-brass/40 bg-brass/5 px-3 py-2 text-xs text-ink">{error}</p>}

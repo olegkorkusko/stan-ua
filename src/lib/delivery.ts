@@ -57,3 +57,23 @@ export const asReceiptChannel = (value: unknown): ReceiptChannel | undefined =>
  * кошику бракує 440 ₴.
  */
 export const FREE_DELIVERY_FROM = 2500
+
+/**
+ * Передплата за накладений платіж: або фіксована сума, або відсоток від
+ * замовлення — як задано в «Налаштуваннях сайту».
+ *
+ * Живе тут, а не в маршруті оформлення, бо рахувати це треба двічі: сервер
+ * визначає, скільки списати онлайн, а форма показує покупцеві «зараз стільки,
+ * при отриманні стільки». Дві копії формули неминуче розійшлися б — і людина
+ * бачила б одну суму, а платила іншу.
+ */
+export const prepaymentFor = (
+  total: number,
+  type: string | null | undefined,
+  amount: number | null | undefined,
+): number => {
+  const value = amount ?? 200
+  const raw =
+    type === 'percent' ? Math.round((total * Math.min(Math.max(value, 0), 100)) / 100) : value
+  return Math.min(Math.max(raw, 0), total)
+}

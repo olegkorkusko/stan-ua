@@ -3,6 +3,8 @@ import type { Metadata } from 'next'
 import { CheckoutForm } from '@/components/site/CheckoutForm'
 import { accountCustomer } from '@/lib/account'
 import { asDeliveryMethod, asPaymentMethod } from '@/lib/delivery'
+import { getLocale } from '@/lib/locale'
+import { siteSettings } from '@/lib/settings'
 
 /*
   Дані покупця читаються на сервері, тому сторінка не може бути статичною.
@@ -17,7 +19,7 @@ export const metadata: Metadata = {
 }
 
 const CheckoutPage = async () => {
-  const customer = await accountCustomer()
+  const [customer, settings] = await Promise.all([accountCustomer(), siteSettings(await getLocale())])
 
   return (
     <div className="shell page-y">
@@ -25,6 +27,10 @@ const CheckoutPage = async () => {
       <h1 className="mt-3 text-page">Ще один крок</h1>
       <div className="mt-12">
         <CheckoutForm
+          prepayment={{
+            type: settings?.prepaymentType ?? null,
+            amount: settings?.prepaymentAmount ?? null,
+          }}
           profile={
             customer && {
               name: customer.name ?? '',
