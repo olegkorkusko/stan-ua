@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from 'react'
 
+import { CloseButton } from '@/components/site/CloseButton'
 import { useScrollLock } from '@/lib/useScrollLock'
 
 type Props = {
@@ -68,21 +69,7 @@ export const SideDrawer = ({ open, onClose, title, closeLabel, footer, children 
             <p className="font-display text-[17px] leading-[21.76px] tracking-[-0.005em] text-ink">
               {title}
             </p>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label={closeLabel}
-              className="text-ink transition-opacity hover:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              <svg viewBox="0 0 12 12" className="h-4 w-4" fill="none" aria-hidden="true">
-                <path
-                  d="M1 1L11 11M11 1L1 11"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
+            <CloseButton onClick={onClose} label={closeLabel} />
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>

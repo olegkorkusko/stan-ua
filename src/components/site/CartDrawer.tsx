@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 
+import { CloseButton } from '@/components/site/CloseButton'
 import { LocaleLink as Link, useLocale } from '@/components/site/LocaleLink'
 import { formatPrice } from '@/lib/format'
 import { FREE_DELIVERY_FROM } from '@/lib/delivery'
@@ -201,21 +202,7 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
           і кнопка поїхала б разом із вмістом.
         */}
         <div className="sticky top-0 z-20 flex justify-end bg-paper px-4 pt-4 md:hidden">
-          <button
-            type="button"
-            onClick={close}
-            aria-label={t.close}
-            className="-m-2 p-2 text-ink transition-opacity hover:opacity-60 active:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2"
-          >
-            <svg viewBox="0 0 12 12" className="size-3.5" fill="none" aria-hidden="true">
-              <path
-                d="M1 1L11 11M11 1L1 11"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
+          <CloseButton onClick={close} label={t.close} />
         </div>
 
         <div
@@ -372,28 +359,7 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
         >
           <div data-figma-node="123:2720" className="flex flex-col gap-5.5">
             <div data-figma-node="123:2721" className="hidden justify-end md:flex">
-              <button
-                type="button"
-                onClick={close}
-                aria-label={t.close}
-                data-figma-node="123:2722"
-                className="text-ink transition-opacity hover:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2"
-              >
-                <svg
-                  viewBox="0 0 12 12"
-                  className="size-3"
-                  fill="none"
-                  aria-hidden="true"
-                  data-figma-node="123:2723"
-                >
-                  <path
-                    d="M1 1L11 11M11 1L1 11"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
+              <CloseButton onClick={close} label={t.close} node="123:2722" />
             </div>
 
             <p data-figma-node="123:2724" className="title-sm">
