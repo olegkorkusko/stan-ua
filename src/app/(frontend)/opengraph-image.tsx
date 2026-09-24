@@ -24,7 +24,7 @@ const Image = () =>
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 34, letterSpacing: 14, color: '#16150F' }}>МК</span>
+          <span style={{ fontSize: 30, letterSpacing: 8, color: '#16150F' }}>STAN_UA</span>
           <span style={{ fontSize: 18, letterSpacing: 4, color: '#6E6A62' }}>
             ХЕНДМЕЙД-СТУДІЯ · УКРАЇНА
           </span>

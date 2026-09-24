@@ -31,7 +31,7 @@ const manrope = Manrope({
   display: 'swap',
 })
 
-const DEFAULT_TITLE = 'МК — прикраси ручної роботи та майстер-класи'
+const DEFAULT_TITLE = 'STAN_UA — прикраси ручної роботи та майстер-класи'
 const DEFAULT_DESCRIPTION =
   'Вʼязання, бісероплетіння, макраме: курси з доступом назавжди і прикраси ручної роботи. Доставка Новою Поштою по Україні.'
 
@@ -42,7 +42,7 @@ const DEFAULT_DESCRIPTION =
   так само, як раніше, а не порожньо.
 
   Окремі заголовки конкретних сторінок це не перебиває — вони мають власний
-  блок «SEO» і підставляються через шаблон «%s · МК».
+  блок «SEO» і підставляються через шаблон «%s · STAN_UA».
 */
 export const generateMetadata = async (): Promise<Metadata> => {
   const locale = await getLocale()
@@ -50,12 +50,12 @@ export const generateMetadata = async (): Promise<Metadata> => {
   const image = imageUrl(settings?.seoImage, 'wide')
 
   return {
-    title: { default: settings?.seoTitle || DEFAULT_TITLE, template: '%s · МК' },
+    title: { default: settings?.seoTitle || DEFAULT_TITLE, template: '%s · STAN_UA' },
     description: settings?.seoDescription || DEFAULT_DESCRIPTION,
     openGraph: {
       type: 'website',
       locale: locale === 'en' ? 'en_US' : 'uk_UA',
-      siteName: 'МК',
+      siteName: 'STAN_UA',
       ...(image ? { images: [image] } : {}),
     },
     // Галочка знята — сайт закритий від пошуку, поки його наповнюють.

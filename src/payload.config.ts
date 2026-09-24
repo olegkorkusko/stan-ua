@@ -33,7 +33,7 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     meta: {
-      titleSuffix: ' · MK',
+      titleSuffix: ' · STAN_UA',
     },
     components: {
       // Змінив компонент — одразу `npm run generate:importmap`, інакше
@@ -98,7 +98,7 @@ export default buildConfig({
     ? {
         email: resendAdapter({
           defaultFromAddress: process.env.EMAIL_FROM || 'noreply@mk.ua',
-          defaultFromName: 'МК',
+          defaultFromName: 'STAN_UA',
           apiKey: process.env.RESEND_API_KEY,
         }),
       }

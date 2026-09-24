@@ -67,7 +67,7 @@ export const courseSchema = ({
   '@type': 'Course',
   name,
   ...(description ? { description } : {}),
-  provider: { '@type': 'Organization', name: 'МК' },
+  provider: { '@type': 'Organization', name: 'STAN_UA' },
   offers: { '@type': 'Offer', price, priceCurrency: 'UAH', url, category: 'Paid' },
   hasCourseInstance: {
     '@type': 'CourseInstance',

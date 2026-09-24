@@ -366,7 +366,7 @@ const uk: Dictionary = {
     search: 'Пошук',
     account: 'Кабінет',
     cart: 'Кошик',
-    home: 'МК — головна',
+    home: 'STAN_UA — головна',
   },
   cart: {
     title: 'Кошик',
