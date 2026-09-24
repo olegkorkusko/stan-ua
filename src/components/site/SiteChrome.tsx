@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 import { CartDrawer } from '@/components/site/CartDrawer'
 import { Footer } from '@/components/site/Footer'
@@ -30,6 +30,47 @@ type Props = {
 export const SiteChrome = ({ locale, settings, children }: Props) => {
   const pathname = usePathname()
   const isPortal = pathname === '/' || pathname === '/en'
+
+  /*
+    Прокрутка на початок при переході.
+
+    Next цього не робить: перша секція сторінок вища за екран, і його перевірка
+    «чи видно верх нового блоку» вважає, що прокручувати нема потреби. Тому,
+    перейшовши з середини каталогу в журнал, людина потрапляла не на початок
+    сторінки, а кудись у її середину — над заголовком.
+
+    Кнопка «назад» цього не зачіпає: там браузер повертає ту позицію, з якої
+    пішли, і затирати її було б гірше за початкову ваду.
+  */
+  const wentBack = useRef(false)
+
+  useEffect(() => {
+    const onPop = () => {
+      wentBack.current = true
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
+  useEffect(() => {
+    if (wentBack.current) {
+      wentBack.current = false
+      return
+    }
+    /*
+      `instant` обовʼязково. У html стоїть scroll-behavior: smooth — воно
+      потрібне якорям усередині сторінки, але при переході перетворює стрибок
+      на початок у повільний автоскрол через увесь документ. Саме його й видно
+      як «сторінка сама кудись їде».
+
+      Наступним кадром, а не одразу: Next теж чіпає прокрутку при переході, і
+      з одного тіку ефекту наша команда губилась під його власною.
+    */
+    const frame = requestAnimationFrame(() =>
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' }),
+    )
+    return () => cancelAnimationFrame(frame)
+  }, [pathname])
 
   /*
     key зі шляху — щоб проявлення повторювалось на кожному переході, а не лише

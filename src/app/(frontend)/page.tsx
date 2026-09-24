@@ -180,7 +180,10 @@ const PortalBranch = ({
           data-portal-cta=""
           className={`${buttonSize} inline-flex items-center justify-center rounded-[2px] px-8 py-[15px] text-ink transition-[background-color,transform] duration-300 ${buttonBg} hover:bg-white/70 active:translate-y-px motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/70`}
         >
-          <span className="text-[15px] font-semibold leading-[18px] tracking-normal">{label}</span>
+          {/* 10 px на 390 → 15 px на 1220. Формула проєкту: нахил (15−10)/830. */}
+          <span className="text-[clamp(0.625rem,0.4782rem+0.6024vw,0.9375rem)] font-semibold leading-[1.2] tracking-normal">
+            {label}
+          </span>
         </Link>
       </div>
     </div>

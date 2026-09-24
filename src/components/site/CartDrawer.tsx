@@ -260,7 +260,7 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
 
                     <div
                       data-figma-node={node?.body}
-                      className="flex min-w-0 flex-1 flex-col gap-1.75 md:flex-row md:items-center md:justify-between"
+                      className="flex min-w-0 flex-1 flex-row items-center justify-between gap-4"
                     >
                       <div data-figma-node={node?.text} className="flex flex-col gap-1.75">
                         <Link
@@ -289,7 +289,7 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
 
                       <div
                         data-figma-node={node?.actions}
-                        className="flex items-center gap-4 pt-1 md:flex-col md:justify-between md:gap-4 md:self-stretch"
+                        className="flex shrink-0 flex-col justify-between gap-4 self-stretch"
                       >
                         <div
                           data-figma-node={node?.quantity}
