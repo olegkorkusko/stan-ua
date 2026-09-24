@@ -64,22 +64,30 @@ const Choice = <T extends string>({
   labels: Record<T, string>
   blank: string
 }) => (
-  <Select
-    value={value ?? NONE}
-    onValueChange={(next) => onChange(next === NONE ? null : (next as T))}
-  >
-    <SelectTrigger aria-label={label}>
-      <SelectValue placeholder={blank} />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value={NONE}>{blank}</SelectItem>
-      {options.map((option) => (
-        <SelectItem key={option.value} value={option.value}>
-          {labels[option.value]}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
+  /*
+    Підпис видимий, а не лише в aria-label. У блоці «Оплата» два списки
+    поспіль, і без підписів другий читався як частина першого: людина бачила
+    «Карткою онлайн» і «На пошту» й не розуміла, що «на пошту» — це про чек.
+  */
+  <label className="flex flex-col gap-1.5">
+    <span className="text-[13px] leading-[19.5px] text-muted">{label}</span>
+    <Select
+      value={value ?? NONE}
+      onValueChange={(next) => onChange(next === NONE ? null : (next as T))}
+    >
+      <SelectTrigger aria-label={label}>
+        <SelectValue placeholder={blank} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={NONE}>{blank}</SelectItem>
+        {options.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {labels[option.value]}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </label>
 )
 
 export type DeliveryProfileValues = {
@@ -306,7 +314,7 @@ export const DeliveryProfile = ({
 
           <Fieldset title={t.payment}>
             <Choice
-              label={t.payment}
+              label={t.paymentMethodLabel}
               value={form.paymentMethod}
               onChange={set('paymentMethod')}
               options={paymentMethodOptions}
@@ -314,7 +322,7 @@ export const DeliveryProfile = ({
               blank={t.blank}
             />
             <Choice
-              label={t.receipt}
+              label={t.receiptToLabel}
               value={form.receiptChannel}
               onChange={set('receiptChannel')}
               options={receiptChannelOptions}

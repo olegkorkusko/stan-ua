@@ -292,6 +292,9 @@ type Dictionary = {
       payment: string
       card: string
       receipt: string
+      /** Підписи над списками в блоці «Оплата» — короткого «Спосіб» там замало. */
+      paymentMethodLabel: string
+      receiptToLabel: string
       /** Прочерк замість значення, якого ще немає. */
       blank: string
       edit: string
@@ -582,6 +585,8 @@ const uk: Dictionary = {
       payment: 'Оплата',
       card: 'Картка',
       receipt: 'Чек',
+      paymentMethodLabel: 'Спосіб оплати',
+      receiptToLabel: 'Куди надсилати чек',
       blank: '—',
       edit: 'Змінити',
       save: 'Зберегти',
@@ -1073,6 +1078,8 @@ const en: Dictionary = {
       payment: 'Payment',
       card: 'Card',
       receipt: 'Receipt',
+      paymentMethodLabel: 'Payment method',
+      receiptToLabel: 'Where to send the receipt',
       blank: '—',
       edit: 'Edit',
       save: 'Save',
