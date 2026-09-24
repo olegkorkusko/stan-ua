@@ -66,25 +66,50 @@ const useSuggestions = (type: 'city' | 'branch', query: string, cityRef?: string
   return { items, manual }
 }
 
-export const CheckoutForm = () => {
+/**
+ * Те, що покупець уже вказував у кабінеті. Підставляється у форму, щоб не
+ * вбивати одне й те саме вдруге.
+ */
+export type CheckoutProfile = {
+  name: string
+  phone: string
+  email: string
+  deliveryMethod: string | null
+  deliveryCity: string
+  deliveryBranch: string
+  paymentMethod: 'card' | 'cod' | null
+}
+
+export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) => {
   const { items, total, clear } = useCart()
   const t = dictionary(useLocale()).checkout
   const formRef = useRef<HTMLFormElement>(null)
 
   const [form, setForm] = useState({
-    customerName: '',
-    customerPhone: '',
-    customerEmail: '',
+    customerName: profile?.name ?? '',
+    customerPhone: profile?.phone ?? '',
+    customerEmail: profile?.email ?? '',
     comment: '',
     promoCode: '',
-    deliveryMethod: 'np_branch',
-    paymentMethod: 'card' as 'card' | 'cod',
+    deliveryMethod: profile?.deliveryMethod || 'np_branch',
+    paymentMethod: (profile?.paymentMethod ?? 'card') as 'card' | 'cod',
     newsletter: false,
   })
   const [city, setCity] = useState({ label: '', ref: '' })
   const [branch, setBranch] = useState('')
-  const [cityQuery, setCityQuery] = useState('')
-  const [branchQuery, setBranchQuery] = useState('')
+  /*
+    Місто й відділення підставляємо текстом: у кабінеті збережена лише назва,
+    без довідникового коду Нової Пошти. Для відправки цього досить — на сервер
+    іде `city.label || cityQuery`.
+  */
+  const [cityQuery, setCityQuery] = useState(profile?.deliveryCity ?? '')
+  const [branchQuery, setBranchQuery] = useState(profile?.deliveryBranch ?? '')
+  /*
+    Підказки міст показуємо лише після того, як людина сама почала друкувати.
+    Інакше підставлене з кабінету місто одразу розкривало б список — форма
+    зустрічала б покупця відкритим випадайкою ні з того ні з сього.
+  */
+  const [cityTouched, setCityTouched] = useState(false)
   const [postcode, setPostcode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -272,12 +297,13 @@ export const CheckoutForm = () => {
                   placeholder={t.city}
                   value={cityQuery}
                   onChange={(e) => {
+                    setCityTouched(true)
                     setCityQuery(e.target.value)
                     setCity({ label: '', ref: '' })
                     setBranch('')
                   }}
                 />
-                {cities.items.length > 0 && !city.ref && (
+                {cityTouched && cities.items.length > 0 && !city.ref && (
                   <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto border border-flax bg-paper shadow-sm">
                     {cities.items.map((item) => (
                       <li key={item.ref}>
