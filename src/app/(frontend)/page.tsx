@@ -62,7 +62,11 @@ const HomePage = async () => {
         buttonTestId="portal-learn"
       />
 
-      <div data-figma-node="172:4240" className="bg-white" aria-hidden="true" />
+      <div
+        data-figma-node="172:4240"
+        aria-hidden="true"
+        className="draw-line origin-center bg-white"
+      />
 
       <PortalBranch
         href="/shop"
@@ -86,7 +90,8 @@ const HomePage = async () => {
       >
         <div
           data-figma-node="80:1383"
-          className="relative flex items-center justify-center rounded-[2px] bg-white px-[19px] py-[16px] md:rounded-[3px] md:px-[26px] md:py-[21px]"
+          style={{ animationDelay: '350ms' }}
+          className="plate-open relative flex origin-center items-center justify-center rounded-[2px] bg-white px-[19px] py-[16px] md:rounded-[3px] md:px-[26px] md:py-[21px]"
         >
           <Image
             data-figma-node="80:1384"
@@ -96,7 +101,8 @@ const HomePage = async () => {
             height={63}
             priority
             unoptimized
-            className="h-auto w-[162px] md:w-[222px]"
+            style={{ animationDelay: '750ms' }}
+            className="portal-in h-auto w-[162px] md:w-[222px]"
           />
         </div>
       </Link>
@@ -181,7 +187,12 @@ const PortalBranch = ({
         висоти. На живому екрані він їде: на низькому ноутбуці кнопка
         притискається догори, на високому моніторі провисає.
       */}
-      <div className={`absolute top-1/2 -translate-y-1/2 ${buttonPlacement}`}>
+      {/* Затримка стилем, не класом: у .portal-in короткий запис animation,
+          і він обнуляє будь-який animation-delay, заданий утилітою. */}
+      <div
+        style={{ animationDelay: '650ms' }}
+        className={`portal-in absolute top-1/2 -translate-y-1/2 ${buttonPlacement}`}
+      >
         <Link
           href={href}
           data-figma-node={buttonNodeId}
