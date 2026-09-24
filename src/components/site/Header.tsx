@@ -1,10 +1,11 @@
 'use client'
 
-import { Menu, Search, ShoppingBag, User, X } from 'lucide-react'
+import { Menu, Search, ShoppingBag, User } from 'lucide-react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
+import { CloseButton } from '@/components/site/CloseButton'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { plural } from '@/lib/format'
 import { dictionary, LOCALES, localePath, type Locale } from '@/lib/i18n'
@@ -293,31 +294,16 @@ export const Header = ({ locale, announcement }: Props) => {
           data-figma-node="302:4425"
           className="flex h-[60px] shrink-0 items-center justify-between px-4"
         >
-          {/* -m/p: сам хрестик 20×20, як намальовано, а зона натискання 40 —
-              у 20 px пальцем не влучити (WCAG 2.5.8 просить від 24). */}
-          <button
-            type="button"
+          {/*
+            Вузол макета — на коробці 20×20, а не на кнопці: у макеті це саме
+            іконка, а зона натискання навколо неї там не намальована.
+          */}
+          <CloseButton
             ref={closeRef}
             onClick={closeMenu}
-            aria-label={t.header.closeMenu}
-            className="-m-3.5 p-3.5 transition-opacity hover:opacity-60 active:opacity-40"
-          >
-            {/*
-              Вузол макета — на коробці 20×20, а не на кнопці: у макеті це
-              саме іконка, а 48 px навколо неї — зона натискання, якої там
-              не намальовано.
-
-              strokeWidth 1.2 при size-7: у lucide хрестик займає 12 із 24
-              одиниць коробки, тож на 28 px він виходить 14×14 з обведенням
-              1.4 — рівно як у макеті (302:4427).
-            */}
-            <span
-              data-figma-node="302:4426"
-              className="flex size-5 items-center justify-center"
-            >
-              <X strokeWidth={1.2} className="size-7" />
-            </span>
-          </button>
+            label={t.header.closeMenu}
+            node="302:4426"
+          />
 
           <span data-figma-node="302:4428">{logo}</span>
 
