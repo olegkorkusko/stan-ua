@@ -172,7 +172,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         i.key === item.key ? { ...i, quantity: Math.min(i.quantity + quantity, limit) } : i,
       )
     })
-    setIsOpen(true)
+    /*
+      Шухляда тут НЕ відкривається. «Купити» означає «поклади в кошик», а не
+      «покажи кошик»: людина вибирає далі, а панель перекривала каталог і її
+      щоразу треба було закривати. Що товар додався, видно з лічильника в
+      шапці — там же єдина кнопка, яка кошик відкриває.
+    */
   }, [])
 
   const remove: CartContext['remove'] = useCallback((key) => {
