@@ -190,9 +190,37 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
+        {/*
+          Закриття на мобільному. У макеті хрестик один — у «Підсумку», тобто
+          аж унизу: щоб закрити кошик із трьома позиціями, треба було
+          прокрутити його до кінця. На десктопі це не помітно, бо колонки
+          стоять поруч, а на телефоні вони йдуть одна під одною.
+
+          sticky, а не fixed: шухляда має власне перетворення (translate), а
+          всередині такого елемента fixed рахується від нього, не від екрана,
+          і кнопка поїхала б разом із вмістом.
+        */}
+        <div className="sticky top-0 z-20 flex justify-end bg-paper px-4 pt-4 md:hidden">
+          <button
+            type="button"
+            onClick={close}
+            aria-label={t.close}
+            className="-m-2 p-2 text-ink transition-opacity hover:opacity-60 active:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2"
+          >
+            <svg viewBox="0 0 12 12" className="size-3.5" fill="none" aria-hidden="true">
+              <path
+                d="M1 1L11 11M11 1L1 11"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+
         <div
           data-figma-node="122:2719"
-          className="flex flex-col gap-6.5 px-4 py-8 md:w-3/5 md:overflow-y-auto md:p-8"
+          className="flex flex-col gap-6.5 px-4 pb-8 pt-4 md:w-3/5 md:overflow-y-auto md:p-8"
         >
           {/*
             Рядка «КОШИК / ЗБЕРЕЖЕНІ» тут немає свідомо: у «Шухляді кошика»
@@ -343,7 +371,7 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
           className="flex flex-col justify-between gap-6 bg-paper-deep px-4 py-7 md:w-2/5 md:overflow-y-auto md:p-7"
         >
           <div data-figma-node="123:2720" className="flex flex-col gap-5.5">
-            <div data-figma-node="123:2721" className="flex justify-end">
+            <div data-figma-node="123:2721" className="hidden justify-end md:flex">
               <button
                 type="button"
                 onClick={close}
