@@ -127,8 +127,17 @@ const PortalBranch = ({
 }: BranchProps) => {
   // Прозорість кнопки у Figma різна: 36% для «Готові вироби», 26% для «Навчання».
   const buttonBg = variant === 'shop' ? 'bg-white/[.36]' : 'bg-white/[.26]'
-  // Розмір кнопки у Figma фіксований — 209×48 для «Готові вироби», 162×48 для «Навчання».
-  const buttonSize = variant === 'shop' ? 'w-[209px]' : 'w-[162px]'
+  /*
+    У макеті кнопки різного розміру — 209×48 і 162×48, — і обидві жорсткі.
+    На телефоні це виглядало як помилка: напис змаленшав, а кнопка лишилась
+    така сама, ще й сусідня інша завширшки.
+
+    Тепер однакові й тягнуться разом з екраном: 150×36 на 390 → 209×48 на
+    1220. Ширину беремо від більшої з двох — у «ГОТОВІ ВИРОБИ» найдовший
+    напис, і він має поміститись.
+  */
+  const buttonSize =
+    'w-[clamp(9.375rem,7.6423rem+7.1084vw,13.0625rem)] h-[clamp(2.25rem,1.8976rem+1.4458vw,3rem)]'
   // Кнопка «Навчання» у desktop-фреймі зсунута лівіше центру (250/719 = 34.77%),
   // «Готові вироби» — центрована. На mobile обидві по центру.
   const buttonPlacement =
@@ -178,7 +187,7 @@ const PortalBranch = ({
           data-figma-node={buttonNodeId}
           data-testid={buttonTestId}
           data-portal-cta=""
-          className={`${buttonSize} inline-flex items-center justify-center rounded-[2px] px-8 py-[15px] text-ink transition-[background-color,transform] duration-300 ${buttonBg} hover:bg-white/70 active:translate-y-px motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/70`}
+          className={`${buttonSize} inline-flex items-center justify-center rounded-[2px] text-ink transition-[background-color,transform] duration-300 ${buttonBg} hover:bg-white/70 active:translate-y-px motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/70`}
         >
           {/* 10 px на 390 → 15 px на 1220. Формула проєкту: нахил (15−10)/830. */}
           <span className="text-[clamp(0.625rem,0.4782rem+0.6024vw,0.9375rem)] font-semibold leading-[1.2] tracking-normal">
