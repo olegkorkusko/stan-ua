@@ -125,9 +125,21 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
   */
   const hasPhysical = items.some((item) => item.kind === 'product')
 
+  /*
+    До порогу рахуються ЛИШЕ товари, не весь кошик.
+
+    Курс доставляти не треба — він приходить у Telegram. Якщо додати його до
+    суми, людина з курсом за 980 ₴ і браслетом за 350 ₴ побачила б «доставка
+    безкоштовна», а насправді товарів у неї на 350 ₴. Обіцянка не збулась би
+    на оформленні.
+  */
+  const goodsTotal = items
+    .filter((item) => item.kind === 'product')
+    .reduce((sum, item) => sum + item.price * item.quantity, 0)
+
   const threshold = freeDeliveryFrom ?? FREE_DELIVERY_FROM
-  const left = Math.max(0, threshold - total)
-  const progress = Math.min(1, threshold > 0 ? total / threshold : 1)
+  const left = Math.max(0, threshold - goodsTotal)
+  const progress = Math.min(1, threshold > 0 ? goodsTotal / threshold : 1)
 
   /*
     Підпис позиції: у курсу — як приходить доступ, у товару — колір і розмір
