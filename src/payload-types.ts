@@ -1579,9 +1579,13 @@ export interface Setting {
    */
   email?: string | null;
   /**
-   * Куди писати про нові замовлення. Порожньо — на публічну. Тут доречна робоча адреса, яку читають щодня.
+   * Куди писати про нові замовлення. Порожньо — сповіщення йдуть лише в Telegram. Тут доречна робоча адреса, яку читають щодня.
    */
   orderNotifyEmail?: string | null;
+  /**
+   * Типово сповіщення приходить лише про оплачені. З галочкою — і про ті, де людина дійшла до оплати й не заплатила: інколи це просто не пройшла картка, і дзвінок повертає покупця. Але таких замовлень завжди більше, ніж оплачених.
+   */
+  notifyPendingOrders?: boolean | null;
   instagram?: string | null;
   telegram?: string | null;
   /**
@@ -1757,6 +1761,7 @@ export interface SettingsSelect<T extends boolean = true> {
   phone?: T;
   email?: T;
   orderNotifyEmail?: T;
+  notifyPendingOrders?: T;
   instagram?: T;
   telegram?: T;
   freeDeliveryFrom?: T;

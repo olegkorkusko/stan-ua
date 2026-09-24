@@ -136,17 +136,21 @@ export const POST = async (request: Request) => {
 
     const base = process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000'
 
-    if (!isConfigured()) {
-      /*
-        Без ключів WayForPay замовлення все одно створюється, але оплатити
-        його на сайті неможливо — рахунок виставляють вручну.
+    /*
+      Сповіщення до оплати.
 
-        Тому тут єдине місце, де власницю треба сповістити ДО оплати: інакше
-        покупець чекає на реквізити, а про нього ніхто не знає. У звичайному
-        режимі сповіщення йде після підтвердженого платежу (fulfillOrder), і
-        дублювати його на кожне натискання «оплатити» не можна — половина
-        таких замовлень так і лишається кинутими.
-      */
+      Обовʼязкове, коли ключів WayForPay немає: оплатити на сайті неможливо,
+      рахунок виставляють вручну, і без сигналу покупець просто чекає, а про
+      нього ніхто не знає.
+
+      Коли оплата працює — за бажанням, галочкою в налаштуваннях. Типово
+      вимкнено: замовлення створюється ДО переходу на оплату, тож інакше
+      власниця отримувала б сигнал про кожного, хто відкрив форму й закрив
+      вкладку, а таких завжди більшість.
+    */
+    const unpaidNotice = !isConfigured() || settings?.notifyPendingOrders === true
+
+    if (unpaidNotice) {
       const summary = lines
         .map((line) => `• ${line.title}${line.quantity > 1 ? ` × ${line.quantity}` : ''}`)
         .join('\n')
@@ -160,7 +164,10 @@ export const POST = async (request: Request) => {
         `${body.customerName.trim()}, ${body.customerPhone.trim()}`,
         body.customerEmail.trim(),
         '',
-        'Оплата на сайті не підключена — виставте рахунок вручну.',
+        // Порада залежить від того, чому замовлення неоплачене.
+        isConfigured()
+          ? 'Покупець дійшов до оплати й не заплатив. Можливо, не пройшла картка.'
+          : 'Оплата на сайті не підключена — виставте рахунок вручну.',
       ].join('\n')
 
       await notifyAdmin(text.replace(orderNumber, `<b>${orderNumber}</b>`)).catch(() => {})
@@ -177,7 +184,11 @@ export const POST = async (request: Request) => {
           .sendEmail({ to: notifyTo, subject: `Замовлення ${orderNumber} очікує оплати`, text })
           .catch((error: unknown) => payload.logger.error({ err: error }, 'Лист про замовлення не пішов'))
       }
+    }
 
+    if (!isConfigured()) {
+      // Без ключів платіжної форми немає — ведемо на сторінку подяки з
+      // поясненням, що реквізити надішлють окремо.
       return NextResponse.json({
         orderNumber,
         redirect: `/checkout/thanks?order=${orderNumber}&pending=1`,
