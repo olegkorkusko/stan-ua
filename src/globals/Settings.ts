@@ -31,7 +31,21 @@ export const Settings: GlobalConfig = {
           label: 'Контакти',
           fields: [
             { name: 'phone', type: 'text', label: 'Телефон' },
-            { name: 'email', type: 'email', label: 'Пошта' },
+            {
+              name: 'email',
+              type: 'email',
+              label: 'Пошта для покупців',
+              admin: { description: 'Публічна — показується в підвалі сайту.' },
+            },
+            {
+              name: 'orderNotifyEmail',
+              type: 'email',
+              label: 'Пошта для сповіщень про замовлення',
+              admin: {
+                description:
+                  'Куди писати про нові замовлення. Порожньо — на публічну. Тут доречна робоча адреса, яку читають щодня.',
+              },
+            },
             { name: 'instagram', type: 'text', label: 'Instagram' },
             { name: 'telegram', type: 'text', label: 'Telegram' },
           ],

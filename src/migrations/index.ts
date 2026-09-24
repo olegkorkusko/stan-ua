@@ -4,6 +4,7 @@ import * as migration_20260922_100314_seo_settings from './20260922_100314_seo_s
 import * as migration_20260922_103230_home_page from './20260922_103230_home_page';
 import * as migration_20260922_112235_newsletter_tracking from './20260922_112235_newsletter_tracking';
 import * as migration_20260922_112953_suggest_in_cart from './20260922_112953_suggest_in_cart';
+import * as migration_20260924_161746_order_notify_email from './20260924_161746_order_notify_email';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20260922_112953_suggest_in_cart.up,
     down: migration_20260922_112953_suggest_in_cart.down,
-    name: '20260922_112953_suggest_in_cart'
+    name: '20260922_112953_suggest_in_cart',
+  },
+  {
+    up: migration_20260924_161746_order_notify_email.up,
+    down: migration_20260924_161746_order_notify_email.down,
+    name: '20260924_161746_order_notify_email'
   },
 ];

@@ -1574,7 +1574,14 @@ export interface Setting {
    */
   announcement?: string | null;
   phone?: string | null;
+  /**
+   * Публічна — показується в підвалі сайту.
+   */
   email?: string | null;
+  /**
+   * Куди писати про нові замовлення. Порожньо — на публічну. Тут доречна робоча адреса, яку читають щодня.
+   */
+  orderNotifyEmail?: string | null;
   instagram?: string | null;
   telegram?: string | null;
   /**
@@ -1749,6 +1756,7 @@ export interface SettingsSelect<T extends boolean = true> {
   announcement?: T;
   phone?: T;
   email?: T;
+  orderNotifyEmail?: T;
   instagram?: T;
   telegram?: T;
   freeDeliveryFrom?: T;

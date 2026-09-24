@@ -428,6 +428,34 @@ export const fulfillOrder = async (
     `<b>Оплачено ${order.orderNumber}</b>\n${summary}\n\n${formatPrice(order.total)}\n${order.customerName}, ${order.customerPhone}${alarm}`,
   )
 
+  /*
+    Те саме на пошту. Telegram бачать не всі й не завжди: у власниці може
+    бути вимкнений звук, а замовлення треба зібрати сьогодні. Адреса та сама,
+    що й для неоплачених — одне місце, куди приходить усе про продажі.
+  */
+  const settings = await payload.findGlobal({ slug: 'settings', depth: 0 }).catch(() => null)
+  const notifyTo = settings?.orderNotifyEmail || settings?.email
+  if (notifyTo) {
+    await payload
+      .sendEmail({
+        to: notifyTo,
+        subject: `Оплачено ${order.orderNumber} — ${formatPrice(order.total)}`,
+        text: [
+          `Замовлення ${order.orderNumber} оплачено.`,
+          '',
+          summary,
+          '',
+          `${formatPrice(order.total)}`,
+          `${order.customerName}, ${order.customerPhone}`,
+          order.customerEmail,
+          undelivered.length ? `\nУВАГА: доступ не видано — ${undelivered.join(', ')}` : '',
+        ]
+          .filter(Boolean)
+          .join('\n'),
+      })
+      .catch((error: unknown) => payload.logger.error({ err: error }, 'Лист власниці не пішов'))
+  }
+
   await payload
     .sendEmail({
       to: order.customerEmail,
