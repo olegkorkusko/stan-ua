@@ -53,18 +53,31 @@ export const AuthForm = () => {
 
     try {
       if (mode === 'link') {
-        const response = await fetch('/api/customers/forgot-password', {
+        const address = email.trim().toLowerCase()
+        const response = await fetch('/api/account/login-link', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email.trim().toLowerCase() }),
+          body: JSON.stringify({ email: address }),
         })
-        // Відповідь однакова незалежно від того, чи є така пошта в базі:
-        // інакше форму можна використати для перевірки чужих адрес.
-        setMessage(
-          response.ok
-            ? 'Якщо ця пошта в нас є, посилання для входу вже летить до вас.'
-            : 'Не вдалось надіслати листа. Спробуйте ще раз.',
-        )
+
+        if (!response.ok) {
+          setError('Не вдалось надіслати листа. Спробуйте ще раз.')
+          return
+        }
+
+        /*
+          Кажемо прямо, чи є така пошта. Нейтральне «якщо пошта в нас є…»
+          рятувало від перевірки чужих адрес, але лишало людину з типом в
+          адресі чекати листа, який ніхто не надсилав — і зрозуміти це з
+          екрана було неможливо. Перевірити адресу однаково можна через
+          реєстрацію: вона відповідає «ця пошта вже зареєстрована».
+        */
+        const { known } = (await response.json()) as { known: boolean }
+        if (known) {
+          setMessage(`Посилання для входу надіслали на ${address}.`)
+        } else {
+          setError('Такої пошти в нас немає. Перевірте адресу або зареєструйтесь.')
+        }
       } else if (mode === 'register') {
         const created = await fetch('/api/account/register', {
           method: 'POST',
