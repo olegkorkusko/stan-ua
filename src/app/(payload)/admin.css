@@ -45,6 +45,18 @@
   filter: invert(1);
 }
 
+/*
+  Payload загортає знак у <span> з фіксованими 18 px і overflow: hidden — під
+  свій квадратний ромб. Напис туди не влазив і обрізався до «ST». Розкриваємо
+  і сам span, і посилання навколо нього.
+*/
+.step-nav__home,
+.step-nav__home > span:has(> .mk-icon) {
+  width: auto;
+  max-width: none;
+  overflow: visible;
+}
+
 /* ── Назва групи ─────────────────────────────────────────────────────── */
 
 .nav-group__toggle {
