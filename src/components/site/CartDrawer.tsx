@@ -225,10 +225,16 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
                   ? t.freeDeliveryLeft.replace('{sum}', formatPrice(left))
                   : t.freeDeliveryReached}
               </p>
+              {/*
+                Смуга кольору ціни, а не чорнила. Чорнило тут збігається з
+                кольором смуги прокрутки (scrollbar-color у globals.css теж
+                --color-ink), і коли прокрутка зʼявлялась, дві темні смуги
+                поруч читались як одна.
+              */}
               <div data-figma-node="122:2725" className="h-0.75 w-full bg-flax">
                 <div
                   data-figma-node="122:2726"
-                  className="h-full bg-ink"
+                  className="h-full bg-brass"
                   style={{ width: `${progress * 100}%` }}
                 />
               </div>

@@ -228,10 +228,13 @@ const ProductPage = async ({ params }: { params: Params }) => {
                   {product.shortDescription}
                 </p>
               )}
-              <p
-                data-figma-node="73:1377"
-                className="font-display text-[17px] font-normal leading-[21.76px] tracking-[-0.005em] text-ink"
-              >
+              {/*
+                Ціна тут така сама, як на сторінці курсу (CourseBuy): 24 px
+                латунню. У макеті вона була 17 px чорнилом, і виходило, що та
+                сама величина на двох сусідніх сторінках виглядає по-різному —
+                на курсі як ціна, на товарі як звичайний рядок тексту.
+              */}
+              <p data-figma-node="73:1377" className="price text-2xl text-brass">
                 {formatPrice(product.priceFrom ?? product.price)}
               </p>
             </div>
