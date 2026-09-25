@@ -3,10 +3,12 @@ import Image from 'next/image'
 
 import { HeroCta } from '@/components/site/HeroCta'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
-import { formatPrice } from '@/lib/format'
+import { formatDay, formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { landingCopy } from '@/lib/landing'
+import { imageAlt, imageUrl } from '@/lib/media'
 import { getLocale } from '@/lib/locale'
+import { payloadClient } from '@/lib/payload'
 import { categoryCards, cardKey } from '@/lib/cards'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
@@ -19,11 +21,6 @@ export const metadata: Metadata = {
 }
 
 const CATEGORY_IMAGES = ['/shop/cat-biseru.jpg', '/shop/cat-knitted.jpg', '/shop/cat-macrame.jpg']
-const JOURNAL_IMAGES = [
-  '/shop/journal-care.jpg',
-  '/shop/journal-materials.png',
-  '/shop/journal-sizes.jpg',
-]
 
 const CARD_NODE_IDS = ['158:3683', '158:3688', '158:3693']
 const CARD_IMAGE_NODE_IDS = ['I158:3683;19:3', 'I158:3688;19:3', 'I158:3693;19:3']
@@ -58,6 +55,24 @@ const ShopPage = async () => {
     Назва, підпис, фото й кількість — з адмінки; словник лишається запасним
     варіантом на порожні поля. Див. lib/cards.ts
   */
+  /*
+    Статті беремо з журналу, а не зі словника.
+
+    Раніше тут лежали три вигадані картки з посиланнями на /journal/choose-cord
+    і подібні — сторінок з такими адресами в базі немає, і всі три вели в 404.
+    Тепер показуємо три найсвіжіші опубліковані статті, а якщо журнал порожній,
+    секції просто немає.
+  */
+  const payload = await payloadClient()
+  const journal = await payload.find({
+    locale,
+    collection: 'posts',
+    where: { status: { equals: 'published' } },
+    sort: '-publishedAt',
+    limit: 3,
+    depth: 1,
+  })
+
   const cards = await categoryCards(locale)
   const cardFor = (href: string) => cards.get(cardKey(href) ?? '')
   const volumeFor = (card?: { count: number; from: number }) =>
@@ -273,62 +288,75 @@ const ShopPage = async () => {
         </div>
       </section>
 
-      {/* Journal — 99:2184. */}
-      <section
-        data-figma-node="99:2184"
-        data-figma-state="shop-journal"
-        className="shell flex flex-col gap-7 bg-paper py-14 md:gap-16 md:py-[120px]"
-      >
-        <div data-figma-node="99:2185" className="flex flex-col gap-3">
-          <SectionLabel data-figma-node="99:2186">{t.journal.label}</SectionLabel>
-          <SectionTitle data-figma-node="99:2187">{t.journal.title}</SectionTitle>
-        </div>
-        <div data-figma-node="99:2188" className="flex flex-col gap-7 md:flex-row md:gap-6">
-          {t.journal.items.map((item, index) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              data-figma-node={JOURNAL_CARD_ROOTS[index]}
-              className="group flex flex-1 flex-col items-center gap-[18px] border border-[#EFE9DF] transition-colors hover:border-[#16150F] active:bg-[#F2EFE9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              <div className="relative aspect-[397/265] w-full overflow-hidden">
-                <Image
-                  data-figma-node={JOURNAL_CARD_IMAGES[index]}
-                  src={JOURNAL_IMAGES[index]}
-                  alt={item.imageAlt}
-                  fill
-                  priority
-                  sizes="(min-width: 768px) 33vw, 100vw"
-                  className="object-cover"
-                />
-              </div>
-              <div
-                data-figma-node={JOURNAL_CARD_BODIES[index]}
-                className="flex w-full flex-col gap-[18px] px-4 pb-4"
-              >
-                <span
-                  data-figma-node={JOURNAL_CARD_EYEBROWS[index]}
-                  className="text-eyebrow uppercase text-muted"
+      {/* Journal — 99:2184. Три найсвіжіші статті з журналу. */}
+      {journal.docs.length > 0 && (
+        <section
+          data-figma-node="99:2184"
+          data-figma-state="shop-journal"
+          className="shell flex flex-col gap-7 bg-paper py-14 md:gap-16 md:py-[120px]"
+        >
+          <div data-figma-node="99:2185" className="flex flex-col gap-3">
+            <SectionLabel data-figma-node="99:2186">{t.journal.label}</SectionLabel>
+            <SectionTitle data-figma-node="99:2187">{t.journal.title}</SectionTitle>
+          </div>
+          <div data-figma-node="99:2188" className="flex flex-col gap-7 md:flex-row md:gap-6">
+            {journal.docs.map((post, index) => {
+              const cover = imageUrl(post.cover, 'card')
+              const day = post.publishedAt
+                ? formatDay(post.publishedAt, dictionary(locale).journal.months)
+                : null
+              const meta = [post.tags?.[0], day].filter(Boolean).join(' · ').toUpperCase()
+
+              return (
+                <Link
+                  key={post.id}
+                  href={`/journal/${post.slug}`}
+                  data-figma-node={JOURNAL_CARD_ROOTS[index]}
+                  className="group flex flex-1 flex-col items-center gap-[18px] border border-[#EFE9DF] transition-colors hover:border-[#16150F] active:bg-[#F2EFE9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
-                  {item.eyebrow}
-                </span>
-                <span
-                  data-figma-node={JOURNAL_CARD_TITLES[index]}
-                  className="font-display text-[17px] font-normal leading-[21.76px] tracking-[-0.005em] text-ink"
-                >
-                  {item.title}
-                </span>
-                <span
-                  data-figma-node={JOURNAL_CARD_BODIES_TEXT[index]}
-                  className="text-[13px] font-normal leading-[19.5px] text-muted"
-                >
-                  {item.body}
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+                  <div className="relative aspect-[397/265] w-full overflow-hidden bg-paper-deep">
+                    {cover && (
+                      <Image
+                        data-figma-node={JOURNAL_CARD_IMAGES[index]}
+                        src={cover}
+                        alt={imageAlt(post.cover, post.title)}
+                        fill
+                        sizes="(min-width: 768px) 33vw, 100vw"
+                        className="object-cover"
+                      />
+                    )}
+                  </div>
+                  <div
+                    data-figma-node={JOURNAL_CARD_BODIES[index]}
+                    className="flex w-full flex-col gap-[18px] px-4 pb-4"
+                  >
+                    <span
+                      data-figma-node={JOURNAL_CARD_EYEBROWS[index]}
+                      className="text-eyebrow uppercase text-muted"
+                    >
+                      {meta}
+                    </span>
+                    <span
+                      data-figma-node={JOURNAL_CARD_TITLES[index]}
+                      className="font-display text-[17px] font-normal leading-[21.76px] tracking-[-0.005em] text-ink"
+                    >
+                      {post.title}
+                    </span>
+                    {post.excerpt && (
+                      <span
+                        data-figma-node={JOURNAL_CARD_BODIES_TEXT[index]}
+                        className="text-[13px] font-normal leading-[19.5px] text-muted"
+                      >
+                        {post.excerpt}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </section>
+      )}
     </div>
   )
 }

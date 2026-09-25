@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import { ArticleCard, type ArticleCardNodes } from '@/components/site/ArticleCard'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
+import { formatDay } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { imageAlt, imageUrl } from '@/lib/media'
@@ -61,20 +62,6 @@ const CARD_NODES: ArticleCardNodes[] = [
 ]
 
 type SearchParams = Promise<{ tag?: string }>
-
-/*
-  Дата в картці — «20 БЕРЕЗНЯ», без року: так у макеті. Регістр робить CSS,
-  а місяць береться зі словника, інакше англійська версія показувала б
-  українські назви.
-
-  Читаємо в UTC, а не в часовому поясі сервера: у Payload дата публікації —
-  поле «лише день», і на сервері західніше за Грінвіч локальні геттери
-  показували б учорашнє число.
-*/
-const formatDay = (value: string, months: string[]) => {
-  const date = new Date(value)
-  return `${date.getUTCDate()} ${months[date.getUTCMonth()]}`
-}
 
 const JournalPage = async ({ searchParams }: { searchParams: SearchParams }) => {
   const params = await searchParams

@@ -150,7 +150,7 @@ type Dictionary = {
     journal: {
       label: string
       title: string
-      items: { eyebrow: string; title: string; body: string; href: string; imageAlt: string }[]
+      /* Картки беруться з колекції «Журнал» — див. shop/page.tsx. */
     }
   }
   coursesLanding: {
@@ -178,7 +178,6 @@ type Dictionary = {
     journal: {
       label: string
       title: string
-      items: { eyebrow: string; title: string; body: string; href: string; imageAlt: string }[]
     }
   }
   product: {
@@ -721,29 +720,6 @@ const uk: Dictionary = {
     journal: {
       label: 'ЖУРНАЛ',
       title: 'Що почитати про ручну роботу',
-      items: [
-        {
-          eyebrow: 'ДОГЛЯД · 12 БЕРЕЗНЯ',
-          title: 'Як доглядати за прикрасами з бісеру',
-          body: 'Щоб нитка не витягувалась, а бісер не тьмянів: прості правила зберігання.',
-          href: '/journal/care-beaded-jewelry',
-          imageAlt: 'Прикраси на льняній тканині',
-        },
-        {
-          eyebrow: 'МАТЕРІАЛИ · 28 ЛЮТОГО',
-          title: 'Який шнур обрати для браслета',
-          body: 'Вощений, поліестер чи бавовна — розбираємо, що тримає вузол найкраще.',
-          href: '/journal/choose-cord',
-          imageAlt: 'Браслет із кольорового шнура',
-        },
-        {
-          eyebrow: 'РОЗМІРИ · 14 ЛЮТОГО',
-          title: 'Як підібрати розмір браслета',
-          body: 'Міряємо запʼясток без сантиметра і не помиляємось із посадкою.',
-          href: '/journal/bracelet-size',
-          imageAlt: 'Кольоровий бісер у розсипі',
-        },
-      ],
     },
   },
   coursesLanding: {
@@ -814,29 +790,6 @@ const uk: Dictionary = {
     journal: {
       label: 'ЖУРНАЛ',
       title: 'Читати перед першим МК',
-      items: [
-        {
-          eyebrow: 'ПОЧАТКІВЦЯМ · 20 БЕРЕЗНЯ',
-          title: 'З чого почати вʼязання гачком',
-          body: 'Три петлі, які закривають половину всіх схем. Без них далі не буде.',
-          href: '/journal/crochet-first-stitches',
-          imageAlt: 'Клубок пряжі та гачок',
-        },
-        {
-          eyebrow: 'ПРАКТИКА · 05 БЕРЕЗНЯ',
-          title: 'Скільки часу займає перший виріб',
-          body: 'Чесно про темп: що встигнете за вечір, а що розтягнеться на тиждень.',
-          href: '/journal/first-project-time',
-          imageAlt: 'Готовий виріб на столі',
-        },
-        {
-          eyebrow: 'ІНСТРУМЕНТИ · 18 ЛЮТОГО',
-          title: 'Який набір інструментів потрібен',
-          body: 'Мінімум, з якого варто стартувати, і що спокійно купується пізніше.',
-          href: '/journal/tools-kit',
-          imageAlt: 'Гачки, ножиці й пряжа',
-        },
-      ],
     },
   },
 }
@@ -1207,29 +1160,6 @@ const en: Dictionary = {
     journal: {
       label: 'JOURNAL',
       title: 'Reading about the craft',
-      items: [
-        {
-          eyebrow: 'CARE · 12 MARCH',
-          title: 'How to care for beaded jewellery',
-          body: 'Keep threads taut and beads bright: simple rules for storing your pieces.',
-          href: '/journal/care-beaded-jewelry',
-          imageAlt: 'Jewellery on linen fabric',
-        },
-        {
-          eyebrow: 'MATERIALS · 28 FEBRUARY',
-          title: 'Choosing the right cord for a bracelet',
-          body: 'Waxed, polyester or cotton — which one holds a knot best.',
-          href: '/journal/choose-cord',
-          imageAlt: 'Bracelet made of colourful cord',
-        },
-        {
-          eyebrow: 'SIZING · 14 FEBRUARY',
-          title: 'How to pick the right bracelet size',
-          body: 'Measure your wrist without a tape and land on the perfect fit.',
-          href: '/journal/bracelet-size',
-          imageAlt: 'Colourful loose beads',
-        },
-      ],
     },
   },
   coursesLanding: {
@@ -1297,29 +1227,6 @@ const en: Dictionary = {
     journal: {
       label: 'JOURNAL',
       title: 'Read before your first class',
-      items: [
-        {
-          eyebrow: 'BEGINNERS · 20 MARCH',
-          title: 'Where to start with crochet',
-          body: 'Three stitches that cover half of every pattern out there. Nothing works without them.',
-          href: '/journal/crochet-first-stitches',
-          imageAlt: 'Yarn ball and crochet hook',
-        },
-        {
-          eyebrow: 'PRACTICE · 05 MARCH',
-          title: 'How long a first project really takes',
-          body: 'Honest pacing: what you can finish in an evening and what stretches over a week.',
-          href: '/journal/first-project-time',
-          imageAlt: 'Finished piece on a table',
-        },
-        {
-          eyebrow: 'TOOLS · 18 FEBRUARY',
-          title: 'The kit you actually need',
-          body: 'The minimum that gets you started, and what to add later without stress.',
-          href: '/journal/tools-kit',
-          imageAlt: 'Hooks, scissors and yarn',
-        },
-      ],
     },
   },
 }
