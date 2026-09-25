@@ -3,9 +3,11 @@ import Image from 'next/image'
 
 import { HeroCta } from '@/components/site/HeroCta'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
+import { formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { landingCopy } from '@/lib/landing'
 import { getLocale } from '@/lib/locale'
+import { productVolumes, volumeKey } from '@/lib/volumes'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
 // Не `force-static`: сторінка читає мову з заголовка запиту — див. lib/locale.ts
@@ -51,6 +53,13 @@ const ShopPage = async () => {
   const locale = await getLocale()
   // Тексти з адмінки поверх текстів із коду — див. lib/landing.ts
   const t = await landingCopy('shop-page', locale, dictionary(locale).shopLanding)
+
+  // Скільки товарів за карткою — з бази, а не рядком у словнику. Див. lib/volumes.ts
+  const volumes = await productVolumes()
+  const volumeFor = (href: string) => {
+    const volume = volumes.get(volumeKey(href) ?? '')
+    return volume ? t.categories.volume(volume.count, formatPrice(volume.from)) : t.categories.soon
+  }
 
   return (
     <div data-figma-node="70:1050" className="bg-paper">
@@ -190,7 +199,7 @@ const ShopPage = async () => {
                   data-figma-node={CARD_VOLUME_NODE_IDS[index]}
                   className="text-[13px] font-normal leading-[19.5px] text-muted"
                 >
-                  {item.volume}
+                  {volumeFor(item.href)}
                 </span>
               </div>
             </Link>

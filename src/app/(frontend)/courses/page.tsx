@@ -3,9 +3,11 @@ import Image from 'next/image'
 
 import { HeroCta } from '@/components/site/HeroCta'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
+import { formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { landingCopy } from '@/lib/landing'
 import { getLocale } from '@/lib/locale'
+import { courseVolumes, productVolumes, volumeKey } from '@/lib/volumes'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
 // Не `force-static`: сторінка читає мову з заголовка запиту — див. lib/locale.ts
@@ -44,6 +46,22 @@ const CoursesPage = async () => {
   const locale = await getLocale()
   // Тексти з адмінки поверх текстів із коду — див. lib/landing.ts
   const t = await landingCopy('courses-page', locale, dictionary(locale).coursesLanding)
+
+  /*
+    Четверта картка веде не в курси, а в набори магазину, тому обсягів треба
+    два набори: по напрямах і по категоріях. Слово теж різне — «курси» проти
+    «товари», — і береться зі словника тієї секції, яка за цю картку відповідає.
+  */
+  const shopCopy = dictionary(locale).shopLanding.categories
+  const [courses, products] = await Promise.all([courseVolumes(), productVolumes()])
+
+  const volumeFor = (href: string) => {
+    const toCourses = href.startsWith('/courses/')
+    const volume = (toCourses ? courses : products).get(volumeKey(href) ?? '')
+    if (!volume) return toCourses ? t.directions.soon : shopCopy.soon
+    const label = toCourses ? t.directions.volume : shopCopy.volume
+    return label(volume.count, formatPrice(volume.from))
+  }
 
   return (
     <div data-figma-node="81:1377" data-figma-state="default" className="flex flex-col bg-paper">
@@ -180,7 +198,7 @@ const CoursesPage = async () => {
                       data-figma-node={inner(index, '19:6')}
                       className="text-[13px] font-normal leading-[19.5px] text-muted"
                     >
-                      {item.volume}
+                      {volumeFor(item.href)}
                     </span>
                   </div>
                 </Link>

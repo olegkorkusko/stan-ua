@@ -136,7 +136,11 @@ type Dictionary = {
     categories: {
       label: string
       title: string
-      items: { title: string; subtitle: string; volume: string; href: string; imageAlt: string }[]
+      /** «4 товари · від 350 ₴». Рахується з бази — див. lib/volumes.ts. */
+      volume: (count: number, from: string) => string
+      /** Коли за карткою поки нічого немає. */
+      soon: string
+      items: { title: string; subtitle: string; href: string; imageAlt: string }[]
     }
     delivery: {
       label: string
@@ -160,7 +164,11 @@ type Dictionary = {
     directions: {
       label: string
       title: string
-      items: { title: string; subtitle: string; volume: string; href: string; imageAlt: string }[]
+      /** «2 курси · від 320 ₴». Рахується з бази — див. lib/volumes.ts. */
+      volume: (count: number, from: string) => string
+      /** Коли за карткою поки нічого немає. */
+      soon: string
+      items: { title: string; subtitle: string; href: string; imageAlt: string }[]
     }
     afterPayment: {
       label: string
@@ -675,25 +683,25 @@ const uk: Dictionary = {
     categories: {
       label: 'ГОТОВІ ВИРОБИ',
       title: 'Категорії',
+      volume: (count: number, from: string) =>
+        `${plural(count, 'товар', 'товари', 'товарів')} · від ${from}`,
+      soon: 'Поповнюється',
       items: [
         {
           title: 'Прикраси з бісеру',
           subtitle: 'Браслети, кольє, сережки, чокери',
-          volume: '4 товари',
           href: '/shop/catalog?category=prykrasy',
           imageAlt: 'Кольє з бісеру ручної роботи',
         },
         {
           title: 'В’язані вироби',
           subtitle: 'Усе для першої роботи в одній коробці',
-          volume: '2 набори',
           href: '/shop/catalog?category=nabory',
           imageAlt: 'Гачки, пряжа й в’язані зразки',
         },
         {
           title: 'Аксесуари макраме',
           subtitle: 'Шнур, пряжа, фурнітура',
-          volume: 'Поповнюється',
           href: '/shop/catalog?category=materialy',
           imageAlt: 'Шнур і фурнітура для макраме',
         },
@@ -759,35 +767,34 @@ const uk: Dictionary = {
     directions: {
       label: 'НАВЧАННЯ',
       title: 'Напрями',
+      volume: (count: number, from: string) =>
+        `${plural(count, 'курс', 'курси', 'курсів')} · від ${from}`,
+      soon: 'Скоро',
       items: [
         {
           title: 'Вʼязання',
           subtitle: 'Гачок і спиці',
-          volume: '2 курси · від 750 ₴',
           href: '/courses/viazannia',
           imageAlt: 'Вʼязання гачком',
         },
         {
           title: 'Бісероплетіння',
           subtitle: 'Дрібний бісер і волосінь',
-          volume: '2 курси · від 650 ₴',
           href: '/courses/biseropletinnia',
           imageAlt: 'Бісер у розсипі',
         },
         {
           title: 'Макраме',
           subtitle: 'Вузли й шнур',
-          volume: '2 курси · від 550 ₴',
           href: '/courses/makrame',
           imageAlt: 'Макраме на деревʼяному кільці',
         },
-        // Четверта картка є в макеті, але її підпис і обсяг там дослівно
-        // скопійовані з вʼязання, а сам шар досі зветься «Напрям — Вʼязання».
-        // Лишаємо тексти як у Figma; змісту вони поки не мають.
+        // Четверта картка є в макеті, але її підпис там дослівно скопійований
+        // з вʼязання, а сам шар досі зветься «Напрям — Вʼязання». Веде вона не
+        // в курси, а в набори магазину, тому й обсяг рахується по товарах.
         {
           title: 'Готові набори',
-          subtitle: 'Гачок і спиці',
-          volume: '2 курси · від 750 ₴',
+          subtitle: 'Усе для першої роботи в одній коробці',
           href: '/shop/catalog?category=nabory',
           imageAlt: 'Готовий набір для рукоділля',
         },
@@ -1167,25 +1174,25 @@ const en: Dictionary = {
     categories: {
       label: 'FINISHED PIECES',
       title: 'Categories',
+      volume: (count: number, from: string) =>
+        `${count} ${count === 1 ? 'item' : 'items'} · from ${from}`,
+      soon: 'Restocking',
       items: [
         {
           title: 'Beaded jewellery',
           subtitle: 'Bracelets, necklaces, earrings, chokers',
-          volume: '4 pieces',
           href: '/shop/catalog?category=prykrasy',
           imageAlt: 'Handmade beaded necklace',
         },
         {
           title: 'Knitted pieces',
           subtitle: 'Everything you need for a first project, in one box',
-          volume: '2 kits',
           href: '/shop/catalog?category=nabory',
           imageAlt: 'Hooks, yarn and knitted swatches',
         },
         {
           title: 'Macramé supplies',
           subtitle: 'Cord, yarn, findings',
-          volume: 'Restocking',
           href: '/shop/catalog?category=materialy',
           imageAlt: 'Macramé cord and findings',
         },
@@ -1251,32 +1258,31 @@ const en: Dictionary = {
     directions: {
       label: 'COURSES',
       title: 'Crafts',
+      volume: (count: number, from: string) =>
+        `${count} ${count === 1 ? 'course' : 'courses'} · from ${from}`,
+      soon: 'Coming soon',
       items: [
         {
           title: 'Knitting',
           subtitle: 'Hooks and needles',
-          volume: '2 courses · from 750 UAH',
           href: '/courses/viazannia',
           imageAlt: 'Crocheting in progress',
         },
         {
           title: 'Beadwork',
           subtitle: 'Small beads and fine line',
-          volume: '2 courses · from 650 UAH',
           href: '/courses/biseropletinnia',
           imageAlt: 'Loose beads',
         },
         {
           title: 'Macramé',
           subtitle: 'Knots and cord',
-          volume: '2 courses · from 550 UAH',
           href: '/courses/makrame',
           imageAlt: 'Macramé on a wooden hoop',
         },
         {
           title: 'Ready-made kits',
-          subtitle: 'Hooks and needles',
-          volume: '2 courses · from 750 UAH',
+          subtitle: 'Everything you need for a first project, in one box',
           href: '/shop/catalog?category=nabory',
           imageAlt: 'A ready-made craft kit',
         },
