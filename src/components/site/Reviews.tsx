@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useLocale } from '@/components/site/LocaleLink'
 import { SideDrawer } from '@/components/site/SideDrawer'
@@ -81,6 +81,26 @@ export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target
     так гортається.
   */
   const track = useRef<HTMLDivElement>(null)
+  const [overflows, setOverflows] = useState(false)
+
+  /*
+    Чи є що гортати — питаємо в самої стрічки, а не рахуємо за кількістю
+    відгуків. Карток на екрані різна кількість залежно від ширини: одна на
+    телефоні, дві на планшеті, три на десктопі. Три відгуки на десктопі
+    вміщаються без гортання, а на планшеті вже ні — і жодне число, зашите в
+    умову, обидва випадки не покриє.
+  */
+  useEffect(() => {
+    const element = track.current
+    if (!element) return
+
+    const measure = () => setOverflows(element.scrollWidth > element.clientWidth + 1)
+    measure()
+
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [reviews.length])
 
   const slide = (direction: 1 | -1) => {
     const element = track.current
@@ -153,11 +173,11 @@ export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target
 
             <div className="flex shrink-0 items-center gap-3">
               {/*
-                Стрілки з'являються, лише коли на десктопі щось не вміщається:
-                до трьох відгуків гортати нічого. На телефоні їх немає зовсім —
-                там гортають пальцем.
+                Стрілки потрібні лише миші: пальцем стрічка й так гортається,
+                тому на телефоні їх немає. З'являються, коли стрічка справді
+                не вміщається — див. overflows вище.
               */}
-              {reviews.length > 3 && (
+              {overflows && (
                 <div className="hidden items-center gap-2 md:flex">
                   {([-1, 1] as const).map((direction) => (
                     <button
@@ -195,8 +215,9 @@ export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target
 
           {reviews.length > 0 ? (
             /* Стрічка — 135:2835. Крок між картками той самий, що був у сітці:
-               28 на мобільному, 32 на десктопі. Ширина картки на десктопі —
-               третина видимої частини за відрахуванням двох проміжків. */
+               28 на мобільному, 32 далі. Карток на екрані: одна на телефоні,
+               дві на планшеті, три від 1024. Без середнього кроку на 768 px
+               картка стискалась до 207 px — для тексту відгуку це вже вузько. */
             <div
               data-figma-node="135:2835"
               ref={track}
@@ -207,7 +228,7 @@ export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target
                 return (
                   <article
                     key={review.id}
-                    className="flex w-full shrink-0 snap-start flex-col gap-3 md:w-[calc((100%-4rem)/3)]"
+                    className="flex w-full shrink-0 snap-start flex-col gap-3 md:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)]"
                   >
                     <div className="flex items-center gap-3">
                       <Stars value={review.rating} size={12} gap={3} />
