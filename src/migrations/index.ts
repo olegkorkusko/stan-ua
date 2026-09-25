@@ -8,6 +8,7 @@ import * as migration_20260924_161746_order_notify_email from './20260924_161746
 import * as migration_20260924_163123_notify_pending from './20260924_163123_notify_pending';
 import * as migration_20260925_114051_drop_prepayment from './20260925_114051_drop_prepayment';
 import * as migration_20260925_130728_drop_checkbox from './20260925_130728_drop_checkbox';
+import * as migration_20260925_131145_drop_prepaid_amount from './20260925_131145_drop_prepaid_amount';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20260925_130728_drop_checkbox.up,
     down: migration_20260925_130728_drop_checkbox.down,
-    name: '20260925_130728_drop_checkbox'
+    name: '20260925_130728_drop_checkbox',
+  },
+  {
+    up: migration_20260925_131145_drop_prepaid_amount.up,
+    down: migration_20260925_131145_drop_prepaid_amount.down,
+    name: '20260925_131145_drop_prepaid_amount'
   },
 ];

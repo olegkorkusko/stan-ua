@@ -464,7 +464,7 @@ export interface CourseDirection {
 export interface Order {
   id: number;
   orderNumber: string;
-  paymentStatus?: ('pending' | 'paid' | 'partial' | 'cancelled' | 'refunded') | null;
+  paymentStatus?: ('pending' | 'paid' | 'cancelled' | 'refunded') | null;
   items?:
     | {
         kind: 'product' | 'course';
@@ -495,10 +495,6 @@ export interface Order {
   deliveryCost?: number | null;
   total: number;
   promoCode?: (number | null) | PromoCode;
-  /**
-   * Для накладеного платежу — сплачена наперед частина.
-   */
-  prepaidAmount?: number | null;
   paymentMethod?: ('card' | 'cod') | null;
   paymentReference?: string | null;
   fulfillmentStatus?: ('new' | 'packing' | 'shipped' | 'done' | 'cancelled') | null;
@@ -1093,7 +1089,6 @@ export interface OrdersSelect<T extends boolean = true> {
   deliveryCost?: T;
   total?: T;
   promoCode?: T;
-  prepaidAmount?: T;
   paymentMethod?: T;
   paymentReference?: T;
   fulfillmentStatus?: T;

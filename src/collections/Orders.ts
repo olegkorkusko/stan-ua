@@ -81,7 +81,6 @@ export const Orders: CollectionConfig = {
           options: [
             { label: 'Очікує оплати', value: 'pending' },
             { label: 'Оплачено', value: 'paid' },
-            { label: 'Часткова передплата', value: 'partial' },
             { label: 'Скасовано', value: 'cancelled' },
             { label: 'Повернено', value: 'refunded' },
           ],
@@ -176,19 +175,7 @@ export const Orders: CollectionConfig = {
             { name: 'total', type: 'number', label: 'До сплати, ₴', required: true, admin: { width: '25%' } },
           ],
         },
-        {
-          type: 'row',
-          fields: [
-            { name: 'promoCode', type: 'relationship', relationTo: 'promo-codes', label: 'Промокод', admin: { width: '50%' } },
-            {
-              name: 'prepaidAmount',
-              type: 'number',
-              label: 'Передплата, ₴',
-              defaultValue: 0,
-              admin: { width: '50%', description: 'Для накладеного платежу — сплачена наперед частина.' },
-            },
-          ],
-        },
+        { name: 'promoCode', type: 'relationship', relationTo: 'promo-codes', label: 'Промокод' },
         {
           name: 'paymentMethod',
           type: 'select',
