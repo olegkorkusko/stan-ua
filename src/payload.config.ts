@@ -38,7 +38,10 @@ export default buildConfig({
     components: {
       // Змінив компонент — одразу `npm run generate:importmap`, інакше
       // адмінка відкриється білим екраном.
-      graphics: { Logo: '@/components/admin/Logo#Logo' },
+      graphics: {
+        Logo: '@/components/admin/Logo#Logo',
+        Icon: '@/components/admin/Icon#Icon',
+      },
       // Кнопка «показати пароль». Рендериться над формою, а саму себе
       // переносить у поле — див. коментар у компоненті.
       beforeLogin: ['@/components/admin/PasswordPeek#PasswordPeek'],

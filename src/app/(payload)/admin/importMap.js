@@ -24,6 +24,7 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { VariantRowLabel as VariantRowLabel_f2e0186a1e5214d5a008355b5b71717b } from '@/components/admin/VariantRowLabel'
 import { LessonRowLabel as LessonRowLabel_2322f443435847cd48917df9fa79f093 } from '@/components/admin/LessonRowLabel'
 import { StepRowLabel as StepRowLabel_dffbaaff7e2a3a9215cb6dc964c89b9d } from '@/components/admin/StepRowLabel'
+import { Icon as Icon_534076e2c753ea5d539a54b05f456b1b } from '@/components/admin/Icon'
 import { Logo as Logo_a44df17d0fc3dcd873dae43dc3bf66bd } from '@/components/admin/Logo'
 import { PasswordPeek as PasswordPeek_85f55f90750d3738de915856c503092c } from '@/components/admin/PasswordPeek'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
@@ -57,6 +58,7 @@ export const importMap = {
   "@/components/admin/VariantRowLabel#VariantRowLabel": VariantRowLabel_f2e0186a1e5214d5a008355b5b71717b,
   "@/components/admin/LessonRowLabel#LessonRowLabel": LessonRowLabel_2322f443435847cd48917df9fa79f093,
   "@/components/admin/StepRowLabel#StepRowLabel": StepRowLabel_dffbaaff7e2a3a9215cb6dc964c89b9d,
+  "@/components/admin/Icon#Icon": Icon_534076e2c753ea5d539a54b05f456b1b,
   "@/components/admin/Logo#Logo": Logo_a44df17d0fc3dcd873dae43dc3bf66bd,
   "@/components/admin/PasswordPeek#PasswordPeek": PasswordPeek_85f55f90750d3738de915856c503092c,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
