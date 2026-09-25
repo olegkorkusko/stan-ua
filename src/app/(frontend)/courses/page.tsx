@@ -27,10 +27,10 @@ const DIRECTION_ROWS = [
   { id: '261:4316', cards: [2, 3] },
 ]
 const DIRECTION_IMAGES = [
-  '/courses/dir-knitted.png',
-  '/courses/dir-biseru.png',
-  '/courses/dir-macrame.png',
-  '/courses/dir-knitted-2.png',
+  '/courses/dir-knitted.jpg',
+  '/courses/dir-biseru.jpg',
+  '/courses/dir-macrame.jpg',
+  '/courses/dir-knitted-2.jpg',
 ]
 
 /** Внутрішні ноди інстанса адресуються як I<картка>;<нода компонента>. */
@@ -82,7 +82,6 @@ const CoursesPage = async () => {
           src="/courses/hero.jpg"
           alt=""
           fill
-          unoptimized
           priority
           sizes="100vw"
           className="object-cover"
@@ -154,7 +153,6 @@ const CoursesPage = async () => {
                       src={card?.image ?? DIRECTION_IMAGES[index]}
                       alt={item.imageAlt}
                       fill
-                      unoptimized
                       priority
                       sizes="(min-width: 768px) 50vw, 100vw"
                       className="object-cover"

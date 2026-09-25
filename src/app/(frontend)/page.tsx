@@ -100,7 +100,6 @@ const HomePage = async () => {
             width={222}
             height={63}
             priority
-            unoptimized
             style={{ animationDelay: '750ms' }}
             className="portal-in h-auto w-[162px] md:w-[222px]"
           />
@@ -162,7 +161,6 @@ const PortalBranch = ({
         fill
         sizes="(min-width: 768px) 50vw, 100vw"
         priority
-        unoptimized
         className="object-cover transition-transform duration-700 ease-out group-has-[[data-portal-cta]:hover]:scale-105 motion-reduce:transition-none motion-reduce:group-has-[[data-portal-cta]:hover]:scale-100"
       />
       {/* Дві градієнтні поволоки з Figma: темна зверху й глибша знизу. */}

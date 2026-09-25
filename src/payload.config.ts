@@ -30,6 +30,12 @@ const dirname = path.dirname(filename)
 const hasS3 = Boolean(process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID)
 
 export default buildConfig({
+  /*
+    Стеля на файл. Без неї браузер годину вантажить 200-мегабайтне відео, а
+    потім усе одно падає на ліміті платформи — і незрозуміло, що сталося.
+    15 МБ вистачає з запасом: фото після зменшення важать менше мегабайта.
+  */
+  upload: { limits: { fileSize: 15 * 1024 * 1024 }, abortOnLimit: true },
   admin: {
     user: Users.slug,
     meta: {

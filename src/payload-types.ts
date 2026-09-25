@@ -267,6 +267,8 @@ export interface Product {
   createdAt: string;
 }
 /**
+ * Фото зменшуються й стискаються самі — вантажте як є, з телефона теж. Максимум 15 МБ на файл; якщо більше, завантаження обірветься.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */

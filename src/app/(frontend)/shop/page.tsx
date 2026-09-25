@@ -18,11 +18,11 @@ export const metadata: Metadata = {
   description: 'Прикраси ручної роботи, набори для створення та матеріали. Доставка Новою Поштою.',
 }
 
-const CATEGORY_IMAGES = ['/shop/cat-biseru.png', '/shop/cat-knitted.png', '/shop/cat-macrame.png']
+const CATEGORY_IMAGES = ['/shop/cat-biseru.jpg', '/shop/cat-knitted.jpg', '/shop/cat-macrame.jpg']
 const JOURNAL_IMAGES = [
-  '/shop/journal-care.png',
+  '/shop/journal-care.jpg',
   '/shop/journal-materials.png',
-  '/shop/journal-sizes.png',
+  '/shop/journal-sizes.jpg',
 ]
 
 const CARD_NODE_IDS = ['158:3683', '158:3688', '158:3693']
@@ -78,7 +78,6 @@ const ShopPage = async () => {
           src="/shop/hero-photo.png"
           alt=""
           fill
-          unoptimized
           priority
           sizes="100vw"
           className="object-cover"
@@ -147,7 +146,6 @@ const ShopPage = async () => {
                   src={card?.image ?? CATEGORY_IMAGES[index]}
                   alt={item.imageAlt}
                   fill
-                  unoptimized
                   priority
                   sizes="(min-width: 768px) 33vw, 100vw"
                   className="object-cover"
@@ -299,7 +297,6 @@ const ShopPage = async () => {
                   src={JOURNAL_IMAGES[index]}
                   alt={item.imageAlt}
                   fill
-                  unoptimized
                   priority
                   sizes="(min-width: 768px) 33vw, 100vw"
                   className="object-cover"
