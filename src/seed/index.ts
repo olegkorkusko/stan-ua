@@ -643,7 +643,6 @@ await payload.updateGlobal({
     telegram: 'https://t.me/',
     phone: '+38 (000) 000-00-00',
     freeDeliveryFrom: 1500,
-    prepaymentAmount: 200,
   },
 })
 

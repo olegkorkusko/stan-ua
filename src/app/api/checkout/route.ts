@@ -9,7 +9,7 @@ import {
   priceCart,
   type CartLineInput,
 } from '@/lib/orders'
-import { asDeliveryMethod, prepaymentFor } from '@/lib/delivery'
+import { asDeliveryMethod } from '@/lib/delivery'
 import { formatPrice } from '@/lib/format'
 import { notifyAdmin } from '@/lib/telegram'
 import { buildPurchaseForm, isConfigured } from '@/lib/wayforpay'
@@ -26,7 +26,7 @@ type Body = {
   deliveryPostcode?: string
   comment?: string
   newsletter?: boolean
-  paymentMethod: 'card' | 'cod'
+  paymentMethod: 'card'
   fbp?: string
   fbc?: string
 }
@@ -79,16 +79,9 @@ export const POST = async (request: Request) => {
 
     const settings = await payload.findGlobal({ slug: 'settings', depth: 0 })
 
-    // Накладений платіж: онлайн береться передплата, решта — при отриманні.
-    // Курси так продавати не можна — доступ видається одразу.
-    const codAllowed = hasPhysical && !lines.some((line) => line.kind === 'course')
-    const isCod = body.paymentMethod === 'cod' && codAllowed
-
-    // Формула одна на сервер і на форму — див. prepaymentFor у lib/delivery.
-    const prepaid = isCod
-      ? prepaymentFor(total, settings?.prepaymentType, settings?.prepaymentAmount)
-      : 0
-    const payNow = isCod ? prepaid : total
+    // Оплата лише карткою і лише повна: накладеного платежу більше немає —
+    // див. PAYMENT_METHODS у lib/delivery.
+    const payNow = total
 
     const orderNumber = makeOrderNumber()
 
@@ -124,8 +117,7 @@ export const POST = async (request: Request) => {
         discount,
         deliveryCost: 0,
         total,
-        prepaidAmount: prepaid,
-        paymentMethod: isCod ? 'cod' : 'card',
+        paymentMethod: 'card',
         promoCode: promoId,
         // Приходять, лише якщо покупець дав згоду на cookie й піксель встиг
         // їх поставити. Порожні — серверна подія просто піде без них.

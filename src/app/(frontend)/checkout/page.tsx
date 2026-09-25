@@ -27,10 +27,6 @@ const CheckoutPage = async () => {
       <h1 className="mt-3 text-page">Ще один крок</h1>
       <div className="mt-12">
         <CheckoutForm
-          prepayment={{
-            type: settings?.prepaymentType ?? null,
-            amount: settings?.prepaymentAmount ?? null,
-          }}
           profile={
             customer && {
               name: customer.name ?? '',

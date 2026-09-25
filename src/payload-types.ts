@@ -1592,11 +1592,6 @@ export interface Setting {
    * Порожньо — доставка завжди платна за тарифами перевізника.
    */
   freeDeliveryFrom?: number | null;
-  prepaymentType?: ('fixed' | 'percent') | null;
-  /**
-   * Для фіксованої — гривні (напр. 200). Для відсотка — число від 1 до 100.
-   */
-  prepaymentAmount?: number | null;
   /**
    * Те, що видно в пошуку й на вкладці браузера. Порожньо — береться назва з коду.
    */
@@ -1765,8 +1760,6 @@ export interface SettingsSelect<T extends boolean = true> {
   instagram?: T;
   telegram?: T;
   freeDeliveryFrom?: T;
-  prepaymentType?: T;
-  prepaymentAmount?: T;
   seoTitle?: T;
   seoDescription?: T;
   seoImage?: T;

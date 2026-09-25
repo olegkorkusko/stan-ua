@@ -4,7 +4,6 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { useEffect, useRef, useState } from 'react'
 
 import { track } from '@/components/site/Analytics'
-import { prepaymentFor } from '@/lib/delivery'
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 import { useLocale } from '@/components/site/LocaleLink'
@@ -78,17 +77,10 @@ export type CheckoutProfile = {
   deliveryMethod: string | null
   deliveryCity: string
   deliveryBranch: string
-  paymentMethod: 'card' | 'cod' | null
+  paymentMethod: 'card' | null
 }
 
-export const CheckoutForm = ({
-  profile,
-  prepayment,
-}: {
-  profile?: CheckoutProfile | null
-  /** Налаштування передплати за накладений платіж із «Налаштувань сайту». */
-  prepayment?: { type: string | null; amount: number | null }
-}) => {
+export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) => {
   const { items, total, clear } = useCart()
   const t = dictionary(useLocale()).checkout
   const formRef = useRef<HTMLFormElement>(null)
@@ -100,7 +92,7 @@ export const CheckoutForm = ({
     comment: '',
     promoCode: '',
     deliveryMethod: profile?.deliveryMethod || 'np_branch',
-    paymentMethod: (profile?.paymentMethod ?? 'card') as 'card' | 'cod',
+    paymentMethod: 'card' as const,
     newsletter: false,
   })
   const [city, setCity] = useState({ label: '', ref: '' })
@@ -124,19 +116,9 @@ export const CheckoutForm = ({
 
   const hasPhysical = items.some((item) => item.kind === 'product')
   const hasCourse = items.some((item) => item.kind === 'course')
-  const codAllowed = hasPhysical && !hasCourse
 
-  /*
-    Накладений платіж ділить суму надвоє: частина списується карткою зараз,
-    решта платиться при отриманні. Досі форма показувала тільки повну суму —
-    людина бачила «до сплати 2 240 ₴», хоча онлайн з неї брали 200.
-
-    Формула спільна з сервером (prepaymentFor), інакше показане й списане
-    неминуче розійшлися б.
-  */
-  const isCod = form.paymentMethod === 'cod' && codAllowed
-  const payNow = isCod ? prepaymentFor(total, prepayment?.type, prepayment?.amount) : total
-  const rest = total - payNow
+  // Оплата лише карткою і лише повна — накладеного платежу більше немає.
+  const payNow = total
 
   // Укрпошта має власну адресну логіку: місто, вулиця й індекс, без довідника
   // відділень Нової Пошти.
@@ -182,7 +164,7 @@ export const CheckoutForm = ({
           ...form,
           fbp: readCookie('_fbp'),
           fbc: readCookie('_fbc'),
-          paymentMethod: codAllowed ? form.paymentMethod : 'card',
+          paymentMethod: 'card',
           deliveryCity: hasPhysical ? city.label || cityQuery : undefined,
           deliveryBranch: hasPhysical ? branch || branchQuery : undefined,
           deliveryPostcode: hasPhysical && isUkrposhta ? postcode : undefined,
@@ -408,28 +390,7 @@ export const CheckoutForm = ({
               {t.card}
             </label>
 
-            {codAllowed && (
-              <label
-                className={`flex cursor-pointer items-center gap-3 border px-3.5 py-3 text-sm transition-colors ${
-                  form.paymentMethod === 'cod' ? 'border-ink' : 'border-flax hover:border-muted'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="payment"
-                  checked={form.paymentMethod === 'cod'}
-                  onChange={() => set('paymentMethod')('cod')}
-                  className="accent-ink"
-                />
-                {t.cod}
-              </label>
-            )}
           </div>
-          {form.paymentMethod === 'cod' && (
-            <p className="mt-2 text-xs text-muted">
-              {t.codNote}
-            </p>
-          )}
         </section>
 
         <section>
@@ -491,15 +452,9 @@ export const CheckoutForm = ({
 
           <div className="mt-5 flex flex-col gap-2 border-t border-flax pt-5">
             <div className="flex items-baseline justify-between">
-              <span className="label">{isCod ? t.payNow : t.toPay}</span>
+              <span className="label">{t.toPay}</span>
               <span className="price text-lg text-brass">{formatPrice(payNow)}</span>
             </div>
-            {isCod && (
-              <div className="flex items-baseline justify-between text-[13px] leading-[19.5px] text-muted">
-                <span>{t.onDelivery}</span>
-                <span>{formatPrice(rest)}</span>
-              </div>
-            )}
           </div>
 
           {error && <p className="mt-4 border border-brass/40 bg-brass/5 px-3 py-2 text-xs text-ink">{error}</p>}

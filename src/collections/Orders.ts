@@ -1,7 +1,7 @@
 import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
 
 import { isAdmin } from '@/access'
-import { deliveryMethodOptions, paymentMethodOptions } from '@/lib/delivery'
+import { deliveryMethodOptions, storedPaymentMethodOptions } from '@/lib/delivery'
 
 /*
   Лист із номером накладної.
@@ -193,7 +193,7 @@ export const Orders: CollectionConfig = {
           name: 'paymentMethod',
           type: 'select',
           label: 'Спосіб оплати',
-          options: paymentMethodOptions,
+          options: storedPaymentMethodOptions,
         },
         { name: 'paymentReference', type: 'text', label: 'Ідентифікатор платежу', admin: { readOnly: true } },
         {

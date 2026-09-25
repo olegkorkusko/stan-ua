@@ -6,6 +6,7 @@ import * as migration_20260922_112235_newsletter_tracking from './20260922_11223
 import * as migration_20260922_112953_suggest_in_cart from './20260922_112953_suggest_in_cart';
 import * as migration_20260924_161746_order_notify_email from './20260924_161746_order_notify_email';
 import * as migration_20260924_163123_notify_pending from './20260924_163123_notify_pending';
+import * as migration_20260925_114051_drop_prepayment from './20260925_114051_drop_prepayment';
 
 export const migrations = [
   {
@@ -46,6 +47,11 @@ export const migrations = [
   {
     up: migration_20260924_163123_notify_pending.up,
     down: migration_20260924_163123_notify_pending.down,
-    name: '20260924_163123_notify_pending'
+    name: '20260924_163123_notify_pending',
+  },
+  {
+    up: migration_20260925_114051_drop_prepayment.up,
+    down: migration_20260925_114051_drop_prepayment.down,
+    name: '20260925_114051_drop_prepayment'
   },
 ];

@@ -13,7 +13,13 @@
 export const DELIVERY_METHODS = ['np_branch', 'np_locker', 'np_courier', 'ukrposhta'] as const
 export type DeliveryMethod = (typeof DELIVERY_METHODS)[number]
 
-export const PAYMENT_METHODS = ['card', 'cod'] as const
+/*
+  Оплата лише карткою. Накладений платіж прибрано: ті гроші збирає Нова Пошта
+  повз платіжну систему, тому фіскальний чек на них ПРРО не виб'є, а виписувати
+  його вручну на кожну посилку ніхто не буде. Замовлення в базі, оформлені
+  раніше, можуть мати 'cod' — поле в Orders лишається, щоб історія читалась.
+*/
+export const PAYMENT_METHODS = ['card'] as const
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number]
 
 /** Куди надсилати фіскальний чек. ПРРО вміє і пошту, і SMS. */
@@ -29,7 +35,16 @@ export const deliveryMethodOptions: { label: string; value: DeliveryMethod }[] =
 
 export const paymentMethodOptions: { label: string; value: PaymentMethod }[] = [
   { label: 'Карткою онлайн', value: 'card' },
-  { label: 'Накладений платіж', value: 'cod' },
+]
+
+/*
+  Те саме плюс знятий накладений платіж — для полів, які читають уже оформлені
+  замовлення. Прибрати 'cod' із самої бази не можна: у старих замовленнях воно
+  записане, і звуження enum поклало б міграцію на першому ж такому рядку.
+*/
+export const storedPaymentMethodOptions: { label: string; value: string }[] = [
+  ...paymentMethodOptions,
+  { label: 'Накладений платіж (більше не приймається)', value: 'cod' },
 ]
 
 export const receiptChannelOptions: { label: string; value: ReceiptChannel }[] = [
@@ -57,23 +72,3 @@ export const asReceiptChannel = (value: unknown): ReceiptChannel | undefined =>
  * кошику бракує 440 ₴.
  */
 export const FREE_DELIVERY_FROM = 2500
-
-/**
- * Передплата за накладений платіж: або фіксована сума, або відсоток від
- * замовлення — як задано в «Налаштуваннях сайту».
- *
- * Живе тут, а не в маршруті оформлення, бо рахувати це треба двічі: сервер
- * визначає, скільки списати онлайн, а форма показує покупцеві «зараз стільки,
- * при отриманні стільки». Дві копії формули неминуче розійшлися б — і людина
- * бачила б одну суму, а платила іншу.
- */
-export const prepaymentFor = (
-  total: number,
-  type: string | null | undefined,
-  amount: number | null | undefined,
-): number => {
-  const value = amount ?? 200
-  const raw =
-    type === 'percent' ? Math.round((total * Math.min(Math.max(value, 0), 100)) / 100) : value
-  return Math.min(Math.max(raw, 0), total)
-}

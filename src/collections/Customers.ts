@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { isAdmin } from '@/access'
 import {
   deliveryMethodOptions,
-  paymentMethodOptions,
+  storedPaymentMethodOptions,
   receiptChannelOptions,
 } from '@/lib/delivery'
 
@@ -107,7 +107,7 @@ export const Customers: CollectionConfig = {
               name: 'paymentMethod',
               type: 'select',
               label: 'Спосіб оплати',
-              options: paymentMethodOptions,
+              options: storedPaymentMethodOptions,
               admin: { width: '50%' },
             },
             {

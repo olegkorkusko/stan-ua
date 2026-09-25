@@ -68,33 +68,6 @@ export const Settings: GlobalConfig = {
               label: 'Безкоштовна доставка від, ₴',
               admin: { description: 'Порожньо — доставка завжди платна за тарифами перевізника.' },
             },
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'prepaymentType',
-                  type: 'select',
-                  label: 'Передплата за накладений платіж',
-                  defaultValue: 'fixed',
-                  options: [
-                    { label: 'Фіксована сума', value: 'fixed' },
-                    { label: 'Відсоток від замовлення', value: 'percent' },
-                  ],
-                  admin: { width: '50%' },
-                },
-                {
-                  name: 'prepaymentAmount',
-                  type: 'number',
-                  label: 'Скільки саме',
-                  defaultValue: 200,
-                  min: 0,
-                  admin: {
-                    width: '50%',
-                    description: 'Для фіксованої — гривні (напр. 200). Для відсотка — число від 1 до 100.',
-                  },
-                },
-              ],
-            },
           ],
         },
         {

@@ -255,8 +255,6 @@ type Dictionary = {
     deliveryNote: string
     payment: string
     card: string
-    cod: string
-    codNote: string
     comment: string
     commentPlaceholder: string
     /** Згода на розсилку при оформленні — галочка знята за замовчуванням. */
@@ -265,9 +263,6 @@ type Dictionary = {
     promo: string
     promoPlaceholder: string
     toPay: string
-    /** Накладений платіж: скільки списується зараз і скільки при отриманні. */
-    payNow: string
-    onDelivery: string
     submit: string
     submitting: string
     terms: string
@@ -553,8 +548,6 @@ const uk: Dictionary = {
     deliveryNote: 'Доставка за тарифами перевізника.',
     payment: 'Оплата',
     card: 'Карткою онлайн · Apple Pay · Google Pay',
-    cod: 'Накладений платіж із передплатою',
-    codNote: 'Зараз сплачуєте передплату, решту — при отриманні на пошті.',
     comment: 'Коментар',
     commentPlaceholder: 'Побажання до замовлення',
     newsletter: 'Хочу отримувати новини про нові курси й товари',
@@ -562,8 +555,6 @@ const uk: Dictionary = {
     promo: 'Промокод',
     promoPlaceholder: 'Якщо є',
     toPay: 'До сплати',
-    payNow: 'Сплатити зараз',
-    onDelivery: 'При отриманні',
     submit: 'Перейти до оплати',
     submitting: 'Готуємо оплату…',
     terms: 'Натискаючи кнопку, ви приймаєте умови',
@@ -612,7 +603,7 @@ const uk: Dictionary = {
         np_courier: 'Нова Пошта — курʼєр',
         ukrposhta: 'Укрпошта',
       },
-      payments: { card: 'Карткою онлайн', cod: 'Накладений платіж' },
+      payments: { card: 'Карткою онлайн' },
       receipts: { email: 'На пошту', sms: 'У SMS' },
     },
   },
@@ -1048,8 +1039,6 @@ const en: Dictionary = {
     deliveryNote: 'Shipping is charged at the carrier rate.',
     payment: 'Payment',
     card: 'Card online · Apple Pay · Google Pay',
-    cod: 'Cash on delivery with a deposit',
-    codNote: 'You pay the deposit now and the rest on collection.',
     comment: 'Note',
     commentPlaceholder: 'Anything we should know',
     newsletter: 'Send me news about new courses and products',
@@ -1057,8 +1046,6 @@ const en: Dictionary = {
     promo: 'Promo code',
     promoPlaceholder: 'If you have one',
     toPay: 'Total',
-    payNow: 'Pay now',
-    onDelivery: 'On delivery',
     submit: 'Go to payment',
     submitting: 'Preparing payment…',
     terms: 'By continuing you accept the',
@@ -1106,7 +1093,7 @@ const en: Dictionary = {
         np_courier: 'Nova Poshta - courier',
         ukrposhta: 'Ukrposhta',
       },
-      payments: { card: 'Card online', cod: 'Cash on delivery' },
+      payments: { card: 'Card online' },
       receipts: { email: 'By email', sms: 'By SMS' },
     },
   },
