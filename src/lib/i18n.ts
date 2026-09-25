@@ -1,4 +1,4 @@
-import type { DeliveryMethod, PaymentMethod, ReceiptChannel } from '@/lib/delivery'
+import type { DeliveryMethod, PaymentMethod } from '@/lib/delivery'
 import { plural } from '@/lib/format'
 
 export const LOCALES = ['uk', 'en'] as const
@@ -297,10 +297,8 @@ type Dictionary = {
       branch: string
       payment: string
       card: string
-      receipt: string
       /** Підписи над списками в блоці «Оплата» — короткого «Спосіб» там замало. */
       paymentMethodLabel: string
-      receiptToLabel: string
       /** Прочерк замість значення, якого ще немає. */
       blank: string
       edit: string
@@ -310,7 +308,6 @@ type Dictionary = {
       close: string
       methods: Record<DeliveryMethod, string>
       payments: Record<PaymentMethod, string>
-      receipts: Record<ReceiptChannel, string>
     }
   }
   reviews: {
@@ -588,9 +585,7 @@ const uk: Dictionary = {
       branch: 'Відділення',
       payment: 'Оплата',
       card: 'Картка',
-      receipt: 'Чек',
       paymentMethodLabel: 'Спосіб оплати',
-      receiptToLabel: 'Куди надсилати чек',
       blank: '—',
       edit: 'Змінити',
       save: 'Зберегти',
@@ -604,7 +599,6 @@ const uk: Dictionary = {
         ukrposhta: 'Укрпошта',
       },
       payments: { card: 'Карткою онлайн' },
-      receipts: { email: 'На пошту', sms: 'У SMS' },
     },
   },
   reviews: {
@@ -1078,9 +1072,7 @@ const en: Dictionary = {
       branch: 'Branch',
       payment: 'Payment',
       card: 'Card',
-      receipt: 'Receipt',
       paymentMethodLabel: 'Payment method',
-      receiptToLabel: 'Where to send the receipt',
       blank: '—',
       edit: 'Edit',
       save: 'Save',
@@ -1094,7 +1086,6 @@ const en: Dictionary = {
         ukrposhta: 'Ukrposhta',
       },
       payments: { card: 'Card online' },
-      receipts: { email: 'By email', sms: 'By SMS' },
     },
   },
   reviews: {

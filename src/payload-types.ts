@@ -501,10 +501,6 @@ export interface Order {
   prepaidAmount?: number | null;
   paymentMethod?: ('card' | 'cod') | null;
   paymentReference?: string | null;
-  /**
-   * ID чека в Checkbox. Порожньо — ПРРО ще не підключено.
-   */
-  fiscalReceipt?: string | null;
   fulfillmentStatus?: ('new' | 'packing' | 'shipped' | 'done' | 'cancelled') | null;
   trackingNumber?: string | null;
   /**
@@ -543,7 +539,6 @@ export interface Customer {
   deliveryCity?: string | null;
   deliveryBranch?: string | null;
   paymentMethod?: ('card' | 'cod') | null;
-  receiptChannel?: ('email' | 'sms') | null;
   /**
    * Останні цифри картки, якою платили. Приходить від WayForPay — ми номера не бачимо й не зберігаємо.
    */
@@ -1101,7 +1096,6 @@ export interface OrdersSelect<T extends boolean = true> {
   prepaidAmount?: T;
   paymentMethod?: T;
   paymentReference?: T;
-  fiscalReceipt?: T;
   fulfillmentStatus?: T;
   trackingNumber?: T;
   newsletter?: T;
@@ -1154,7 +1148,6 @@ export interface CustomersSelect<T extends boolean = true> {
   deliveryCity?: T;
   deliveryBranch?: T;
   paymentMethod?: T;
-  receiptChannel?: T;
   cardMask?: T;
   subscribedToNewsletter?: T;
   updatedAt?: T;

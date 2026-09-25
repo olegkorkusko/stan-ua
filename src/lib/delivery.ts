@@ -22,10 +22,6 @@ export type DeliveryMethod = (typeof DELIVERY_METHODS)[number]
 export const PAYMENT_METHODS = ['card'] as const
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number]
 
-/** Куди надсилати фіскальний чек. ПРРО вміє і пошту, і SMS. */
-export const RECEIPT_CHANNELS = ['email', 'sms'] as const
-export type ReceiptChannel = (typeof RECEIPT_CHANNELS)[number]
-
 export const deliveryMethodOptions: { label: string; value: DeliveryMethod }[] = [
   { label: 'Нова Пошта — відділення', value: 'np_branch' },
   { label: 'Нова Пошта — поштомат', value: 'np_locker' },
@@ -47,11 +43,6 @@ export const storedPaymentMethodOptions: { label: string; value: string }[] = [
   { label: 'Накладений платіж (більше не приймається)', value: 'cod' },
 ]
 
-export const receiptChannelOptions: { label: string; value: ReceiptChannel }[] = [
-  { label: 'На пошту', value: 'email' },
-  { label: 'У SMS', value: 'sms' },
-]
-
 const isOneOf = <T extends string>(values: readonly T[], value: unknown): value is T =>
   typeof value === 'string' && (values as readonly string[]).includes(value)
 
@@ -61,8 +52,6 @@ export const asDeliveryMethod = (value: unknown): DeliveryMethod | undefined =>
 export const asPaymentMethod = (value: unknown): PaymentMethod | undefined =>
   isOneOf(PAYMENT_METHODS, value) ? value : undefined
 
-export const asReceiptChannel = (value: unknown): ReceiptChannel | undefined =>
-  isOneOf(RECEIPT_CHANNELS, value) ? value : undefined
 
 /**
  * Сума, з якої доставка безкоштовна — запасне значення.

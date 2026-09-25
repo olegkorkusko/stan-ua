@@ -5,7 +5,7 @@ import { AccountShell, type AccountShellNodes } from '@/components/site/AccountS
 import { DeliveryProfile } from '@/components/site/DeliveryProfile'
 import { LogoutButton } from '@/components/site/LogoutButton'
 import { accountCustomer } from '@/lib/account'
-import { asDeliveryMethod, asPaymentMethod, asReceiptChannel } from '@/lib/delivery'
+import { asDeliveryMethod, asPaymentMethod } from '@/lib/delivery'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -89,7 +89,6 @@ const DeliveryDataPage = async () => {
           deliveryCity: customer.deliveryCity ?? '',
           deliveryBranch: customer.deliveryBranch ?? '',
           paymentMethod: asPaymentMethod(customer.paymentMethod) ?? null,
-          receiptChannel: asReceiptChannel(customer.receiptChannel) ?? null,
           cardMask: customer.cardMask ?? '',
         }}
       />

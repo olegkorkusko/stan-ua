@@ -16,10 +16,8 @@ import {
 import {
   deliveryMethodOptions,
   paymentMethodOptions,
-  receiptChannelOptions,
   type DeliveryMethod,
   type PaymentMethod,
-  type ReceiptChannel,
 } from '@/lib/delivery'
 import { dictionary } from '@/lib/i18n'
 
@@ -99,7 +97,6 @@ export type DeliveryProfileValues = {
   deliveryCity: string
   deliveryBranch: string
   paymentMethod: PaymentMethod | null
-  receiptChannel: ReceiptChannel | null
   cardMask: string
 }
 
@@ -197,10 +194,6 @@ export const DeliveryProfile = ({
           value: values.paymentMethod ? t.payments[values.paymentMethod] : t.blank,
         },
         { name: t.card, value: values.cardMask ? `•••• ${values.cardMask}` : t.blank },
-        {
-          name: t.receipt,
-          value: values.receiptChannel ? t.receipts[values.receiptChannel] : t.blank,
-        },
       ],
     },
   ]
@@ -363,14 +356,6 @@ export const DeliveryProfile = ({
               onChange={set('paymentMethod')}
               options={paymentMethodOptions}
               labels={t.payments}
-              blank={t.blank}
-            />
-            <Choice
-              label={t.receiptToLabel}
-              value={form.receiptChannel}
-              onChange={set('receiptChannel')}
-              options={receiptChannelOptions}
-              labels={t.receipts}
               blank={t.blank}
             />
             {/* Картку не редагуємо: її маска приходить від платіжки. */}

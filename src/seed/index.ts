@@ -281,7 +281,6 @@ if (demo) {
       deliveryCity: demo.deliveryCity ?? 'Київ',
       deliveryBranch: demo.deliveryBranch ?? '№ 24, вул. Хрещатик, 1',
       paymentMethod: demo.paymentMethod ?? 'card',
-      receiptChannel: demo.receiptChannel ?? 'email',
       cardMask: demo.cardMask ?? '4242',
     },
   })

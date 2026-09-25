@@ -3,7 +3,7 @@ import { headers as nextHeaders } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 
-import { asDeliveryMethod, asPaymentMethod, asReceiptChannel } from '@/lib/delivery'
+import { asDeliveryMethod, asPaymentMethod } from '@/lib/delivery'
 
 type Body = {
   name?: unknown
@@ -12,7 +12,6 @@ type Body = {
   deliveryCity?: unknown
   deliveryBranch?: unknown
   paymentMethod?: unknown
-  receiptChannel?: unknown
 }
 
 const text = (value: unknown, limit = 120): string =>
@@ -54,7 +53,6 @@ export const POST = async (request: Request) => {
       deliveryCity: text(body.deliveryCity),
       deliveryBranch: text(body.deliveryBranch),
       paymentMethod: asPaymentMethod(body.paymentMethod) ?? null,
-      receiptChannel: asReceiptChannel(body.receiptChannel) ?? null,
     },
   })
 

@@ -4,7 +4,6 @@ import { isAdmin } from '@/access'
 import {
   deliveryMethodOptions,
   storedPaymentMethodOptions,
-  receiptChannelOptions,
 } from '@/lib/delivery'
 
 const isSelfOrAdmin = ({ req }: { req: { user?: { collection?: string; id?: string | number } | null } }) => {
@@ -108,14 +107,6 @@ export const Customers: CollectionConfig = {
               type: 'select',
               label: 'Спосіб оплати',
               options: storedPaymentMethodOptions,
-              admin: { width: '50%' },
-            },
-            {
-              name: 'receiptChannel',
-              type: 'select',
-              label: 'Чек',
-              defaultValue: 'email',
-              options: receiptChannelOptions,
               admin: { width: '50%' },
             },
           ],

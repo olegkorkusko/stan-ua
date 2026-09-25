@@ -1,7 +1,6 @@
 import crypto from 'crypto'
 import type { Payload } from 'payload'
 
-import { createReceipt } from '@/lib/checkbox'
 import { formatPrice } from '@/lib/format'
 import { sendPurchase } from '@/lib/meta'
 import { createCourseInvite, notifyAdmin } from '@/lib/telegram'
@@ -358,25 +357,15 @@ export const fulfillOrder = async (
     overrideAccess: true,
   })
 
-  const receiptId = await createReceipt({
-    orderNumber: order.orderNumber,
-    email: order.customerEmail,
-    items: (order.items ?? []).map((item) => ({
-      name: item.title,
-      price: item.price,
-      quantity: item.quantity,
-    })),
-    total: order.prepaidAmount || order.total,
-  })
-
+  /*
+    Фіскальний чек виписує ПРРО всередині WayForPay — на ті самі гроші, що
+    через нього й пройшли, і одразу покупцю. Свого виклику тут більше немає:
+    друга каса означала б два чеки на одну оплату.
+  */
   await payload.update({
     collection: 'orders',
     id: orderId,
-    data: {
-      accessGranted: true,
-      paymentStatus: order.prepaidAmount ? 'partial' : 'paid',
-      ...(receiptId ? { fiscalReceipt: receiptId } : {}),
-    },
+    data: { accessGranted: true, paymentStatus: 'paid' },
     overrideAccess: true,
   })
 
