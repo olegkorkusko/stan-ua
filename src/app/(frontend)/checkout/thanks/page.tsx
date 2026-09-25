@@ -30,7 +30,7 @@ const ThanksPage = async ({ searchParams }: { searchParams: SearchParams }) => {
     : { docs: [] }
 
   const order = found.docs[0]
-  const paid = order?.paymentStatus === 'paid' || order?.paymentStatus === 'partial'
+  const paid = order?.paymentStatus === 'paid'
   const hasCourse = order?.items?.some((item) => item.kind === 'course')
 
   return (
