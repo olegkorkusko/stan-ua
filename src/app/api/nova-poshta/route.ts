@@ -38,8 +38,17 @@ export const GET = async (request: Request) => {
 
     if (type === 'branch') {
       if (!cityRef) return NextResponse.json({ items: [] })
+      /*
+        Саме CityRef, а не SettlementRef.
+
+        searchSettlements віддає два різні ідентифікатори: Ref самого населеного
+        пункту й DeliveryCity — місто доставки. Ми беремо другий, і getWarehouses
+        розуміє його лише як CityRef. З SettlementRef запит проходив успішно, але
+        повертав порожній список — тому підказки відділень не з'являлись ніде,
+        ні в кошику, ні в кабінеті, і це виглядало як «Нова Пошта не відповідає».
+      */
       const result = await call('AddressGeneral', 'getWarehouses', {
-        SettlementRef: cityRef,
+        CityRef: cityRef,
         FindByString: query,
         Limit: 20,
       })

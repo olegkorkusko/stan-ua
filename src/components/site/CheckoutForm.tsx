@@ -6,10 +6,9 @@ import { useEffect, useRef, useState } from 'react'
 import { track } from '@/components/site/Analytics'
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
+import { Suggest, useSuggestions } from '@/components/site/AddressSuggest'
 import { useLocale } from '@/components/site/LocaleLink'
 import { dictionary } from '@/lib/i18n'
-
-type Suggestion = { label: string; ref: string }
 
 /**
  * Кукі пікселя Meta. Їх не існує, якщо людина не дала згоди на cookie —
@@ -27,44 +26,6 @@ const DELIVERY = [
   { value: 'np_courier', label: "Нова Пошта — кур'єр до дверей" },
   { value: 'ukrposhta', label: 'Укрпошта' },
 ]
-
-/**
- * Підказки адрес з невеликою затримкою, щоб не смикати API на кожну літеру.
- * `enabled` вимикає їх для Укрпошти: довідник Нової Пошти для неї не підходить.
- */
-const useSuggestions = (type: 'city' | 'branch', query: string, cityRef?: string, enabled = true) => {
-  const [items, setItems] = useState<Suggestion[]>([])
-  const [manual, setManual] = useState(false)
-
-  useEffect(() => {
-    if (!enabled) {
-      setItems([])
-      return
-    }
-    if (type === 'branch' && !cityRef) return
-    if (type === 'city' && query.trim().length < 2) {
-      setItems([])
-      return
-    }
-
-    const timer = setTimeout(async () => {
-      const params = new URLSearchParams({ type, q: query })
-      if (cityRef) params.set('ref', cityRef)
-      try {
-        const response = await fetch(`/api/nova-poshta?${params}`)
-        const data = (await response.json()) as { items: Suggestion[]; manual?: boolean }
-        setItems(data.items ?? [])
-        setManual(Boolean(data.manual))
-      } catch {
-        setManual(true)
-      }
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [type, query, cityRef, enabled])
-
-  return { items, manual }
-}
 
 /**
  * Те, що покупець уже вказував у кабінеті. Підставляється у форму, щоб не
@@ -293,66 +254,36 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
             </div>
 
             <div className="mt-4 grid gap-3">
-              <div className="relative">
-                <input
-                  className="field"
-                  placeholder={t.city}
-                  value={cityQuery}
-                  onChange={(e) => {
-                    setCityTouched(true)
-                    setCityQuery(e.target.value)
-                    setCity({ label: '', ref: '' })
-                    setBranch('')
-                  }}
-                />
-                {cityTouched && cities.items.length > 0 && !city.ref && (
-                  <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto border border-flax bg-paper shadow-sm">
-                    {cities.items.map((item) => (
-                      <li key={item.ref}>
-                        <button
-                          type="button"
-                          className="w-full px-3.5 py-2 text-left text-sm hover:bg-paper-deep"
-                          onClick={() => {
-                            setCity(item)
-                            setCityQuery(item.label)
-                          }}
-                        >
-                          {item.label}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              <Suggest
+                placeholder={t.city}
+                value={cityQuery}
+                show={cityTouched && !city.ref}
+                items={cities.items}
+                onChange={(value) => {
+                  setCityTouched(true)
+                  setCityQuery(value)
+                  setCity({ label: '', ref: '' })
+                  setBranch('')
+                }}
+                onPick={(item) => {
+                  setCity(item)
+                  setCityQuery(item.label)
+                }}
+              />
 
-              <div className="relative">
-                <input
-                  className="field"
-                  placeholder={
-                    form.deliveryMethod === 'np_courier' || isUkrposhta ? t.address : t.branch
-                  }
-                  value={branch || branchQuery}
-                  onChange={(e) => {
-                    setBranchQuery(e.target.value)
-                    setBranch('')
-                  }}
-                />
-                {branches.items.length > 0 && !branch && form.deliveryMethod !== 'np_courier' && (
-                  <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto border border-flax bg-paper shadow-sm">
-                    {branches.items.map((item) => (
-                      <li key={item.ref}>
-                        <button
-                          type="button"
-                          className="w-full px-3.5 py-2 text-left text-sm hover:bg-paper-deep"
-                          onClick={() => setBranch(item.label)}
-                        >
-                          {item.label}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              <Suggest
+                placeholder={
+                  form.deliveryMethod === 'np_courier' || isUkrposhta ? t.address : t.branch
+                }
+                value={branch || branchQuery}
+                show={!branch && form.deliveryMethod !== 'np_courier'}
+                items={branches.items}
+                onChange={(value) => {
+                  setBranchQuery(value)
+                  setBranch('')
+                }}
+                onPick={(item) => setBranch(item.label)}
+              />
               {isUkrposhta && (
                 <div>
                   <input

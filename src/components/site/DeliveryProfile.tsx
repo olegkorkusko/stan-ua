@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState, type ReactNode } from 'react'
 
+import { Suggest, useSuggestions } from '@/components/site/AddressSuggest'
 import { useLocale } from '@/components/site/LocaleLink'
 import { SideDrawer } from '@/components/site/SideDrawer'
 import {
@@ -125,6 +126,22 @@ export const DeliveryProfile = ({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState(values)
+
+  /*
+    Підказки ті самі, що й на оформленні — див. AddressSuggest.
+
+    Ref міста тримаємо окремо: у профілі збережена лише назва, а довідник
+    відділень шукає за ref. Поки місто не вибрали зі списку, відділення
+    доводиться вписувати руками — так само, як на оформленні, коли людина
+    приходить із заповненим профілем.
+  */
+  const [cityRef, setCityRef] = useState('')
+  const [cityTouched, setCityTouched] = useState(false)
+  const [branchPicked, setBranchPicked] = useState(false)
+  const isUkrposhta = form.deliveryMethod === 'ukrposhta'
+
+  const cities = useSuggestions('city', form.deliveryCity, undefined, !isUkrposhta)
+  const branches = useSuggestions('branch', form.deliveryBranch, cityRef, !isUkrposhta)
 
   const set =
     <K extends keyof DeliveryProfileValues>(key: K) =>
@@ -304,19 +321,38 @@ export const DeliveryProfile = ({
               labels={t.methods}
               blank={t.blank}
             />
-            <input
-              className="field"
-              aria-label={t.city}
+            <Suggest
+              label={t.city}
               placeholder={t.city}
               value={form.deliveryCity}
-              onChange={(event) => set('deliveryCity')(event.target.value)}
+              show={cityTouched && !cityRef}
+              items={cities.items}
+              onChange={(value) => {
+                setCityTouched(true)
+                set('deliveryCity')(value)
+                setCityRef('')
+              }}
+              onPick={(item) => {
+                set('deliveryCity')(item.label)
+                setCityRef(item.ref)
+                set('deliveryBranch')('')
+                setBranchPicked(false)
+              }}
             />
-            <input
-              className="field"
-              aria-label={t.branch}
+            <Suggest
+              label={t.branch}
               placeholder={t.branch}
               value={form.deliveryBranch}
-              onChange={(event) => set('deliveryBranch')(event.target.value)}
+              show={!branchPicked && form.deliveryMethod !== 'np_courier'}
+              items={branches.items}
+              onChange={(value) => {
+                set('deliveryBranch')(value)
+                setBranchPicked(false)
+              }}
+              onPick={(item) => {
+                set('deliveryBranch')(item.label)
+                setBranchPicked(true)
+              }}
             />
           </Fieldset>
 
