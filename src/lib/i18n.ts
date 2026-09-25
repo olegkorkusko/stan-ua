@@ -325,6 +325,9 @@ type Dictionary = {
     cancel: string
     empty: string
     moderationNote: string
+    /** Підписи стрілок стрічки — видно лише читачам екрана. */
+    prev: string
+    next: string
     failed: string
     offline: string
   }
@@ -616,6 +619,8 @@ const uk: Dictionary = {
     cancel: 'Скасувати',
     empty: 'Відгуків поки немає. Будете першою.',
     moderationNote: 'Відгук зʼявиться після перевірки — зазвичай протягом дня.',
+    prev: 'Попередні відгуки',
+    next: 'Наступні відгуки',
     failed: 'Не вдалось надіслати',
     offline: 'Немає звʼязку з сервером',
   },
@@ -1102,6 +1107,8 @@ const en: Dictionary = {
     cancel: 'Cancel',
     empty: 'No reviews yet. Be the first.',
     moderationNote: 'Your review appears after a quick check — usually within a day.',
+    prev: 'Previous reviews',
+    next: 'Next reviews',
     failed: 'Could not send the review',
     offline: 'No connection to the server',
   },

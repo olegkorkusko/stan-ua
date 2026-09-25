@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { useLocale } from '@/components/site/LocaleLink'
 import { SideDrawer } from '@/components/site/SideDrawer'
@@ -68,6 +68,26 @@ export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target
   const closeLabel = dictionary(locale).header.closeMenu
 
   const [open, setOpen] = useState(false)
+  /*
+    Відгуки їдуть стрічкою, а не лягають сіткою.
+
+    Сітка в три колонки лишала четвертий відгук самотнім у другому ряду з
+    двома порожніми клітинками поруч, а при двадцятьох розганяла сторінку
+    вниз на сім рядів. Стрічкою видно рівно три, решта гортається.
+
+    Гортання — звичайним scroll-snap, а не своїми обробниками дотику: інерцію
+    й відскок на краях браузер робить правильно, а ручний підрахунок пікселів
+    завжди виходить дерев'яним. Стрілки поруч потрібні лише миші — пальцем і
+    так гортається.
+  */
+  const track = useRef<HTMLDivElement>(null)
+
+  const slide = (direction: 1 | -1) => {
+    const element = track.current
+    if (!element) return
+    element.scrollBy({ left: direction * element.clientWidth, behavior: 'smooth' })
+  }
+
   const [form, setForm] = useState({ authorName: '', city: '', text: '', rating: 5 })
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -131,6 +151,36 @@ export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target
               )}
             </div>
 
+            <div className="flex shrink-0 items-center gap-3">
+              {/*
+                Стрілки з'являються, лише коли на десктопі щось не вміщається:
+                до трьох відгуків гортати нічого. На телефоні їх немає зовсім —
+                там гортають пальцем.
+              */}
+              {reviews.length > 3 && (
+                <div className="hidden items-center gap-2 md:flex">
+                  {([-1, 1] as const).map((direction) => (
+                    <button
+                      key={direction}
+                      type="button"
+                      onClick={() => slide(direction)}
+                      aria-label={direction === -1 ? t.prev : t.next}
+                      className="flex size-11 items-center justify-center rounded-[2px] border border-ink text-ink transition-colors hover:bg-ink hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-2"
+                    >
+                      <svg viewBox="0 0 14 11" fill="none" className="h-[11px] w-[14px]" aria-hidden="true">
+                        <path
+                          d={direction === 1 ? 'M0 5.5H14M8.5 0L14 5.5L8.5 11' : 'M14 5.5H0M5.5 0L0 5.5L5.5 11'}
+                          stroke="currentColor"
+                          strokeWidth="1.3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  ))}
+                </div>
+              )}
+
             {/* Кнопка 200×44, рамка #16150F, радіус 2 — 135:2833. */}
             <button
               type="button"
@@ -140,19 +190,25 @@ export const Reviews = ({ reviews, target }: { reviews: Review[]; target: Target
             >
               {t.leave}
             </button>
+            </div>
           </div>
 
           {reviews.length > 0 ? (
-            /* Сітка — 135:2835. Три колонки по 432 з кроком 32 на десктопі,
-               стовпчик із кроком 28 на мобільному. */
+            /* Стрічка — 135:2835. Крок між картками той самий, що був у сітці:
+               28 на мобільному, 32 на десктопі. Ширина картки на десктопі —
+               третина видимої частини за відрахуванням двох проміжків. */
             <div
               data-figma-node="135:2835"
-              className="grid grid-cols-1 gap-7 md:grid-cols-3 md:gap-8"
+              ref={track}
+              className="flex snap-x snap-mandatory gap-7 overflow-x-auto overscroll-x-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:gap-8 [&::-webkit-scrollbar]:hidden"
             >
               {reviews.map((review) => {
                 const date = formatDate(review.createdAt, locale)
                 return (
-                  <article key={review.id} className="flex flex-col gap-3">
+                  <article
+                    key={review.id}
+                    className="flex w-full shrink-0 snap-start flex-col gap-3 md:w-[calc((100%-4rem)/3)]"
+                  >
                     <div className="flex items-center gap-3">
                       <Stars value={review.rating} size={12} gap={3} />
                       {date && <span className="text-[13px] leading-[19.5px] text-muted">{date}</span>}
