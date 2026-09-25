@@ -150,8 +150,6 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
         return
       }
 
-      clear()
-
       if (data.payment) {
         // WayForPay приймає тільки form-post, тому збираємо форму й надсилаємо.
         const paymentForm = document.createElement('form')
@@ -174,6 +172,12 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
         return
       }
 
+      /*
+        Кошик чистимо лише тут, на гілці без оплати: замовлення вже прийняте,
+        рахунок виставлять окремо. Перед переходом на банк не чистимо — див.
+        ClearCartOnPaid.
+      */
+      clear()
       if (data.redirect) window.location.href = data.redirect
     } catch {
       setError('Немає звʼязку з сервером. Спробуйте ще раз.')

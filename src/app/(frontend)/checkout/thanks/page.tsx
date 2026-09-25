@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
+import { ClearCartOnPaid } from '@/components/site/ClearCartOnPaid'
 import { PurchaseTracking } from '@/components/site/PurchaseTracking'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
@@ -35,6 +36,8 @@ const ThanksPage = async ({ searchParams }: { searchParams: SearchParams }) => {
 
   return (
     <div className="shell flex min-h-[70svh] flex-col items-center justify-center py-24 text-center">
+      {paid && <ClearCartOnPaid />}
+
       {paid && order && (
         <PurchaseTracking
           orderNumber={order.orderNumber}

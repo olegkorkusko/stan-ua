@@ -281,7 +281,8 @@ export const DeliveryProfile = ({
           </div>
         }
       >
-        <div className="flex min-h-0 flex-col gap-6 overflow-y-auto">
+        {/* Прокрутку дає сама шухляда — другий overflow тут малював другу смугу. */}
+        <div className="flex flex-col gap-6">
           <Fieldset title={t.contacts}>
             <input
               className="field"

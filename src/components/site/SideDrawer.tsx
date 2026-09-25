@@ -64,7 +64,13 @@ export const SideDrawer = ({ open, onClose, title, closeLabel, footer, children 
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex min-h-0 flex-col gap-6">
+        {/*
+          flex-1 — щоб вміст займав усю висоту між заголовком і підвалом.
+          Без нього блок був заввишки з власний вміст, і будь-що, що виступало
+          за його межі — наприклад випадний список підказок, — вмикало смугу
+          прокрутки, хоча нижче в шухляді лишалося порожнє місце.
+        */}
+        <div className="flex min-h-0 flex-1 flex-col gap-6">
           <div className="flex items-center justify-between gap-4">
             <p className="font-display text-[17px] leading-[21.76px] tracking-[-0.005em] text-ink">
               {title}
