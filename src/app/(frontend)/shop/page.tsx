@@ -7,7 +7,7 @@ import { formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { landingCopy } from '@/lib/landing'
 import { getLocale } from '@/lib/locale'
-import { productVolumes, volumeKey } from '@/lib/volumes'
+import { categoryCards, cardKey } from '@/lib/cards'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
 // Не `force-static`: сторінка читає мову з заголовка запиту — див. lib/locale.ts
@@ -54,12 +54,16 @@ const ShopPage = async () => {
   // Тексти з адмінки поверх текстів із коду — див. lib/landing.ts
   const t = await landingCopy('shop-page', locale, dictionary(locale).shopLanding)
 
-  // Скільки товарів за карткою — з бази, а не рядком у словнику. Див. lib/volumes.ts
-  const volumes = await productVolumes()
-  const volumeFor = (href: string) => {
-    const volume = volumes.get(volumeKey(href) ?? '')
-    return volume ? t.categories.volume(volume.count, formatPrice(volume.from)) : t.categories.soon
-  }
+  /*
+    Назва, підпис, фото й кількість — з адмінки; словник лишається запасним
+    варіантом на порожні поля. Див. lib/cards.ts
+  */
+  const cards = await categoryCards(locale)
+  const cardFor = (href: string) => cards.get(cardKey(href) ?? '')
+  const volumeFor = (card?: { count: number; from: number }) =>
+    card && card.count > 0
+      ? t.categories.volume(card.count, formatPrice(card.from))
+      : t.categories.soon
 
   return (
     <div data-figma-node="70:1050" className="bg-paper">
@@ -128,7 +132,9 @@ const ShopPage = async () => {
           <SectionTitle data-figma-node="71:1204">{t.categories.title}</SectionTitle>
         </div>
         <div data-figma-node="158:3682" className="flex flex-col gap-7 md:flex-row md:gap-6">
-          {t.categories.items.map((item, index) => (
+          {t.categories.items.map((item, index) => {
+            const card = cardFor(item.href)
+            return (
             <Link
               key={item.href}
               href={item.href}
@@ -138,7 +144,7 @@ const ShopPage = async () => {
               <div className="relative aspect-[398/294] w-full overflow-hidden">
                 <Image
                   data-figma-node={CARD_IMAGE_NODE_IDS[index]}
-                  src={CATEGORY_IMAGES[index]}
+                  src={card?.image ?? CATEGORY_IMAGES[index]}
                   alt={item.imageAlt}
                   fill
                   unoptimized
@@ -164,7 +170,7 @@ const ShopPage = async () => {
                     data-figma-node={CARD_TITLE_NODE_IDS[index]}
                     className="font-display text-[17px] font-normal leading-[21.76px] tracking-[-0.005em] text-ink"
                   >
-                    {item.title}
+                    {card?.title ?? item.title}
                   </span>
                   <span
                     data-figma-node={CARD_ARROW_NODE_IDS[index]}
@@ -193,17 +199,18 @@ const ShopPage = async () => {
                   data-figma-node={CARD_SUBTITLE_NODE_IDS[index]}
                   className="text-[13px] font-normal leading-[19.5px] text-muted"
                 >
-                  {item.subtitle}
+                  {card?.subtitle ?? item.subtitle}
                 </span>
                 <span
                   data-figma-node={CARD_VOLUME_NODE_IDS[index]}
                   className="text-[13px] font-normal leading-[19.5px] text-muted"
                 >
-                  {volumeFor(item.href)}
+                  {volumeFor(card)}
                 </span>
               </div>
             </Link>
-          ))}
+            )
+          })}
         </div>
       </section>
 

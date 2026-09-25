@@ -7,7 +7,7 @@ import { formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { landingCopy } from '@/lib/landing'
 import { getLocale } from '@/lib/locale'
-import { courseVolumes, productVolumes, volumeKey } from '@/lib/volumes'
+import { categoryCards, cardKey, directionCards } from '@/lib/cards'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
 // Не `force-static`: сторінка читає мову з заголовка запиту — див. lib/locale.ts
@@ -53,14 +53,20 @@ const CoursesPage = async () => {
     «товари», — і береться зі словника тієї секції, яка за цю картку відповідає.
   */
   const shopCopy = dictionary(locale).shopLanding.categories
-  const [courses, products] = await Promise.all([courseVolumes(), productVolumes()])
+  const [directions, categories] = await Promise.all([
+    directionCards(locale),
+    categoryCards(locale),
+  ])
+
+  const cardFor = (href: string) =>
+    (href.startsWith('/courses/') ? directions : categories).get(cardKey(href) ?? '')
 
   const volumeFor = (href: string) => {
     const toCourses = href.startsWith('/courses/')
-    const volume = (toCourses ? courses : products).get(volumeKey(href) ?? '')
-    if (!volume) return toCourses ? t.directions.soon : shopCopy.soon
+    const card = cardFor(href)
+    if (!card || card.count === 0) return toCourses ? t.directions.soon : shopCopy.soon
     const label = toCourses ? t.directions.volume : shopCopy.volume
-    return label(volume.count, formatPrice(volume.from))
+    return label(card.count, formatPrice(card.from))
   }
 
   return (
@@ -130,6 +136,7 @@ const CoursesPage = async () => {
             {row.cards.map((index) => {
               const item = t.directions.items[index]
               if (!item) return null
+              const card = cardFor(item.href)
               return (
                 <Link
                   key={item.href}
@@ -144,7 +151,7 @@ const CoursesPage = async () => {
                   <div className="relative aspect-398/294 w-full overflow-hidden md:aspect-[668/480]">
                     <Image
                       data-figma-node={inner(index, '19:3')}
-                      src={DIRECTION_IMAGES[index]}
+                      src={card?.image ?? DIRECTION_IMAGES[index]}
                       alt={item.imageAlt}
                       fill
                       unoptimized
@@ -165,7 +172,7 @@ const CoursesPage = async () => {
                         data-figma-node={inner(index, '19:4')}
                         className="font-display text-[17px] font-normal leading-[21.76px] tracking-[-0.005em] text-ink"
                       >
-                        {item.title}
+                        {card?.title ?? item.title}
                       </span>
                       <span
                         data-figma-node={inner(index, '264:3')}
@@ -192,7 +199,7 @@ const CoursesPage = async () => {
                       data-figma-node={inner(index, '19:5')}
                       className="text-[13px] font-normal leading-[19.5px] text-muted"
                     >
-                      {item.subtitle}
+                      {card?.subtitle ?? item.subtitle}
                     </span>
                     <span
                       data-figma-node={inner(index, '19:6')}
