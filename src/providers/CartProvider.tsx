@@ -147,7 +147,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: toLines(items) }),
-      }).catch(() => undefined)
+      })
+        .then(async (response) => {
+          if (!response.ok) return
+          // Підказка залежить від вмісту кошика, тож приїжджає разом із
+          // відповіддю на запис — інакше лишалася б тією, що на завантаженні.
+          const data = (await response.json()) as { suggestion?: CartSuggestion | null }
+          setSuggestion(data.suggestion ?? null)
+        })
+        .catch(() => undefined)
     }, 600)
 
     return () => {

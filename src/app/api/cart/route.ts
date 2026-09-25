@@ -269,5 +269,14 @@ export const PUT = async (request: Request) => {
     ? await payload.update({ collection: 'carts', id: existing.id, data, overrideAccess: true })
     : await payload.create({ collection: 'carts', data, overrideAccess: true })
 
-  return withCookie({ items: await hydrate(payload, items) }, cart.token)
+  /*
+    Підказку віддаємо й тут, а не лише на читання кошика.
+
+    Вона залежить від того, що вже лежить у кошику: покладене зі списку
+    виключається. Поки її рахували тільки на завантаженні сторінки, шухляда
+    показувала підказку, обчислену для порожнього кошика — і пропонувала
+    докласти те, що людина щойно поклала.
+  */
+  const hydrated = await hydrate(payload, items)
+  return withCookie({ items: hydrated, suggestion: await suggest(payload, hydrated) }, cart.token)
 }
