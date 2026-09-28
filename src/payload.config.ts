@@ -36,6 +36,12 @@ export default buildConfig({
     15 МБ вистачає з запасом: фото після зменшення важать менше мегабайта.
   */
   upload: { limits: { fileSize: 15 * 1024 * 1024 }, abortOnLimit: true },
+  /*
+    Без цього Payload будує посилання у службових листах із порожнього домену:
+    у листі «забули пароль» виходило http:///admin/reset/<токен>, і браузер
+    відмовлявся відкривати. Значення те саме, що й у решти сайту.
+  */
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL,
   admin: {
     user: Users.slug,
     meta: {
