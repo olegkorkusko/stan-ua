@@ -4,6 +4,8 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { notFound } from 'next/navigation'
 
 import { CourseCard } from '@/components/site/CourseCard'
+import { cardKey } from '@/lib/cards'
+import { dictionary, type Locale } from '@/lib/i18n'
 import { imageAlt, imageUrl } from '@/lib/media'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
@@ -16,7 +18,18 @@ type Params = Promise<{ direction: string }>
 const findDirection = async (slug: string) => {
   const payload = await payloadClient()
   const locale = await getLocale()
-  const result = await payload.find({ locale,
+  const result = await payload.find({
+    locale,
+    /*
+      Без підстановки мови — так само, як у картках напрямів (lib/cards.ts).
+
+      З нею порожнє англійське поле підмінялося українським, і виходила
+      нісенітниця: у списку напрямів картка називалась «Macramé», а на самій
+      сторінці цього ж напряму заголовок був «Макраме». Тепер обидва місця
+      беруть переклад з одного джерела — зі словника, поки клієнтка не впише
+      англійську назву в адмінці.
+    */
+    fallbackLocale: false,
     collection: 'course-directions',
     where: { slug: { equals: slug } },
     limit: 1,
@@ -24,11 +37,21 @@ const findDirection = async (slug: string) => {
   return result.docs[0] ?? null
 }
 
+/** Те, що показуємо, коли напрям ще не перекладено: текст із словника. */
+const fromDictionary = (locale: Locale, slug: string) =>
+  dictionary(locale).coursesLanding.directions.items.find(
+    (item) => cardKey(item.href) === slug,
+  )
+
 export const generateMetadata = async ({ params }: { params: Params }): Promise<Metadata> => {
   const { direction: slug } = await params
   const direction = await findDirection(slug)
   if (!direction) return {}
-  return { title: direction.title, description: direction.description ?? undefined }
+  const spare = fromDictionary(await getLocale(), slug)
+  return {
+    title: direction.title || spare?.title || slug,
+    description: direction.description ?? spare?.subtitle ?? undefined,
+  }
 }
 
 const DirectionPage = async ({ params }: { params: Params }) => {
@@ -38,6 +61,12 @@ const DirectionPage = async ({ params }: { params: Params }) => {
 
   const payload = await payloadClient()
   const locale = await getLocale()
+  const t = dictionary(locale)
+  const spare = fromDictionary(locale, slug)
+  const title = direction.title || spare?.title || slug
+  const tagline = direction.tagline || spare?.subtitle
+  const description = direction.description
+
   const courses = await payload.find({ locale,
     collection: 'courses',
     where: { status: { equals: 'published' }, direction: { equals: direction.id } },
@@ -55,7 +84,7 @@ const DirectionPage = async ({ params }: { params: Params }) => {
           {cover ? (
             <Image
               src={cover}
-              alt={imageAlt(direction.image, direction.title)}
+              alt={imageAlt(direction.image, title)}
               fill
               priority
               sizes="100vw"
@@ -69,20 +98,20 @@ const DirectionPage = async ({ params }: { params: Params }) => {
 
         <div className="shell relative pb-10 text-paper">
           <Link href="/courses" className="label text-paper/70 hover:text-paper">
-            Курси
+            {t.common.courses}
           </Link>
           {/* Той самий герой, що на лендингах магазину й курсів: підпис
               і великий заголовок поверх темного фото. Тому й кегль спільний —
               токен --text-hero, а не власний clamp, який тут стояв і давав
               на мобільному 32 проти 30 у сусідів. */}
-          <h1 className="mt-3 font-display text-hero font-normal">{direction.title}</h1>
-          {direction.tagline && <p className="mt-2 text-sm text-paper/80">{direction.tagline}</p>}
+          <h1 className="mt-3 font-display text-hero font-normal">{title}</h1>
+          {tagline && <p className="mt-2 text-sm text-paper/80">{tagline}</p>}
         </div>
       </section>
 
       <div className="shell mt-14">
-        {direction.description && (
-          <p className="max-w-xl text-[0.9375rem] leading-relaxed text-muted">{direction.description}</p>
+        {description && (
+          <p className="max-w-xl text-[0.9375rem] leading-relaxed text-muted">{description}</p>
         )}
 
         {courses.docs.length > 0 ? (
