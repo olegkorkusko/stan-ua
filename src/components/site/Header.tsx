@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CloseButton } from '@/components/site/CloseButton'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { plural } from '@/lib/format'
+import { formatPrice } from '@/lib/format'
 import { dictionary, LOCALES, localePath, type Locale } from '@/lib/i18n'
 import { useScrollLock } from '@/lib/useScrollLock'
 import { useCart } from '@/providers/CartProvider'
@@ -19,6 +20,8 @@ type Props = {
    * 1440×40), а не окремий блок над нею, тому приходить сюди пропом.
    */
   announcement?: string | null
+  /** Поріг безкоштовної доставки — з нього складається смуга, якщо тексту немає. */
+  freeDeliveryFrom?: number | null
 }
 
 const LOCALE_LABELS: Record<Locale, string> = { uk: 'UA', en: 'EN' }
@@ -33,10 +36,28 @@ const LOCALE_LABELS: Record<Locale, string> = { uk: 'UA', en: 'EN' }
   лишається в потоці й їде вгору — так це працює на mejuri, і так шапка не
   накриває верх сторінки, поки її не прокрутили.
 */
-export const Header = ({ locale, announcement }: Props) => {
+export const Header = ({ locale, announcement, freeDeliveryFrom }: Props) => {
   // Словник збираємо тут, а не приймаємо пропом: у ньому є функції,
   // а їх не можна передати із серверного компонента в клієнтський.
   const t = dictionary(locale)
+
+  /*
+    Смугу складаємо з порога безкоштовної доставки, якщо власниця не вписала
+    свій текст.
+
+    Досі те саме число жило у двох полях: у «Рядку-оголошенні» текстом і в
+    «Безкоштовна доставка від» числом. Поміняла поріг на 2000 — кошик рахує
+    по-новому, а смуга вгорі й далі обіцяє 1500. Тепер джерело одне, а поле
+    з текстом лишається для інших оголошень: «Відправляємо через день» тощо.
+
+    Ще один наслідок: складений текст перекладається сам. Вписаний руками —
+    ні, його треба перекласти в адмінці окремо для кожної мови.
+  */
+  const promo =
+    announcement?.trim() ||
+    (typeof freeDeliveryFrom === 'number' && freeDeliveryFrom > 0
+      ? t.cart.freeDeliveryFrom(formatPrice(freeDeliveryFrom))
+      : null)
   const currentPath = usePathname()
   // Шлях без мовного префікса: перемикач мов має лишати вас на тій самій
   // сторінці. Беремо його з роутера, а не з заголовка запиту — інакше на
@@ -193,12 +214,12 @@ export const Header = ({ locale, announcement }: Props) => {
       */}
       <header
         data-sticky-header
-        className={`sticky z-50 bg-paper ${announcement ? '-top-9 md:-top-10' : 'top-0'}`}
+        className={`sticky z-50 bg-paper ${promo ? '-top-9 md:-top-10' : 'top-0'}`}
       >
-        {announcement && (
+        {promo && (
           <div className="bg-ink">
             <p className="shell flex h-9 items-center justify-center text-center text-eyebrow uppercase text-paper md:h-10">
-              {announcement}
+              {promo}
             </p>
           </div>
         )}

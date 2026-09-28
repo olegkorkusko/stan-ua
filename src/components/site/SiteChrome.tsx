@@ -93,7 +93,11 @@ export const SiteChrome = ({ locale, settings, children }: Props) => {
     <>
       {/* Промо-смуга — верхній поверх самої шапки, як у макеті, тому йде
           всередину Header, а не окремим блоком над ним. */}
-      <Header locale={locale} announcement={settings?.announcement} />
+      <Header
+        locale={locale}
+        announcement={settings?.announcement}
+        freeDeliveryFrom={settings?.freeDeliveryFrom}
+      />
       <main key={pathname} className="show-slow">
         {children}
       </main>

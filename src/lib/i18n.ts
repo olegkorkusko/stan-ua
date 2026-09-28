@@ -50,6 +50,8 @@ type Dictionary = {
     /** «До безкоштовної доставки — ще 440 ₴»; {sum} — скільки лишилось добрати. */
     freeDeliveryLeft: string
     freeDeliveryReached: string
+    /** Промо-смуга вгорі сайту, коли власниця не вписала свій текст. */
+    freeDeliveryFrom: (sum: string) => string
     summary: string
     items: string
     delivery: string
@@ -435,6 +437,7 @@ const uk: Dictionary = {
     close: 'Закрити',
     freeDeliveryLeft: 'До безкоштовної доставки — ще {sum}',
     freeDeliveryReached: 'Доставка безкоштовна',
+    freeDeliveryFrom: (sum: string) => `Безкоштовна доставка від ${sum}`,
     summary: 'Підсумок',
     items: 'Товари',
     delivery: 'Доставка',
@@ -936,6 +939,7 @@ const en: Dictionary = {
     close: 'Close',
     freeDeliveryLeft: '{sum} away from free shipping',
     freeDeliveryReached: 'Free shipping unlocked',
+    freeDeliveryFrom: (sum: string) => `Free shipping from ${sum}`,
     summary: 'Summary',
     items: 'Items',
     delivery: 'Shipping',
