@@ -1560,7 +1560,7 @@ export interface About {
 export interface Setting {
   id: number;
   /**
-   * Наприклад: «Безкоштовна доставка від 1500 ₴». Порожньо — рядок не показується. На головній його немає: там сторінка без шапки.
+   * Порожньо — смуга складається сама з порога безкоштовної доставки й перекладається. Впишіть свій текст, щоб показати інше оголошення — тоді його треба перекласти окремо для кожної мови.
    */
   announcement?: string | null;
   phone?: string | null;
@@ -1568,6 +1568,10 @@ export interface Setting {
    * Публічна — показується в підвалі сайту.
    */
   email?: string | null;
+  /**
+   * Напишіть боту @stanua_access_bot «Почати» — він одразу надішле ваш номер. Вставте його сюди. Кілька людей — через кому.
+   */
+  telegramNotify?: string | null;
   /**
    * Куди писати про нові замовлення. Порожньо — сповіщення йдуть лише в Telegram. Тут доречна робоча адреса, яку читають щодня.
    */
@@ -1579,7 +1583,7 @@ export interface Setting {
   instagram?: string | null;
   telegram?: string | null;
   /**
-   * Порожньо — доставка завжди платна за тарифами перевізника.
+   * Це саме число працює у двох місцях: смуга прогресу в кошику й оголошення вгорі сайту. Порожньо — доставка завжди платна, а смуги вгорі немає.
    */
   freeDeliveryFrom?: number | null;
   /**
@@ -1745,6 +1749,7 @@ export interface SettingsSelect<T extends boolean = true> {
   announcement?: T;
   phone?: T;
   email?: T;
+  telegramNotify?: T;
   orderNotifyEmail?: T;
   notifyPendingOrders?: T;
   instagram?: T;

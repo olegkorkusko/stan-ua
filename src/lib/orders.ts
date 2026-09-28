@@ -413,16 +413,17 @@ export const fulfillOrder = async (
       'Покупцеві надішліть доступ вручну.'
     : ''
 
-  await notifyAdmin(
-    `<b>Оплачено ${order.orderNumber}</b>\n${summary}\n\n${formatPrice(order.total)}\n${order.customerName}, ${order.customerPhone}${alarm}`,
-  )
-
   /*
-    Те саме на пошту — але лише якщо клієнтка вписала адресу для сповіщень.
-    Telegram бачать не всі й не завжди: звук буває вимкнений, а замовлення
-    треба зібрати сьогодні. Порожнє поле означає «досить Telegram».
+    Налаштування читаємо до сповіщення: у них і адреси Telegram, і пошта.
+    Telegram бачать не всі й не завжди — звук буває вимкнений, а замовлення
+    треба зібрати сьогодні; порожня пошта означає «досить Telegram».
   */
   const settings = await payload.findGlobal({ slug: 'settings', depth: 0 }).catch(() => null)
+
+  await notifyAdmin(
+    `<b>Оплачено ${order.orderNumber}</b>\n${summary}\n\n${formatPrice(order.total)}\n${order.customerName}, ${order.customerPhone}${alarm}`,
+    settings?.telegramNotify,
+  )
   const notifyTo = settings?.orderNotifyEmail
   if (notifyTo) {
     await payload

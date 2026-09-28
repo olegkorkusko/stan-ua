@@ -88,6 +88,11 @@ export const courseChannelProblem = async (chatId: string): Promise<string | nul
   return null
 }
 
+/** Одне повідомлення в один чат. Потрібне вебхуку, який відповідає на «Почати». */
+export const sendMessage = async (chatId: number | string, text: string): Promise<void> => {
+  await call('sendMessage', { chat_id: chatId, text, parse_mode: 'HTML' })
+}
+
 /*
   Сповіщення про нове замовлення.
 
@@ -97,16 +102,20 @@ export const courseChannelProblem = async (chatId: string): Promise<string | nul
   Кожне повідомлення йде окремим запитом: якщо одна адреса відвалилась —
   скажімо, людина заблокувала бота, — решта все одно отримає своє.
 */
-export const notifyAdmin = async (text: string): Promise<void> => {
-  const chats = (process.env.TELEGRAM_ADMIN_CHAT_ID ?? '')
+export const notifyAdmin = async (text: string, extra?: string | null): Promise<void> => {
+  const chats = [process.env.TELEGRAM_ADMIN_CHAT_ID, extra]
+    .filter(Boolean)
+    .join(',')
     .split(',')
     .map((chat) => chat.trim())
     .filter(Boolean)
 
+  // Той самий номер міг прийти і зі змінної, і з налаштувань — шлемо раз.
   await Promise.all(
-    chats.map((chat_id) => call('sendMessage', { chat_id, text, parse_mode: 'HTML' })),
+    [...new Set(chats)].map((chat_id) => call('sendMessage', { chat_id, text, parse_mode: 'HTML' })),
   )
 }
+
 
 /** Публікація розсилки у відкритий Telegram-канал бренду. */
 export const broadcastToChannel = async (text: string): Promise<void> => {

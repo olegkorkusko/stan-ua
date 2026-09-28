@@ -38,6 +38,15 @@ export const Settings: GlobalConfig = {
               admin: { description: 'Публічна — показується в підвалі сайту.' },
             },
             {
+              name: 'telegramNotify',
+              type: 'text',
+              label: 'Telegram для сповіщень про замовлення',
+              admin: {
+                description:
+                  'Напишіть боту @stanua_access_bot «Почати» — він одразу надішле ваш номер. Вставте його сюди. Кілька людей — через кому.',
+              },
+            },
+            {
               name: 'orderNotifyEmail',
               type: 'email',
               label: 'Пошта для сповіщень про замовлення',

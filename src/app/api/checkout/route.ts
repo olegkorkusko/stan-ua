@@ -162,7 +162,9 @@ export const POST = async (request: Request) => {
           : 'Оплата на сайті не підключена — виставте рахунок вручну.',
       ].join('\n')
 
-      await notifyAdmin(text.replace(orderNumber, `<b>${orderNumber}</b>`)).catch(() => {})
+      await notifyAdmin(text.replace(orderNumber, `<b>${orderNumber}</b>`), settings?.telegramNotify).catch(
+        () => {},
+      )
 
       /*
         Лист — доповнення, не заміна: у Telegram повідомлення йде завжди, а
