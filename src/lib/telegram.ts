@@ -88,11 +88,24 @@ export const courseChannelProblem = async (chatId: string): Promise<string | nul
   return null
 }
 
-/** Сповіщення власниці про нове оплачене замовлення. */
+/*
+  Сповіщення про нове замовлення.
+
+  Адрес може бути кілька через кому: власниця бачить замовлення, розробник —
+  помилки. Раніше приймалась одна, і доводилось вибирати, кому саме важливіше.
+
+  Кожне повідомлення йде окремим запитом: якщо одна адреса відвалилась —
+  скажімо, людина заблокувала бота, — решта все одно отримає своє.
+*/
 export const notifyAdmin = async (text: string): Promise<void> => {
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID
-  if (!chatId) return
-  await call('sendMessage', { chat_id: chatId, text, parse_mode: 'HTML' })
+  const chats = (process.env.TELEGRAM_ADMIN_CHAT_ID ?? '')
+    .split(',')
+    .map((chat) => chat.trim())
+    .filter(Boolean)
+
+  await Promise.all(
+    chats.map((chat_id) => call('sendMessage', { chat_id, text, parse_mode: 'HTML' })),
+  )
 }
 
 /** Публікація розсилки у відкритий Telegram-канал бренду. */
