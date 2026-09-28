@@ -3,6 +3,8 @@
 import Image from 'next/image'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
+import { NoPhoto } from '@/components/site/Picture'
+
 export type GalleryImage = { src: string; alt: string }
 
 /*
@@ -121,7 +123,7 @@ export const MediaGallery = ({
     return (
       <div data-figma-node={nodes?.frame} className="flex flex-col gap-4 md:flex-row md:gap-8">
         <div className={FRAME}>
-          <div className="weave h-full w-full" />
+          <NoPhoto />
         </div>
       </div>
     )

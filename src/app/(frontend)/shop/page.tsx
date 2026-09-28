@@ -3,6 +3,7 @@ import Image from 'next/image'
 
 import { HeroCta } from '@/components/site/HeroCta'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
+import { Picture } from '@/components/site/Picture'
 import { formatDay, formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { landingCopy } from '@/lib/landing'
@@ -160,8 +161,11 @@ const ShopPage = async () => {
               className="group flex flex-1 flex-col gap-5 bg-[#F4F4F4] transition-colors hover:bg-[#EBEBEB] active:bg-[#E0E0E0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <div className="relative aspect-[398/294] w-full overflow-hidden">
-                <Image
-                  data-figma-node={CARD_IMAGE_NODE_IDS[index]}
+                {/* Фото категорії з адмінки; поки його немає — кадр із макета.
+                    Карток може стати більше, ніж кадрів у коді (їх додають в
+                    адмінці), і тоді зайва отримує заглушку, а не порожній src. */}
+                <Picture
+                  node={CARD_IMAGE_NODE_IDS[index]}
                   src={card?.image ?? CATEGORY_IMAGES[index]}
                   alt={item.imageAlt}
                   fill
@@ -319,16 +323,14 @@ const ShopPage = async () => {
                   className="group flex flex-1 flex-col items-center gap-[18px] border border-[#EFE9DF] transition-colors hover:border-[#16150F] active:bg-[#F2EFE9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                   <div className="relative aspect-[397/265] w-full overflow-hidden bg-paper-deep">
-                    {cover && (
-                      <Image
-                        data-figma-node={JOURNAL_CARD_IMAGES[index]}
-                        src={cover}
-                        alt={imageAlt(post.cover, post.title)}
-                        fill
-                        sizes="(min-width: 768px) 33vw, 100vw"
-                        className="object-cover"
-                      />
-                    )}
+                    <Picture
+                      node={JOURNAL_CARD_IMAGES[index]}
+                      src={cover}
+                      alt={imageAlt(post.cover, post.title)}
+                      fill
+                      sizes="(min-width: 768px) 33vw, 100vw"
+                      className="object-cover"
+                    />
                   </div>
                   <div
                     data-figma-node={JOURNAL_CARD_BODIES[index]}

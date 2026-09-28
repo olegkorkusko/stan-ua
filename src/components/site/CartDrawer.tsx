@@ -1,11 +1,11 @@
 'use client'
 
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 
 import { CloseButton } from '@/components/site/CloseButton'
 import { LocaleLink as Link, useLocale } from '@/components/site/LocaleLink'
+import { Picture } from '@/components/site/Picture'
 import { formatPrice } from '@/lib/format'
 import { FREE_DELIVERY_FROM } from '@/lib/delivery'
 import { dictionary } from '@/lib/i18n'
@@ -265,18 +265,14 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
                       onClick={close}
                       className="relative h-26 w-full shrink-0 md:w-26"
                     >
-                      {item.image ? (
-                        <Image
-                          src={item.image}
-                          alt={item.title}
-                          data-figma-node={node?.photo}
-                          fill
-                          sizes="(min-width: 768px) 104px, 100vw"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <span className="weave block h-full w-full" />
-                      )}
+                      <Picture
+                        src={item.image}
+                        alt={item.title}
+                        node={node?.photo}
+                        fill
+                        sizes="(min-width: 768px) 104px, 100vw"
+                        className="object-cover"
+                      />
                     </Link>
 
                     <div
@@ -421,18 +417,14 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
                     onClick={close}
                     className="relative size-18 shrink-0"
                   >
-                    {suggestion.image ? (
-                      <Image
-                        src={suggestion.image}
-                        alt={suggestion.title}
-                        data-figma-node="123:2737"
-                        fill
-                        sizes="72px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <span className="weave block h-full w-full" />
-                    )}
+                    <Picture
+                      src={suggestion.image}
+                      alt={suggestion.title}
+                      node="123:2737"
+                      fill
+                      sizes="72px"
+                      className="object-cover"
+                    />
                   </Link>
                   <div data-figma-node="123:2738" className="flex min-w-0 flex-1 flex-col gap-1.25">
                     <Link

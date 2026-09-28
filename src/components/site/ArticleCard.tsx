@@ -1,6 +1,5 @@
-import Image from 'next/image'
-
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
+import { Picture } from '@/components/site/Picture'
 
 /*
   Картка статті за макетом (компонент 97:2: «Обкладинка» 97:3 і «Текст» 162:4
@@ -78,20 +77,16 @@ export const ArticleCard = ({
     className="group flex flex-col gap-[18px] border-y border-edge transition-colors hover:border-ink sm:border"
   >
     <div className="relative -mt-px h-80 overflow-hidden bg-paper-deep sm:-mx-px">
-      {cover ? (
-        <Image
-          data-figma-node={nodes?.cover}
-          src={cover.src}
-          alt={cover.alt}
-          fill
-          sizes={sizes}
-          priority={priority}
-          quality={90}
-          className="object-cover"
-        />
-      ) : (
-        <div data-figma-node={nodes?.cover} className="weave h-full w-full" />
-      )}
+      <Picture
+        node={nodes?.cover}
+        src={cover?.src}
+        alt={cover?.alt ?? title}
+        fill
+        sizes={sizes}
+        priority={priority}
+        quality={90}
+        className="object-cover"
+      />
     </div>
 
     <div

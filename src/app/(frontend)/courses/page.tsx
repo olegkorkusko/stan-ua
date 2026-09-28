@@ -3,6 +3,7 @@ import Image from 'next/image'
 
 import { HeroCta } from '@/components/site/HeroCta'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
+import { Picture } from '@/components/site/Picture'
 import { formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { landingCopy } from '@/lib/landing'
@@ -151,8 +152,11 @@ const CoursesPage = async () => {
                       висока 358/480 з'їдала півекрана на кожну. На десктопі
                       лишається 668/480 з макета. */}
                   <div className="relative aspect-398/294 w-full overflow-hidden md:aspect-[668/480]">
-                    <Image
-                      data-figma-node={inner(index, '19:3')}
+                    {/* Фото напряму з адмінки; поки його немає — кадр із макета.
+                        Напрямів може стати більше, ніж кадрів у коді, і тоді
+                        зайвий отримує заглушку, а не порожній src. */}
+                    <Picture
+                      node={inner(index, '19:3')}
                       src={card?.image ?? DIRECTION_IMAGES[index]}
                       alt={item.imageAlt}
                       fill

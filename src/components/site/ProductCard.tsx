@@ -1,6 +1,6 @@
-import Image from 'next/image'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
+import { Picture } from '@/components/site/Picture'
 import { SaveButton } from '@/components/site/SaveButton'
 import { formatPrice } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
@@ -42,17 +42,13 @@ export const ProductCard = ({
   return (
     <article className="group relative flex flex-col gap-3 bg-[#F4F4F4] md:gap-[18px]">
       <div className="relative aspect-[190/228] overflow-hidden bg-paper-deep md:aspect-[348/400]">
-          {primary ? (
-            <Image
-              src={primary}
-              alt={imageAlt(images[0], product.title)}
-              fill
-              sizes="(max-width: 768px) 50vw, 25vw"
-              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.07] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-            />
-          ) : (
-            <div className="weave h-full w-full" />
-          )}
+          <Picture
+            src={primary}
+            alt={imageAlt(images[0], product.title)}
+            fill
+            sizes="(max-width: 768px) 50vw, 25vw"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.07] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+          />
 
         {!product.inStock && (
           <span className="absolute left-3 top-3 bg-paper/90 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">

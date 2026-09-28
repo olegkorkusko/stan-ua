@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { notFound } from 'next/navigation'
 
 import { CourseCard } from '@/components/site/CourseCard'
+import { Picture } from '@/components/site/Picture'
 import { cardKey } from '@/lib/cards'
 import { dictionary, type Locale } from '@/lib/i18n'
 import { imageAlt, imageUrl } from '@/lib/media'
@@ -81,18 +81,14 @@ const DirectionPage = async ({ params }: { params: Params }) => {
     <div className="pb-24">
       <section className="relative flex h-[52svh] min-h-80 items-end overflow-hidden">
         <div className="absolute inset-0">
-          {cover ? (
-            <Image
-              src={cover}
-              alt={imageAlt(direction.image, title)}
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
-            />
-          ) : (
-            <div className="weave h-full w-full" />
-          )}
+          <Picture
+            src={cover}
+            alt={imageAlt(direction.image, title)}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
           <div className="absolute inset-0 bg-linear-to-t from-ink/65 to-ink/20" />
         </div>
 

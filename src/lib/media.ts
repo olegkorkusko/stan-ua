@@ -3,8 +3,12 @@ import type { Media } from '@/payload-types'
 type MediaLike = number | string | Media | null | undefined
 
 /**
- * Поки клієнтка не завантажила фото, компоненти показують «переплетення»
- * замість сірого прямокутника. Тому тут повертається null, а не заглушка.
+ * Адреса файлу або null, якщо фото немає. Заглушку тут не підставляємо: що
+ * малювати замість фото, знає <Picture> — див. components/site/Picture.tsx.
+ *
+ * Адреса лишається відносною (/api/media/file/...). Абсолютну next/image
+ * вважає зовнішнім ресурсом і без дозволу в remotePatterns не оптимізує —
+ * саме тому в payload.config.ts немає serverURL.
  */
 export const imageUrl = (media: MediaLike, size?: 'thumbnail' | 'card' | 'wide' | 'hero'): string | null => {
   if (!media || typeof media === 'number' || typeof media === 'string') return null

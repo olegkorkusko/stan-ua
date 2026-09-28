@@ -1,11 +1,11 @@
 'use client'
 
-import Image from 'next/image'
 import { useState } from 'react'
 
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 import { useLocale } from '@/components/site/LocaleLink'
+import { Picture } from '@/components/site/Picture'
 import { dictionary } from '@/lib/i18n'
 
 export type Addon = {
@@ -54,17 +54,16 @@ export const KitAddons = ({ addons }: { addons: Addon[] }) => {
                   }
                   className="accent-ink"
                 />
-                {addon.image ? (
-                  <Image
+                {/* Кадр сталого розміру: заглушка заповнює його так само, як фото. */}
+                <span className="relative block h-14 w-11 shrink-0 overflow-hidden">
+                  <Picture
                     src={addon.image}
                     alt={addon.title}
-                    width={44}
-                    height={55}
-                    className="h-14 w-11 object-cover"
+                    fill
+                    sizes="44px"
+                    className="object-cover"
                   />
-                ) : (
-                  <span className="weave h-14 w-11" />
-                )}
+                </span>
                 <span className="flex-1 text-sm">{addon.title}</span>
                 <span className="price text-brass">{formatPrice(addon.price)}</span>
               </label>

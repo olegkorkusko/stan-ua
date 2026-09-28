@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 
 import { AccountGuest } from '@/components/site/AccountGuest'
 import { AccountShell, type AccountShellNodes } from '@/components/site/AccountShell'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { LogoutButton } from '@/components/site/LogoutButton'
+import { Picture } from '@/components/site/Picture'
 import { ResendAccess } from '@/components/site/ResendAccess'
 import { accountCustomer } from '@/lib/account'
 import { plural } from '@/lib/format'
@@ -110,18 +110,14 @@ const AccountPage = async () => {
                   href={courseHref(course)}
                   className="relative block h-[220px] w-full shrink-0 overflow-hidden bg-paper-deep transition-opacity hover:opacity-85 active:opacity-70 md:h-[140px] md:w-[112px]"
                 >
-                  {cover ? (
-                    <Image
-                      src={cover}
-                      alt={imageAlt(course.cover, course.title)}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 112px"
-                      data-figma-node={nodes?.cover}
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div data-figma-node={nodes?.cover} className="weave h-full w-full" />
-                  )}
+                  <Picture
+                    src={cover}
+                    alt={imageAlt(course.cover, course.title)}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 112px"
+                    node={nodes?.cover}
+                    className="object-cover"
+                  />
                 </Link>
 
                 <div

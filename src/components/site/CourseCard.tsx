@@ -1,6 +1,6 @@
-import Image from 'next/image'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
+import { Picture } from '@/components/site/Picture'
 import { SaveButton } from '@/components/site/SaveButton'
 import { formatPrice, plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
@@ -80,18 +80,14 @@ export const CourseCard = ({
         data-figma-node={nodes?.frame}
         className="relative aspect-[190/228] overflow-hidden bg-paper-deep md:aspect-[348/400]"
       >
-        {cover ? (
-          <Image
-            src={cover}
-            alt={imageAlt(course.cover, course.title)}
-            fill
-            sizes="(max-width: 768px) 100vw, 33vw"
-            data-figma-node={nodes?.cover}
-            className="object-cover transition-transform duration-[220ms] ease-out group-hover:scale-[1.07] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-          />
-        ) : (
-          <div data-figma-node={nodes?.cover} className="weave h-full w-full" />
-        )}
+        <Picture
+          src={cover}
+          alt={imageAlt(course.cover, course.title)}
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          node={nodes?.cover}
+          className="object-cover transition-transform duration-[220ms] ease-out group-hover:scale-[1.07] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+        />
       </div>
 
       {/* flex-1 + mt-auto нижче: підписи в курсів різної довжини, і без цього

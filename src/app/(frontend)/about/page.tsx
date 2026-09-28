@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 
+import { Picture } from '@/components/site/Picture'
 import { getLocale } from '@/lib/locale'
 import { imageAlt, imageUrl } from '@/lib/media'
 import { payloadClient } from '@/lib/payload'
@@ -85,18 +85,14 @@ const AboutPage = async () => {
         data-figma-node="94:2091"
         className="relative h-80 w-full overflow-hidden bg-paper-deep md:h-[680px]"
       >
-        {photo ? (
-          <Image
-            src={photo}
-            alt={imageAlt(about?.photo, about?.title ?? '')}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-        ) : (
-          <div className="weave h-full w-full" />
-        )}
+        <Picture
+          src={photo}
+          alt={imageAlt(about?.photo, about?.title ?? '')}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
       </div>
 
       {values.length > 0 && (
