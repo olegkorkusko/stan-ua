@@ -80,7 +80,13 @@ export const directionCards = async (locale: Locale): Promise<Map<string, Card>>
   const payload = await payloadClient()
   const [directions, courses] = await Promise.all([
     // depth: 1 — щоб обкладинка прийшла документом, а не самим лише id.
-    payload.find({ collection: 'course-directions', locale, limit: 50, depth: 1 }),
+    payload.find({
+      collection: 'course-directions',
+      locale,
+      fallbackLocale: false,
+      limit: 50,
+      depth: 1,
+    }),
     payload.find({
       collection: 'courses',
       where: { status: { equals: 'published' } },
@@ -105,7 +111,13 @@ export const directionCards = async (locale: Locale): Promise<Map<string, Card>>
 export const categoryCards = async (locale: Locale): Promise<Map<string, Card>> => {
   const payload = await payloadClient()
   const [categories, products] = await Promise.all([
-    payload.find({ collection: 'categories', locale, limit: 50, depth: 1 }),
+    payload.find({
+      collection: 'categories',
+      locale,
+      fallbackLocale: false,
+      limit: 50,
+      depth: 1,
+    }),
     payload.find({
       collection: 'products',
       where: { status: { equals: 'published' } },
