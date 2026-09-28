@@ -37,11 +37,17 @@ export default buildConfig({
   */
   upload: { limits: { fileSize: 15 * 1024 * 1024 }, abortOnLimit: true },
   /*
-    Без цього Payload будує посилання у службових листах із порожнього домену:
-    у листі «забули пароль» виходило http:///admin/reset/<токен>, і браузер
-    відмовлявся відкривати. Значення те саме, що й у решти сайту.
+    serverURL тут НЕ ставимо — навмисно.
+
+    Він міняє не лише посилання в листах, а й адреси файлів: із ним url медіа
+    стає абсолютним (https://домен/api/media/file/...). Для next/image це вже
+    зовнішній ресурс, а зовнішні дозволені списком remotePatterns у
+    next.config.ts — свого домену там немає, і оптимізатор відповідає 400 на
+    КОЖНЕ фото з адмінки. Сайт лишається цілим, а зображень на ньому немає.
+
+    Службові листи в цьому не потребують: і Users, і Customers будують
+    посилання самі з NEXT_PUBLIC_SERVER_URL — див. generateEmailHTML.
   */
-  serverURL: process.env.NEXT_PUBLIC_SERVER_URL,
   admin: {
     user: Users.slug,
     meta: {

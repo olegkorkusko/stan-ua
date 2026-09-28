@@ -50,6 +50,14 @@ export const generateMetadata = async (): Promise<Metadata> => {
   const image = imageUrl(settings?.seoImage, 'wide')
 
   return {
+    /*
+      Адреси медіа відносні (/api/media/file/...) — так їх бачить next/image,
+      і так їх має бачити оптимізатор. Але у превʼю для соцмереж відносного
+      шляху не досить: Facebook і Telegram тягнуть картинку з нуля й не знають,
+      від чого її відраховувати. metadataBase — те, від чого Next розгортає
+      будь-який відносний шлях у метаданих: тут і нижче в журналі та сторінках.
+    */
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000'),
     title: { default: settings?.seoTitle || DEFAULT_TITLE, template: '%s · STAN_UA' },
     description: settings?.seoDescription || DEFAULT_DESCRIPTION,
     openGraph: {
