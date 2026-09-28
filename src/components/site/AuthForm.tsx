@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
+import { useLocale } from '@/components/site/LocaleLink'
 import { Tabs } from '@/components/site/Tabs'
+import { dictionary } from '@/lib/i18n'
 
 type Mode = 'login' | 'link' | 'register'
 
@@ -37,6 +39,7 @@ const REGISTRATION_ENABLED = false
  */
 export const AuthForm = () => {
   const router = useRouter()
+  const t = dictionary(useLocale()).auth
   const [mode, setMode] = useState<Mode>('link')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -61,7 +64,7 @@ export const AuthForm = () => {
         })
 
         if (!response.ok) {
-          setError('Не вдалось надіслати листа. Спробуйте ще раз.')
+          setError(t.sendFailed)
           return
         }
 
@@ -74,9 +77,9 @@ export const AuthForm = () => {
         */
         const { known } = (await response.json()) as { known: boolean }
         if (known) {
-          setMessage(`Посилання для входу надіслали на ${address}.`)
+          setMessage(t.sent(address))
         } else {
-          setError('Такої пошти в нас немає. Перевірте адресу або зареєструйтесь.')
+          setError(t.unknownEmail)
         }
       } else if (mode === 'register') {
         const created = await fetch('/api/account/register', {
@@ -103,13 +106,13 @@ export const AuthForm = () => {
           body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
         })
         if (!response.ok) {
-          setError('Пошта або пароль не підходять')
+          setError(t.wrongPassword)
         } else {
           router.refresh()
         }
       }
     } catch {
-      setError('Немає звʼязку з сервером')
+      setError(t.noConnection)
     } finally {
       setBusy(false)
     }
@@ -120,9 +123,9 @@ export const AuthForm = () => {
       {/* Той самий рядок вкладок, що в кабінеті, лише вирівняний по центру. */}
       <Tabs
         items={[
-          { key: 'link', title: 'Посилання' },
-          { key: 'login', title: 'Пароль' },
-          ...(REGISTRATION_ENABLED ? [{ key: 'register', title: 'Реєстрація' }] : []),
+          { key: 'link', title: t.tabs.link },
+          { key: 'login', title: t.tabs.login },
+          ...(REGISTRATION_ENABLED ? [{ key: 'register', title: t.tabs.register }] : []),
         ]}
         active={mode}
         onSelect={(key) => {
@@ -131,7 +134,7 @@ export const AuthForm = () => {
           setMessage(null)
         }}
         align="center"
-        label="Спосіб входу"
+        label={t.tabsLabel}
       />
 
       <form onSubmit={submit} className="mt-6 space-y-3">
@@ -140,7 +143,7 @@ export const AuthForm = () => {
           type="email"
           autoComplete="email"
           className="field"
-          placeholder="Ваша пошта"
+          placeholder={t.email}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -149,7 +152,7 @@ export const AuthForm = () => {
           <input
             className="field"
             autoComplete="name"
-            placeholder="Імʼя (не обовʼязково)"
+            placeholder={t.name}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -162,7 +165,7 @@ export const AuthForm = () => {
             minLength={mode === 'register' ? 8 : undefined}
             autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
             className="field"
-            placeholder={mode === 'register' ? 'Пароль, щонайменше 8 символів' : 'Пароль'}
+            placeholder={mode === 'register' ? t.newPassword : t.password}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -173,12 +176,12 @@ export const AuthForm = () => {
 
         <button type="submit" disabled={busy} className="btn btn-primary w-full">
           {busy
-            ? 'Хвилинку…'
+            ? t.busy
             : mode === 'link'
-              ? 'Надіслати посилання'
+              ? t.sendLink
               : mode === 'register'
-                ? 'Створити кабінет'
-                : 'Увійти'}
+                ? t.createAccount
+                : t.signIn}
         </button>
       </form>
 
@@ -187,11 +190,8 @@ export const AuthForm = () => {
         посилати по неї — глухий кут: вкладки «Реєстрація» на сторінці немає.
       */}
       <p className="mt-5 text-center text-xs leading-relaxed text-muted">
-        Після покупки курсу кабінет створюється сам — тоді заходьте за посиланням
-        на пошту.{' '}
-        {REGISTRATION_ENABLED
-          ? 'Реєстрація потрібна, якщо ви ще нічого не купували.'
-          : 'Пароль — якщо ви вже задали його раніше.'}
+        {t.hint}{' '}
+        {REGISTRATION_ENABLED ? t.hintRegister : t.hintPassword}
       </p>
     </div>
   )

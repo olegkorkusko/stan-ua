@@ -13,10 +13,13 @@ import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 // Не `force-static`: сторінка читає мову з заголовка запиту — див. lib/locale.ts
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Курси',
-  description:
-    'Майстер-класи з вʼязання, бісероплетіння та макраме. Доступ у закритий Telegram одразу після оплати, назавжди.',
+/*
+  Заголовок вкладки й опис для пошуку залежать від мови, тому це функція,
+  а не сталий обʼєкт: мова приходить із заголовка запиту.
+*/
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = dictionary(await getLocale()).meta.courses
+  return { title: t.title, description: t.description }
 }
 
 // Напрями — чотири картки у двох рядах по дві, а не три в один ряд:

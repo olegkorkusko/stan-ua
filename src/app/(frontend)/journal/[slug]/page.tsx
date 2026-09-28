@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation'
 import { CourseCard } from '@/components/site/CourseCard'
 import { ProductCard } from '@/components/site/ProductCard'
 import { imageAlt, imageUrl } from '@/lib/media'
+import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 import { savedItems } from '@/lib/saved'
@@ -51,6 +52,8 @@ const PostPage = async ({ params }: { params: Params }) => {
   const post = await findPost(slug)
   if (!post) notFound()
 
+  const t = dictionary(await getLocale())
+
   const cover = imageUrl(post.cover, 'hero')
   const products = (post.relatedProducts ?? []).filter((item): item is Product => typeof item === 'object')
   const courses = (post.relatedCourses ?? []).filter((item): item is Course => typeof item === 'object')
@@ -89,7 +92,7 @@ const PostPage = async ({ params }: { params: Params }) => {
 
       {products.length > 0 && (
         <section className="shell mt-20">
-          <p className="label">Зі статті</p>
+          <p className="label">{t.common.fromArticle}</p>
           <div className="mt-8 grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-4 md:gap-x-6">
             {products.map((product) => (
               <ProductCard
@@ -105,7 +108,7 @@ const PostPage = async ({ params }: { params: Params }) => {
 
       {courses.length > 0 && (
         <section className="shell mt-20">
-          <p className="label">Навчитись</p>
+          <p className="label">{t.common.learnMore}</p>
           <div className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => (
               <CourseCard

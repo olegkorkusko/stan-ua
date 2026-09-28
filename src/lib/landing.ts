@@ -58,6 +58,19 @@ export const landingCopy = async <T>(
   fallback: T,
 ): Promise<T> => {
   const payload = await payloadClient()
-  const stored = await payload.findGlobal({ slug, locale, depth: 0 }).catch(() => null)
+  /*
+    fallbackLocale: false — інакше англійська версія показує українські тексти.
+
+    У конфізі стоїть fallback: true, тож порожнє англійське поле Payload
+    підміняє українським. Тут це шкодить: у словнику лежить готовий переклад,
+    а підставлена українська його перекривала — на /en блок «Доставка й
+    оплата» виходив українською посеред англійської сторінки.
+
+    Порожнє поле має лишатися порожнім: тоді overlay нижче віддасть переклад
+    із коду, а коли клієнтка впише англійський текст — переможе він.
+  */
+  const stored = await payload
+    .findGlobal({ slug, locale, fallbackLocale: false, depth: 0 })
+    .catch(() => null)
   return overlay(fallback, stored)
 }

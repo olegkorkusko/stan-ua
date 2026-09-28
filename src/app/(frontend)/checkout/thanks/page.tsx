@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+
+import { dictionary } from '@/lib/i18n'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
 import { ClearCartOnPaid } from '@/components/site/ClearCartOnPaid'
@@ -8,9 +10,13 @@ import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Дякуємо',
-  robots: { index: false },
+/*
+  Заголовок вкладки й опис для пошуку залежать від мови, тому це функція,
+  а не сталий обʼєкт: мова приходить із заголовка запиту.
+*/
+export const generateMetadata = async (): Promise<Metadata> => {
+  // Службові сторінки в пошуку не потрібні — заборона індексації тут же.
+  return { robots: { index: false }, title: dictionary(await getLocale()).meta.thanks }
 }
 
 type SearchParams = Promise<{ order?: string; pending?: string }>

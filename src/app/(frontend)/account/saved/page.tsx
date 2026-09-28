@@ -13,9 +13,13 @@ import type { Course, Product } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Збережені',
-  robots: { index: false },
+/*
+  Заголовок вкладки й опис для пошуку залежать від мови, тому це функція,
+  а не сталий обʼєкт: мова приходить із заголовка запиту.
+*/
+export const generateMetadata = async (): Promise<Metadata> => {
+  // Службові сторінки в пошуку не потрібні — заборона індексації тут же.
+  return { robots: { index: false }, title: dictionary(await getLocale()).meta.saved }
 }
 
 /*

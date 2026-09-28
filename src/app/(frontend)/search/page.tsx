@@ -11,9 +11,13 @@ import { savedItems } from '@/lib/saved'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Пошук',
-  robots: { index: false },
+/*
+  Заголовок вкладки й опис для пошуку залежать від мови, тому це функція,
+  а не сталий обʼєкт: мова приходить із заголовка запиту.
+*/
+export const generateMetadata = async (): Promise<Metadata> => {
+  // Службові сторінки в пошуку не потрібні — заборона індексації тут же.
+  return { robots: { index: false }, title: dictionary(await getLocale()).meta.search }
 }
 
 type SearchParams = Promise<{ q?: string }>
@@ -80,17 +84,17 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
       {query && total === 0 && (
         <div className="mt-12 flex flex-wrap gap-3">
           <Link href="/shop" className="btn btn-outline">
-            Дивитись усі товари
+            {t.common.seeAllProducts}
           </Link>
           <Link href="/courses" className="btn btn-outline">
-            Дивитись курси
+            {t.common.seeCourses}
           </Link>
         </div>
       )}
 
       {courses.docs.length > 0 && (
         <section className="mt-14">
-          <p className="label">Курси</p>
+          <p className="label">{t.common.courses}</p>
           <div className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {courses.docs.map((course) => (
               <CourseCard
@@ -107,7 +111,7 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
 
       {products.docs.length > 0 && (
         <section className="mt-14">
-          <p className="label">Товари</p>
+          <p className="label">{t.common.products}</p>
           <div className="mt-8 grid grid-cols-2 gap-x-5 gap-y-12 md:grid-cols-4 md:gap-x-6">
             {products.docs.map((product) => (
               <ProductCard

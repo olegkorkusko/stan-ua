@@ -10,9 +10,13 @@ import { payloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Журнал',
-  description: 'Гайди й поради про вʼязання, бісероплетіння та макраме: з чого почати й що купити.',
+/*
+  Заголовок вкладки й опис для пошуку залежать від мови, тому це функція,
+  а не сталий обʼєкт: мова приходить із заголовка запиту.
+*/
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = dictionary(await getLocale()).meta.journal
+  return { title: t.title, description: t.description }
 }
 
 /*

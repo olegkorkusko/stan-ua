@@ -86,7 +86,6 @@ type Dictionary = {
       journal: string
     }
   }
-  common: { language: string; loading: string; back: string }
   home: {
     eyebrow: string
     heroTitle: string
@@ -236,6 +235,57 @@ type Dictionary = {
     found: (count: number) => string
     showCount: (count: number) => string
     empty: string
+  }
+  /** Заголовки вкладки браузера й описи для пошуку. */
+  meta: {
+    shop: { title: string; description: string }
+    courses: { title: string; description: string }
+    journal: { title: string; description: string }
+    checkout: string
+    thanks: string
+    search: string
+    account: string
+    saved: string
+    reset: string
+  }
+  /** Дрібні підписи, які трапляються на кількох сторінках. */
+  common: {
+    language: string
+    loading: string
+    back: string
+    courses: string
+    products: string
+    seeAllProducts: string
+    seeCourses: string
+    fromArticle: string
+    learnMore: string
+    notFoundLabel: string
+    notFoundTitle: string
+    loadingCatalog: string
+    loadingCourses: string
+    accountLabel: string
+    setPassword: string
+  }
+  /** Вхід і реєстрація в кабінеті — AuthForm. */
+  auth: {
+    tabs: { link: string; login: string; register: string }
+    tabsLabel: string
+    email: string
+    name: string
+    password: string
+    newPassword: string
+    sendLink: string
+    createAccount: string
+    signIn: string
+    busy: string
+    sent: (email: string) => string
+    unknownEmail: string
+    sendFailed: string
+    wrongPassword: string
+    noConnection: string
+    hint: string
+    hintRegister: string
+    hintPassword: string
   }
   checkout: {
     label: string
@@ -421,7 +471,6 @@ const uk: Dictionary = {
       journal: 'Журнал',
     },
   },
-  common: { language: 'Мова', loading: 'Хвилинку…', back: 'Назад' },
   home: {
     eyebrow: 'ХЕНДМЕЙД-СТУДІЯ · УКРАЇНА',
     heroTitle: 'Прикраси ручної роботи. І курси, щоб зробити свою.',
@@ -529,6 +578,64 @@ const uk: Dictionary = {
     found: (count: number) => plural(count, 'курс', 'курси', 'курсів'),
     showCount: (count: number) => `Показати ${plural(count, 'курс', 'курси', 'курсів')}`,
     empty: 'Нічого не знайшли за цими умовами.',
+  },
+  meta: {
+    shop: {
+      title: 'Магазин',
+      description: 'Прикраси ручної роботи, набори для створення та матеріали. Доставка Новою Поштою.',
+    },
+    courses: {
+      title: 'Курси',
+      description:
+        'Майстер-класи з вʼязання, бісероплетіння та макраме. Доступ у закритий Telegram одразу після оплати, назавжди.',
+    },
+    journal: {
+      title: 'Журнал',
+      description: 'Гайди й поради про вʼязання, бісероплетіння та макраме: з чого почати й що купити.',
+    },
+    checkout: 'Оформлення',
+    thanks: 'Дякуємо',
+    search: 'Пошук',
+    account: 'Мої доступи',
+    saved: 'Збережені',
+    reset: 'Вхід у кабінет',
+  },
+  common: {
+    language: 'Мова',
+    loading: 'Хвилинку…',
+    back: 'Назад',
+    courses: 'Курси',
+    products: 'Товари',
+    seeAllProducts: 'Дивитись усі товари',
+    seeCourses: 'Дивитись курси',
+    fromArticle: 'Зі статті',
+    learnMore: 'Навчитись',
+    notFoundLabel: 'Сторінку не знайдено',
+    notFoundTitle: 'Тут нічого немає',
+    loadingCatalog: 'Завантаження каталогу',
+    loadingCourses: 'Завантаження курсів',
+    accountLabel: 'Кабінет',
+    setPassword: 'Задайте пароль',
+  },
+  auth: {
+    tabs: { link: 'Посилання', login: 'Пароль', register: 'Реєстрація' },
+    tabsLabel: 'Спосіб входу',
+    email: 'Ваша пошта',
+    name: 'Імʼя (не обовʼязково)',
+    password: 'Пароль',
+    newPassword: 'Пароль, щонайменше 8 символів',
+    sendLink: 'Надіслати посилання',
+    createAccount: 'Створити кабінет',
+    signIn: 'Увійти',
+    busy: 'Хвилинку…',
+    sent: (email: string) => `Посилання для входу надіслали на ${email}.`,
+    unknownEmail: 'Такої пошти в нас немає. Перевірте адресу або зареєструйтесь.',
+    sendFailed: 'Не вдалось надіслати листа. Спробуйте ще раз.',
+    wrongPassword: 'Пошта або пароль не підходять',
+    noConnection: 'Немає звʼязку з сервером',
+    hint: 'Після покупки курсу кабінет створюється сам — тоді заходьте за посиланням на пошту.',
+    hintRegister: 'Реєстрація потрібна, якщо ви ще нічого не купували.',
+    hintPassword: 'Пароль — якщо ви вже задали його раніше.',
   },
   checkout: {
     label: 'Оформлення',
@@ -865,7 +972,6 @@ const en: Dictionary = {
       journal: 'Journal',
     },
   },
-  common: { language: 'Language', loading: 'One moment…', back: 'Back' },
   home: {
     eyebrow: 'HANDMADE STUDIO · UKRAINE',
     heroTitle: 'Handmade jewellery. And the courses to make your own.',
@@ -973,6 +1079,64 @@ const en: Dictionary = {
     found: (count: number) => `${count} ${count === 1 ? 'course' : 'courses'}`,
     showCount: (count: number) => `Show ${count} ${count === 1 ? 'course' : 'courses'}`,
     empty: 'Nothing matches these filters.',
+  },
+  meta: {
+    shop: {
+      title: 'Shop',
+      description: 'Handmade jewellery, craft kits and materials. Delivery across Ukraine.',
+    },
+    courses: {
+      title: 'Courses',
+      description:
+        'Master classes in knitting, beadwork and macramé. Access to a private Telegram channel right after payment, for good.',
+    },
+    journal: {
+      title: 'Journal',
+      description: 'Guides and tips on knitting, beadwork and macramé: where to start and what to buy.',
+    },
+    checkout: 'Checkout',
+    thanks: 'Thank you',
+    search: 'Search',
+    account: 'My access',
+    saved: 'Saved',
+    reset: 'Sign in',
+  },
+  common: {
+    language: 'Language',
+    loading: 'One moment…',
+    back: 'Back',
+    courses: 'Courses',
+    products: 'Products',
+    seeAllProducts: 'See all products',
+    seeCourses: 'See courses',
+    fromArticle: 'From the article',
+    learnMore: 'Learn it',
+    notFoundLabel: 'Page not found',
+    notFoundTitle: 'Nothing here',
+    loadingCatalog: 'Loading the catalogue',
+    loadingCourses: 'Loading courses',
+    accountLabel: 'Account',
+    setPassword: 'Set a password',
+  },
+  auth: {
+    tabs: { link: 'Email link', login: 'Password', register: 'Sign up' },
+    tabsLabel: 'How to sign in',
+    email: 'Your email',
+    name: 'Name (optional)',
+    password: 'Password',
+    newPassword: 'Password, at least 8 characters',
+    sendLink: 'Send the link',
+    createAccount: 'Create an account',
+    signIn: 'Sign in',
+    busy: 'One moment…',
+    sent: (email: string) => `We have sent a sign-in link to ${email}.`,
+    unknownEmail: 'We have no such email. Check the address or sign up.',
+    sendFailed: 'Could not send the email. Please try again.',
+    wrongPassword: 'That email and password do not match',
+    noConnection: 'No connection to the server',
+    hint: 'Your account is created automatically after buying a course — then just follow the link we email you.',
+    hintRegister: 'Sign up if you have not bought anything yet.',
+    hintPassword: 'Use a password if you have already set one.',
   },
   checkout: {
     label: 'Checkout',

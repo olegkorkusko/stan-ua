@@ -1,11 +1,16 @@
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
+import { dictionary } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 // 404 для публічної частини. Портал-splash у дизайні не має chrome, тож із
 // ненайденої сторінки ведемо двома гілками — так само, як із головної.
-const NotFound = () => (
+const NotFound = async () => {
+  const t = dictionary(await getLocale()).common
+
+  return (
   <div className="shell py-32 text-center">
-    <p className="label">Сторінку не знайдено</p>
-    <h1 className="mt-3 text-page">Тут нічого немає</h1>
+    <p className="label">{t.notFoundLabel}</p>
+    <h1 className="mt-3 text-page">{t.notFoundTitle}</h1>
     <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-muted">
       Можливо, адреса змінилася або сторінку прибрали.
     </p>
@@ -19,6 +24,7 @@ const NotFound = () => (
       </Link>
     </div>
   </div>
-)
+  )
+}
 
 export default NotFound

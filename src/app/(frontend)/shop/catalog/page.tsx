@@ -12,9 +12,13 @@ import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Магазин',
-  description: 'Прикраси ручної роботи, набори для створення та матеріали. Доставка Новою Поштою.',
+/*
+  Заголовок вкладки й опис для пошуку залежать від мови, тому це функція,
+  а не сталий обʼєкт: мова приходить із заголовка запиту.
+*/
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = dictionary(await getLocale()).meta.shop
+  return { title: t.title, description: t.description }
 }
 
 type SearchParams = Promise<{

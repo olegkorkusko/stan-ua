@@ -1,10 +1,16 @@
+import { dictionary } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
+
 // Скелет сітки каталогу. Лежить саме тут, а не в корені: loading.tsx відкриває
 // Suspense-межу на весь сегмент разом із нащадками, відповідь одразу починає
 // стримитись зі статусом 200, і notFound() у сторінках-деталях уже не може
 // повернути справжню 404. У /shop/catalog нащадків немає, тож це безпечно.
-const Loading = () => (
+const Loading = async () => {
+  const t = dictionary(await getLocale()).common
+
+  return (
   <div className="shell min-h-[60vh] py-24" aria-busy="true" aria-live="polite">
-    <span className="sr-only">Завантаження каталогу</span>
+    <span className="sr-only">{t.loadingCatalog}</span>
 
     <div className="h-3 w-24 animate-pulse bg-flax" />
     <div className="mt-6 h-9 w-2/3 max-w-md animate-pulse bg-flax" />
@@ -19,6 +25,7 @@ const Loading = () => (
       ))}
     </div>
   </div>
-)
+  )
+}
 
 export default Loading

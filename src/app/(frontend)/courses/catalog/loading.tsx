@@ -1,9 +1,15 @@
+import { dictionary } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
+
 // Скелет сітки курсів. Як і в каталозі товарів, лежить на самому сегменті:
 // у корені loading.tsx перетворив би 404 сторінок-деталей на м'яку 200, бо
 // стримінг починається раніше, ніж спрацює notFound().
-const Loading = () => (
+const Loading = async () => {
+  const t = dictionary(await getLocale()).common
+
+  return (
   <div className="shell min-h-[60vh] py-24" aria-busy="true" aria-live="polite">
-    <span className="sr-only">Завантаження курсів</span>
+    <span className="sr-only">{t.loadingCourses}</span>
 
     <div className="h-3 w-24 animate-pulse bg-flax" />
     <div className="mt-6 h-9 w-2/3 max-w-md animate-pulse bg-flax" />
@@ -18,6 +24,7 @@ const Loading = () => (
       ))}
     </div>
   </div>
-)
+  )
+}
 
 export default Loading
