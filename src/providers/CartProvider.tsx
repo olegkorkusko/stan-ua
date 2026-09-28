@@ -188,6 +188,19 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     */
   }, [])
 
+  /*
+    Стабільна й не смикає стан даремно.
+
+    Раніше це була стрілка просто в useMemo: щоразу нова функція, і сторінка
+    подяки, яка чистить кошик в ефекті, зациклювалась — очищення міняло items,
+    items давали новий clear, новий clear перезапускав ефект. Порожній масив
+    щоразу новий, тож React не міг зупинити цикл сам.
+  */
+  const clear: CartContext['clear'] = useCallback(
+    () => setItems((current) => (current.length > 0 ? [] : current)),
+    [],
+  )
+
   const remove: CartContext['remove'] = useCallback((key) => {
     setItems((current) => current.filter((i) => i.key !== key))
   }, [])
@@ -213,11 +226,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       add,
       remove,
       setQuantity,
-      clear: () => setItems([]),
+      clear,
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
     }),
-    [items, suggestion, isOpen, ready, add, remove, setQuantity],
+    [items, suggestion, isOpen, ready, add, remove, setQuantity, clear],
   )
 
   return <Context.Provider value={value}>{children}</Context.Provider>
