@@ -17,11 +17,17 @@ import { useCart } from '@/providers/CartProvider'
   клієнта — звідси очищення розходиться і в сховище, і на сервер.
 */
 export const ClearCartOnPaid = () => {
-  const { clear } = useCart()
+  const { clear, ready } = useCart()
 
+  /*
+    Чекаємо на ready. Провайдер спершу малює те, що лишилось у браузері, а
+    потім підтягує кошик із сервера — і якщо почистити до того, відповідь
+    сервера просто поверне все назад. Саме так і виходило: замовлення
+    оплачене, а кошик знову повний.
+  */
   useEffect(() => {
-    clear()
-  }, [clear])
+    if (ready) clear()
+  }, [ready, clear])
 
   return null
 }
