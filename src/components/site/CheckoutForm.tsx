@@ -43,7 +43,8 @@ export type CheckoutProfile = {
 
 export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) => {
   const { items, total, clear } = useCart()
-  const t = dictionary(useLocale()).checkout
+  const locale = useLocale()
+  const t = dictionary(locale).checkout
   const formRef = useRef<HTMLFormElement>(null)
 
   const [form, setForm] = useState({
@@ -190,7 +191,7 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
       <div className="py-20 text-center">
         <p className="text-sm text-muted">{t.empty}</p>
         <Link href="/courses" className="btn btn-outline mt-6">
-          Обрати курс
+          {dictionary(locale).cart.chooseCourse}
         </Link>
       </div>
     )
