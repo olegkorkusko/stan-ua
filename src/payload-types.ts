@@ -398,6 +398,10 @@ export interface Category {
    */
   showInShop?: boolean | null;
   /**
+   * Категорія стане в один ряд із напрямами курсів.
+   */
+  showInDirections?: boolean | null;
+  /**
    * Менше число — лівіше на вітрині.
    */
   order?: number | null;
@@ -1016,6 +1020,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   image?: T;
   description?: T;
   showInShop?: T;
+  showInDirections?: T;
   order?: T;
   updatedAt?: T;
   createdAt?: T;

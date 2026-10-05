@@ -75,6 +75,63 @@ const tally = (
   return cards
 }
 
+
+/** Картка вітрини: звідки назва, фото й рядок обсягу. */
+export type ShelfItem = {
+  slug: string
+  href: string
+  card?: Card
+  /** Остання запаска для назви, коли перекладу ще немає. */
+  titleUk?: string | null
+  /** Від цього залежить, чи рахувати «курси», чи «товари». */
+  kind: 'direction' | 'category'
+}
+
+/**
+ * Ряд напрямів на сторінці «Навчання»: самі напрями плюс категорії
+ * магазину з галочкою «Показувати на сторінці Навчання».
+ *
+ * Категорія серед напрямів — не натяжка: набори купують до курсу, і шукають
+ * їх саме тут. Доти ця картка була зашита в коді окремим рядком.
+ */
+export const directionShelf = async (locale: Locale): Promise<ShelfItem[]> => {
+  const payload = await payloadClient()
+  const where = { showInDirections: { equals: true } }
+
+  const [directions, directionsUk, extras, extrasUk, dirCards, catCards] = await Promise.all([
+    payload.find({ collection: 'course-directions', sort: 'order', locale, fallbackLocale: false, limit: 20, depth: 0 }),
+    payload.find({ collection: 'course-directions', sort: 'order', locale: 'uk', limit: 20, depth: 0 }),
+    payload.find({ collection: 'categories', where, sort: 'order', locale, fallbackLocale: false, limit: 20, depth: 0 }),
+    payload.find({ collection: 'categories', where, sort: 'order', locale: 'uk', limit: 20, depth: 0 }),
+    directionCards(locale),
+    categoryCards(locale),
+  ])
+
+  const uk = new Map<string, string | null | undefined>()
+  for (const doc of [...directionsUk.docs, ...extrasUk.docs]) uk.set(doc.slug ?? '', doc.title)
+
+  return [
+    ...directions.docs
+      .filter((doc): doc is typeof doc & { slug: string } => Boolean(doc.slug))
+      .map((doc) => ({
+        slug: doc.slug,
+        href: `/courses/${doc.slug}`,
+        card: dirCards.get(doc.slug),
+        titleUk: uk.get(doc.slug),
+        kind: 'direction' as const,
+      })),
+    ...extras.docs
+      .filter((doc): doc is typeof doc & { slug: string } => Boolean(doc.slug))
+      .map((doc) => ({
+        slug: doc.slug,
+        href: `/shop/category/${doc.slug}`,
+        card: catCards.get(doc.slug),
+        titleUk: uk.get(doc.slug),
+        kind: 'category' as const,
+      })),
+  ]
+}
+
 /** Напрями курсів: назва, підпис, обкладинка й скільки опублікованих курсів. */
 export const directionCards = async (locale: Locale): Promise<Map<string, Card>> => {
   const payload = await payloadClient()

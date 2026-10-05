@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 
 import { HeroCta } from '@/components/site/HeroCta'
 import { HeroMedia } from '@/components/site/HeroMedia'
@@ -9,7 +8,7 @@ import { formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { landingBanner, landingCopy } from '@/lib/landing'
 import { getLocale } from '@/lib/locale'
-import { categoryCards, cardKey, directionCards } from '@/lib/cards'
+import { cardKey, directionShelf } from '@/lib/cards'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
 // Не `force-static`: сторінка читає мову з заголовка запиту — див. lib/locale.ts
@@ -54,26 +53,33 @@ const CoursesPage = async () => {
   const banner = await landingBanner('courses-page', locale)
 
   /*
-    Четверта картка веде не в курси, а в набори магазину, тому обсягів треба
-    два набори: по напрямах і по категоріях. Слово теж різне — «курси» проти
-    «товари», — і береться зі словника тієї секції, яка за цю картку відповідає.
+    Ряд напрямів — із бази: самі напрями плюс категорії з галочкою
+    «Показувати на сторінці Навчання». Раніше він був зашитий у словнику, і
+    картка наборів стояла там четвертим рядком коду.
+
+    Слово в обсязі різне — «курси» проти «товарів», — тож береться зі
+    словника тієї секції, яка за цю картку відповідає.
   */
   const shopCopy = dictionary(locale).shopLanding.categories
-  const [directions, categories] = await Promise.all([
-    directionCards(locale),
-    categoryCards(locale),
-  ])
+  const shelf = await directionShelf(locale)
 
-  const cardFor = (href: string) =>
-    (href.startsWith('/courses/') ? directions : categories).get(cardKey(href) ?? '')
+  const fromDictionary = (slug: string) =>
+    t.directions.items.find((item) => cardKey(item.href) === slug) ??
+    shopCopy.items.find((item) => cardKey(item.href) === slug)
 
-  const volumeFor = (href: string) => {
-    const toCourses = href.startsWith('/courses/')
-    const card = cardFor(href)
-    if (!card || card.count === 0) return toCourses ? t.directions.soon : shopCopy.soon
+  const volumeFor = (item: (typeof shelf)[number]) => {
+    const toCourses = item.kind === 'direction'
+    if (!item.card || item.card.count === 0) return toCourses ? t.directions.soon : shopCopy.soon
     const label = toCourses ? t.directions.volume : shopCopy.volume
-    return label(card.count, formatPrice(card.from))
+    return label(item.card.count, formatPrice(item.card.from))
   }
+
+  // У макеті картки стоять по дві в ряд; скільки їх — вирішує адмінка.
+  const rows = shelf.reduce<(typeof shelf)[]>((acc, item, index) => {
+    if (index % 2 === 0) acc.push([item])
+    else acc[acc.length - 1].push(item)
+    return acc
+  }, [])
 
   return (
     <div data-figma-node="81:1377" data-figma-state="default" className="flex flex-col bg-paper">
@@ -131,20 +137,21 @@ const CoursesPage = async () => {
           <SectionLabel data-figma-node="81:1451">{t.directions.label}</SectionLabel>
           <SectionTitle data-figma-node="81:1452">{t.directions.title}</SectionTitle>
         </div>
-        {DIRECTION_ROWS.map((row) => (
+        {rows.map((row, rowIndex) => (
           <div
-            key={row.id}
-            data-figma-node={row.id}
+            key={DIRECTION_ROWS[rowIndex]?.id ?? rowIndex}
+            data-figma-node={DIRECTION_ROWS[rowIndex]?.id}
             className="flex flex-col gap-7 md:flex-row md:gap-6"
           >
-            {row.cards.map((index) => {
-              const item = t.directions.items[index]
-              if (!item) return null
-              const card = cardFor(item.href)
+            {row.map((entry, inRow) => {
+              const index = rowIndex * 2 + inRow
+              const spare = fromDictionary(entry.slug)
+              const card = entry.card
+              const title = card?.title ?? spare?.title ?? entry.titleUk ?? entry.slug
               return (
                 <Link
-                  key={item.href}
-                  href={item.href}
+                  key={entry.slug}
+                  href={entry.href}
                   data-figma-node={DIRECTION_CARDS[index]}
                   className="group flex flex-1 flex-col gap-5 bg-[#F4F4F4] transition-colors hover:bg-[#EBEBEB] active:bg-[#E0E0E0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
@@ -159,7 +166,7 @@ const CoursesPage = async () => {
                     <Picture
                       node={inner(index, '19:3')}
                       src={card?.image ?? DIRECTION_IMAGES[index]}
-                      alt={item.imageAlt}
+                      alt={spare?.imageAlt ?? title}
                       fill
                       priority
                       sizes="(min-width: 768px) 50vw, 100vw"
@@ -178,7 +185,7 @@ const CoursesPage = async () => {
                         data-figma-node={inner(index, '19:4')}
                         className="font-display text-[17px] font-normal leading-[21.76px] tracking-[-0.005em] text-ink"
                       >
-                        {card?.title ?? item.title}
+                        {title}
                       </span>
                       <span
                         data-figma-node={inner(index, '264:3')}
@@ -205,13 +212,13 @@ const CoursesPage = async () => {
                       data-figma-node={inner(index, '19:5')}
                       className="text-[13px] font-normal leading-[19.5px] text-muted"
                     >
-                      {card?.subtitle ?? item.subtitle}
+                      {card?.subtitle ?? spare?.subtitle}
                     </span>
                     <span
                       data-figma-node={inner(index, '19:6')}
                       className="text-[13px] font-normal leading-[19.5px] text-muted"
                     >
-                      {volumeFor(item.href)}
+                      {volumeFor(entry)}
                     </span>
                   </div>
                 </Link>

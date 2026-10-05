@@ -17,6 +17,7 @@ import * as migration_20261005_124954_course_card_video from './20261005_124954_
 import * as migration_20261005_125913_product_color_gallery from './20261005_125913_product_color_gallery';
 import * as migration_20261005_164637_product_card_fields from './20261005_164637_product_card_fields';
 import * as migration_20261005_165308_category_shop_order from './20261005_165308_category_shop_order';
+import * as migration_20261005_165951_category_in_directions from './20261005_165951_category_in_directions';
 
 export const migrations = [
   {
@@ -112,6 +113,11 @@ export const migrations = [
   {
     up: migration_20261005_165308_category_shop_order.up,
     down: migration_20261005_165308_category_shop_order.down,
-    name: '20261005_165308_category_shop_order'
+    name: '20261005_165308_category_shop_order',
+  },
+  {
+    up: migration_20261005_165951_category_in_directions.up,
+    down: migration_20261005_165951_category_in_directions.down,
+    name: '20261005_165951_category_in_directions'
   },
 ];
