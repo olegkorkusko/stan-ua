@@ -1,12 +1,11 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 import { useLocale } from '@/components/site/LocaleLink'
-import { dictionary, localePath } from '@/lib/i18n'
+import { dictionary } from '@/lib/i18n'
 
 type Props = {
   courseId: string
@@ -24,20 +23,18 @@ type Props = {
 }
 
 /**
- * Курс купується в два кліки: «Купити» кладе в кошик і одразу веде на
- * оформлення. Це головне, заради чого робився сайт — щоб не пересилати
- * реквізити руками.
+ * «Купити» кладе курс у кошик — і більше нічого. Далі зʼявляється смужка
+ * «Додано в кошик» із двома дорогами, та сама, що в товару.
  *
- * Перехід тут, а не спливашка, як у товарі, — бо до курсу нічого не
- * добирають: його купують один раз і більше в каталог не повертаються.
- * Раніше цей перехід був лише в коментарі: кнопка клала в кошик і мовчала,
- * і людині треба було самій здогадатись піти в кошик.
+ * Якийсь час кнопка сама везла на оформлення: мовляв, до курсу нічого не
+ * добирають. На ділі це читалось як збій — людина тиснула «Купити» й без
+ * попередження опинялась на іншій сторінці, не встигнувши ні подивитись
+ * решту курсів, ні зрозуміти, що сталося. Рішення піти на оформлення має
+ * лишатися за нею.
  */
 export const CourseBuy = ({ courseId, title, href, price, oldPrice, image, save }: Props) => {
   const { add } = useCart()
-  const router = useRouter()
-  const locale = useLocale()
-  const t = dictionary(locale).courses
+  const t = dictionary(useLocale()).courses
 
   return (
     <div className="border border-flax bg-paper p-6">
@@ -60,8 +57,6 @@ export const CourseBuy = ({ courseId, title, href, price, oldPrice, image, save 
               image,
               href,
             })
-            // Мова живе в префіксі адреси — тим самим helper'ом, що й LocaleLink.
-            router.push(localePath(locale, '/checkout'))
           }}
           className="btn btn-primary w-full flex-1"
         >
