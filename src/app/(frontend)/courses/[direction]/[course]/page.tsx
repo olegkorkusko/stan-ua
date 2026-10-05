@@ -7,6 +7,7 @@ import { headers } from 'next/headers'
 
 import { CourseBuy } from '@/components/site/CourseBuy'
 import { courseSchema, JsonLd } from '@/components/site/JsonLd'
+import { ProductCard } from '@/components/site/ProductCard'
 import { Reviews } from '@/components/site/Reviews'
 import { MediaGallery } from '@/components/site/MediaGallery'
 import { SaveButton } from '@/components/site/SaveButton'
@@ -73,6 +74,18 @@ const CoursePage = async ({ params }: { params: Params }) => {
         )
         .catch(() => false)
     : false
+
+  /*
+    Набори до цього курсу. Звʼязок лежить у товарі (поле «Для якого курсу»),
+    тож шукаємо звідти — курс про свої набори не знає й знати не мусить.
+  */
+  const kits = await payload.find({
+    locale,
+    collection: 'products',
+    where: { status: { equals: 'published' }, courses: { in: [course.id] } },
+    limit: 8,
+    depth: 1,
+  })
 
   const lessons = course.lessons ?? []
 
@@ -255,6 +268,25 @@ const CoursePage = async ({ params }: { params: Params }) => {
           </div>
         </section>
       </div>
+
+      {/*
+        Набори до курсу — перед відгуками, поки людина ще вирішує.
+
+        У макеті цієї секції немає: звʼязку товару з курсом там не існувало
+        взагалі. Тому розкладка та сама, що в «Схоже» на сторінці товару, —
+        щоб не вигадувати третій вигляд сітки карток.
+      */}
+      {kits.docs.length > 0 && (
+        <section className="shell mt-24">
+          <p className="label">{t.courses.kitsLabel}</p>
+          <SectionTitle className="mt-3">{t.courses.kitsTitle}</SectionTitle>
+          <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:gap-x-6 lg:grid-cols-4">
+            {kits.docs.map((kit) => (
+              <ProductCard key={kit.id} product={kit} authorized={authorized} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Відгуки — 137:2861. Поза контейнером навмисно: у макеті це смуга
           #F4F4F4 на всі 1440, а вміст усередині вже в контейнері 1360. */}

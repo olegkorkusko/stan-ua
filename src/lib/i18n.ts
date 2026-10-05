@@ -242,6 +242,13 @@ type Dictionary = {
     found: (count: number) => string
     showCount: (count: number) => string
     empty: string
+    /** Набори до курсу: блок на сторінці курсу й група у фільтрі каталогу. */
+    kitsLabel: string
+    kitsTitle: string
+    kind: string
+    kindCourses: string
+    kindKits: string
+    emptyKits: string
   }
   /** Заголовки вкладки браузера й описи для пошуку. */
   meta: {
@@ -591,6 +598,12 @@ const uk: Dictionary = {
     allFilters: 'Всі фільтри',
     reset: 'Скинути фільтри',
     found: (count: number) => plural(count, 'курс', 'курси', 'курсів'),
+    kitsLabel: 'Матеріали',
+    kitsTitle: 'Набір для цього курсу',
+    kind: 'Показати',
+    kindCourses: 'Курси',
+    kindKits: 'Набори',
+    emptyKits: 'Наборів до цих курсів поки немає.',
     showCount: (count: number) => `Показати ${plural(count, 'курс', 'курси', 'курсів')}`,
     empty: 'Нічого не знайшли за цими умовами.',
   },
@@ -1101,6 +1114,12 @@ const en: Dictionary = {
     found: (count: number) => `${count} ${count === 1 ? 'course' : 'courses'}`,
     showCount: (count: number) => `Show ${count} ${count === 1 ? 'course' : 'courses'}`,
     empty: 'Nothing matches these filters.',
+    kitsLabel: 'Materials',
+    kitsTitle: 'The kit for this course',
+    kind: 'Show',
+    kindCourses: 'Courses',
+    kindKits: 'Kits',
+    emptyKits: 'No kits for these courses yet.',
   },
   meta: {
     shop: {

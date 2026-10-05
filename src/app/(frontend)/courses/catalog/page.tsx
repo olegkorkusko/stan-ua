@@ -3,6 +3,7 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import type { Where } from 'payload'
 
 import { CourseCard } from '@/components/site/CourseCard'
+import { ProductCard } from '@/components/site/ProductCard'
 import { FilterDrawer, type FilterGroup } from '@/components/site/FilterDrawer'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -26,6 +27,8 @@ type SearchParams = Promise<{
   direction?: string
   level?: string
   sort?: string
+  /** 'kits' — замість курсів показуємо набори до них. */
+  kind?: string
 }>
 
 const LEVELS = ['beginner', 'medium', 'advanced'] as const
@@ -78,6 +81,19 @@ const CoursesCatalogPage = async ({ searchParams }: { searchParams: SearchParams
 
   const sort = sorts.some((s) => s.value === params.sort) ? params.sort! : '-createdAt'
 
+  /*
+    Каталог навчання вміє показувати дві різні речі.
+
+    Типово — курси. Але набір до курсу теж шукають, і шукають саме тут: він
+    належить навчанню, хоч технічно й лишається товаром магазину. Тому
+    перемикач, а не окрема сторінка: фільтр напряму працює для обох.
+
+    Набори знаходимо через курси, а не через категорію: категорія «Набори для
+    створення» ширша — туди потрапляють і набори, не привʼязані до жодного
+    курсу. Тут потрібні саме ті, у яких звʼязок проставлено.
+  */
+  const showKits = params.kind === 'kits'
+
   const courses = await payload.find({
     locale,
     collection: 'courses',
@@ -87,12 +103,43 @@ const CoursesCatalogPage = async ({ searchParams }: { searchParams: SearchParams
     depth: 1,
   })
 
+  const kits = showKits
+    ? await (async () => {
+        // Курси обраного напряму (або всі) — набори шукаємо вже по них.
+        const scope = await payload.find({
+          collection: 'courses',
+          where: activeDir
+            ? { status: { equals: 'published' }, direction: { equals: activeDir.id } }
+            : { status: { equals: 'published' } },
+          limit: 200,
+          depth: 0,
+        })
+        const ids = scope.docs.map((doc) => doc.id)
+        if (ids.length === 0) return { docs: [], totalDocs: 0 }
+        return payload.find({
+          locale,
+          collection: 'products',
+          where: { status: { equals: 'published' }, courses: { in: ids } },
+          limit: 48,
+          depth: 1,
+        })
+      })()
+    : { docs: [], totalDocs: 0 }
+
+  const total = showKits ? kits.totalDocs : courses.totalDocs
+
   // Обране читаємо один раз на сторінку, а не по запиту на картку.
   const saved = await savedItems()
 
-  const active = { direction: params.direction, level: params.level, sort: params.sort }
-  const hasFilters = Boolean(params.direction || params.level)
-  const totalLabel = t.courses.found(courses.totalDocs)
+  const active = {
+    direction: params.direction,
+    level: params.level,
+    sort: params.sort,
+    kind: showKits ? 'kits' : undefined,
+  }
+  const hasFilters = Boolean(params.direction || params.level || showKits)
+  // Рахунок іменує те, що справді в сітці: набори — це товари, не курси.
+  const totalLabel = showKits ? t.shop.found(total) : t.courses.found(total)
 
   const directionSlugById = new Map<number, string>()
   for (const dir of directions.docs) {
@@ -133,14 +180,39 @@ const CoursesCatalogPage = async ({ searchParams }: { searchParams: SearchParams
       })),
     },
     {
-      id: 'level',
-      label: t.courses.level,
-      options: LEVELS.map((lvl) => ({
-        label: t.courses.levels[lvl],
-        href: buildHref(active, { level: params.level === lvl ? undefined : lvl }),
-        checked: params.level === lvl,
-      })),
+      id: 'kind',
+      label: t.courses.kind,
+      open: true,
+      options: [
+        {
+          label: t.courses.kindCourses,
+          // Рівень стосується тільки курсів — повертаючись до них, його
+          // не скидаємо, а йдучи в набори прибираємо (див. нижче).
+          href: buildHref(active, { kind: undefined }),
+          checked: !showKits,
+        },
+        {
+          label: t.courses.kindKits,
+          href: buildHref(active, { kind: 'kits', level: undefined }),
+          checked: showKits,
+        },
+      ],
     },
+    // Рівень — властивість курсу. У наборів його немає, тож і групи немає:
+    // галочка, яка ні на що не впливає, гірша за її відсутність.
+    ...(showKits
+      ? []
+      : [
+          {
+            id: 'level',
+            label: t.courses.level,
+            options: LEVELS.map((lvl) => ({
+              label: t.courses.levels[lvl],
+              href: buildHref(active, { level: params.level === lvl ? undefined : lvl }),
+              checked: params.level === lvl,
+            })),
+          },
+        ]),
   ].filter((group) => group.options.length > 0)
 
   // У спокої в рядку лише «Всі фільтри»; група зʼявляється тоді, коли в ній
@@ -190,7 +262,7 @@ const CoursesCatalogPage = async ({ searchParams }: { searchParams: SearchParams
         reset={hasFilters ? { href: '/courses/catalog', label: t.courses.reset } : undefined}
         title={t.courses.filters}
         closeLabel={t.header.closeMenu}
-        applyLabel={t.courses.showCount(courses.totalDocs)}
+        applyLabel={showKits ? t.shop.showCount(total) : t.courses.showCount(total)}
         groups={groups}
         nodes={{ row: '161:4188', left: '161:4189', right: '161:4197', count: '161:4198' }}
         leftGap={24}
@@ -203,14 +275,27 @@ const CoursesCatalogPage = async ({ searchParams }: { searchParams: SearchParams
           На ширших екранах додаємо колонку на тих самих межах, що й у
           магазині (1500 і 1800), але з рахунку 3 → 4 → 5: картка курсу вдвічі
           ширша за товарну, і пʼять у ряд на 1500 зробили б її вужчою за фото. */}
-      {courses.docs.length === 0 ? (
+      {total === 0 ? (
         <div className="shell mt-8 py-24 text-center md:mt-12">
-          <p className="text-sm text-muted">{t.courses.empty}</p>
+          <p className="text-sm text-muted">{showKits ? t.courses.emptyKits : t.courses.empty}</p>
           {hasFilters && (
             <Link href="/courses/catalog" className="btn btn-outline mt-6">
               {t.courses.reset}
             </Link>
           )}
+        </div>
+      ) : showKits ? (
+        /* Картка товару вдвічі вужча за картку курсу, тож і колонок удвічі
+           більше — та сама сітка, що в каталозі магазину. */
+        <div className="mt-8 grid w-full grid-cols-2 gap-x-4 gap-y-10 px-5 md:mt-12 md:grid-cols-4 md:gap-x-6 wide:grid-cols-5">
+          {kits.docs.map((kit) => (
+            <ProductCard
+              key={kit.id}
+              product={kit}
+              saved={saved.products.has(kit.id)}
+              authorized={saved.authorized}
+            />
+          ))}
         </div>
       ) : (
         <div

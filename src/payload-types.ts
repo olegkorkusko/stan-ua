@@ -250,6 +250,10 @@ export interface Product {
    */
   addons?: (number | Product)[] | null;
   category?: (number | null) | Category;
+  /**
+   * Набір зʼявиться на сторінці цих курсів і в каталозі навчання, якщо шукати набори.
+   */
+  courses?: (number | Course)[] | null;
   status?: ('draft' | 'published') | null;
   featured?: boolean | null;
   /**
@@ -960,6 +964,7 @@ export interface ProductsSelect<T extends boolean = true> {
   kitItems?: T;
   addons?: T;
   category?: T;
+  courses?: T;
   status?: T;
   featured?: T;
   suggestInCart?: T;

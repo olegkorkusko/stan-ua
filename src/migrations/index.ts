@@ -11,6 +11,7 @@ import * as migration_20260925_130728_drop_checkbox from './20260925_130728_drop
 import * as migration_20260925_131145_drop_prepaid_amount from './20260925_131145_drop_prepaid_amount';
 import * as migration_20260928_165655_telegram_notify from './20260928_165655_telegram_notify';
 import * as migration_20261005_092345_banner_media_and_production_time from './20261005_092345_banner_media_and_production_time';
+import * as migration_20261005_121759_product_courses from './20261005_121759_product_courses';
 
 export const migrations = [
   {
@@ -76,6 +77,11 @@ export const migrations = [
   {
     up: migration_20261005_092345_banner_media_and_production_time.up,
     down: migration_20261005_092345_banner_media_and_production_time.down,
-    name: '20261005_092345_banner_media_and_production_time'
+    name: '20261005_092345_banner_media_and_production_time',
+  },
+  {
+    up: migration_20261005_121759_product_courses.up,
+    down: migration_20261005_121759_product_courses.down,
+    name: '20261005_121759_product_courses'
   },
 ];
