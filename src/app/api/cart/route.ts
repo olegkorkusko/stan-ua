@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server'
 import { getPayload, type Payload } from 'payload'
 
 import { imageUrl } from '@/lib/media'
+import { productThumb } from '@/lib/product-media'
 
 const COOKIE = 'mk_cart'
 const YEAR = 60 * 60 * 24 * 365
@@ -71,8 +72,6 @@ const hydrate = async (payload: Payload, lines: Line[]) => {
 
     const color = variant && typeof variant.color === 'object' ? variant.color : null
     const size = variant && typeof variant.size === 'object' ? variant.size : null
-    const images = Array.isArray(product.images) ? product.images : []
-
     items.push({
       key: `product:${product.id}:${variant?.id ?? 'base'}`,
       kind: 'product' as const,
@@ -84,7 +83,7 @@ const hydrate = async (payload: Payload, lines: Line[]) => {
       size: size?.title ?? undefined,
       price: variant?.price ?? product.price,
       quantity: Math.min(line.quantity, stock),
-      image: imageUrl(variant?.image ?? images[0], 'thumbnail') ?? undefined,
+      image: imageUrl(variant?.image, 'thumbnail') ?? productThumb(product),
       href: `/shop/${product.slug}`,
       maxQuantity: stock,
     })
@@ -164,14 +163,13 @@ const suggest = async (payload: Payload, items: { id: string }[]) => {
   const product = (await pick(true)) ?? (await pick(false))
   if (!product) return null
 
-  const images = Array.isArray(product.images) ? product.images : []
 
   return {
     kind: 'product' as const,
     id: String(product.id),
     title: product.title,
     price: product.price,
-    image: imageUrl(images[0], 'thumbnail') ?? undefined,
+    image: productThumb(product),
     href: `/shop/${product.slug}`,
   }
 }

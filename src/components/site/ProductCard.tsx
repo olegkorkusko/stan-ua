@@ -5,7 +5,7 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { Picture } from '@/components/site/Picture'
 import { SaveButton } from '@/components/site/SaveButton'
 import { formatPrice } from '@/lib/format'
-import { imageAlt, imageUrl } from '@/lib/media'
+import { productCard } from '@/lib/product-media'
 import type { Product } from '@/payload-types'
 
 /*
@@ -42,11 +42,7 @@ export const ProductCard = ({
   saved?: boolean
   authorized?: boolean
 }) => {
-  const images = Array.isArray(product.images) ? product.images : []
-  const primary = imageUrl(images[0], 'card')
-  const secondary = imageUrl(images[1], 'card')
-  // У відео розмірів не буває — imageUrl віддає адресу самого файлу.
-  const cardVideo = imageUrl(product.cardVideo)
+  const { cover, coverAlt, hover, video } = productCard(product)
 
   const colors = (product.variants ?? [])
     .map((variant) => (typeof variant.color === 'object' ? variant.color : null))
@@ -57,8 +53,8 @@ export const ProductCard = ({
     <article className="group relative flex flex-col gap-3 bg-[#F4F4F4] md:gap-[18px]">
       <div className="relative aspect-[190/228] overflow-hidden bg-paper-deep md:aspect-[348/400]">
         <Picture
-          src={primary}
-          alt={imageAlt(images[0], product.title)}
+          src={cover}
+          alt={coverAlt}
           fill
           sizes={SIZES}
           className={`object-cover ${ZOOM}`}
@@ -67,9 +63,9 @@ export const ProductCard = ({
         {/* Друге фото при наведенні — те, що підказка в адмінці обіцяє від
             самого початку, але чого картка досі не вміла. Наближається разом
             із першим, інакше на півдорозі вони їхали б урізнобіч. */}
-        {secondary && (
+        {hover && (
           <Image
-            src={secondary}
+            src={hover}
             alt=""
             aria-hidden="true"
             fill
@@ -79,7 +75,7 @@ export const ProductCard = ({
         )}
 
         {/* Відео поверх обох: якщо воно є, саме воно й оживає. */}
-        {cardVideo && <CardVideo src={cardVideo} className={ZOOM} />}
+        {video && <CardVideo src={video} className={ZOOM} />}
 
         {!product.inStock && (
           <span className="absolute left-3 top-3 bg-paper/90 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">

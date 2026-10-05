@@ -207,26 +207,21 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
-   * Перше фото — головне. Друге показується при наведенні на картку. Відео теж можна: у слайдері воно стане окремим кадром із кнопкою відтворення.
-   */
-  images?: (number | Media)[] | null;
-  /**
-   * Коли покупець обирає цей колір, слайдер перемотується на перший із цих файлів. Решта фото лишається на місці — їх можна догортати.
+   * Це і є слайдер на сторінці товару: кадри йдуть у тому порядку, у якому стоять групи. Вкажіть колір — і свотч перемотуватиме слайдер на першу фотографію цієї групи. Колір можна лишити порожнім: тоді це просто фото без привʼязки.
    */
   colorGallery?:
     | {
-        color: number | Color;
         /**
-         * Можна вибрати ті, що вже є у «Фотографіях», — тоді слайдер просто перемотується на них.
+         * Порожньо — фото показуються всім, але жоден свотч на них не веде.
+         */
+        color?: (number | null) | Color;
+        /**
+         * Відео стане окремим кадром слайдера з кнопкою відтворення.
          */
         media: (number | Media)[];
         id?: string | null;
       }[]
     | null;
-  /**
-   * Програється при наведенні на картку в каталозі: без звуку, по колу. До 15 МБ — це 10–20 секунд. Перше фото лишається тим, що видно до наведення.
-   */
-  cardVideo?: (number | null) | Media;
   /**
    * Базова ціна. Для окремих варіацій її можна перевизначити нижче.
    */
@@ -235,6 +230,18 @@ export interface Product {
    * Заповніть, якщо хочете показати перекреслену ціну.
    */
   oldPrice?: number | null;
+  /**
+   * Головне фото в каталозі. Порожньо — візьметься перший кадр слайдера.
+   */
+  cardImage?: (number | null) | Media;
+  /**
+   * Підміняє обкладинку, коли на картку наводять. Порожньо — візьметься другий кадр слайдера.
+   */
+  cardHover?: (number | null) | Media;
+  /**
+   * Якщо є — грає замість фото при наведенні: без звуку, по колу. До 15 МБ, тобто 10–20 секунд.
+   */
+  cardVideo?: (number | null) | Media;
   generateColors?: (number | Color)[] | null;
   generateSizes?: (number | Size)[] | null;
   generateStock?: number | null;
@@ -284,6 +291,24 @@ export interface Product {
   priceFrom?: number | null;
   inStock?: boolean | null;
   totalStock?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "colors".
+ */
+export interface Color {
+  id: number;
+  title: string;
+  /**
+   * Заповнюється автоматично з назви. Змінюйте, тільки якщо розумієте наслідки для SEO.
+   */
+  slug?: string | null;
+  /**
+   * Наприклад #C2410C. Показується кружечком у фільтрі й на картці товару.
+   */
+  hex: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -344,24 +369,6 @@ export interface Media {
       filename?: string | null;
     };
   };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "colors".
- */
-export interface Color {
-  id: number;
-  title: string;
-  /**
-   * Заповнюється автоматично з назви. Змінюйте, тільки якщо розумієте наслідки для SEO.
-   */
-  slug?: string | null;
-  /**
-   * Наприклад #C2410C. Показується кружечком у фільтрі й на картці товару.
-   */
-  hex: string;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -962,7 +969,6 @@ export interface ProductsSelect<T extends boolean = true> {
   title?: T;
   shortDescription?: T;
   description?: T;
-  images?: T;
   colorGallery?:
     | T
     | {
@@ -970,9 +976,11 @@ export interface ProductsSelect<T extends boolean = true> {
         media?: T;
         id?: T;
       };
-  cardVideo?: T;
   price?: T;
   oldPrice?: T;
+  cardImage?: T;
+  cardHover?: T;
+  cardVideo?: T;
   generateColors?: T;
   generateSizes?: T;
   generateStock?: T;

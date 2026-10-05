@@ -10,7 +10,8 @@ import { JsonLd, productSchema } from '@/components/site/JsonLd'
 import { ProductPurchase, type PurchaseVariant } from '@/components/site/ProductPurchase'
 import { Reviews } from '@/components/site/Reviews'
 import { formatPrice } from '@/lib/format'
-import { imageAlt, imageUrl, isVideo } from '@/lib/media'
+import { imageUrl } from '@/lib/media'
+import { productCard, productGallery } from '@/lib/product-media'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
@@ -93,50 +94,13 @@ const ProductPage = async ({ params }: { params: Params }) => {
     (item): item is Product => typeof item === 'object' && item !== null,
   )
 
-  const images = Array.isArray(product.images) ? product.images : []
-
   /*
-    Кадр слайдера. У відео розмірів не буває, тож адресу беремо як є; фото
-    беремо у «широкому» розмірі. Тип мусить проїхати до компонента: інакше
-    він намалює <img> поверх відео й покаже порожній прямокутник.
+    Слайдер і прив'язка кадрів до кольорів — з «Фото й відео за кольором».
+    Галерея одна: обраний колір нічого не ховає, лише перемотує стрічку на
+    свій кадр. Див. lib/product-media.ts.
   */
-  const toGalleryItem = (item: unknown) => {
-    const video = isVideo(item as never)
-    const src = video ? imageUrl(item as never) : imageUrl(item as never, 'wide')
-    if (!src) return null
-    return {
-      src,
-      alt: imageAlt(item as never, product.title),
-      kind: video ? ('video' as const) : ('image' as const),
-    }
-  }
-
-  const galleryImages = images
-    .map(toGalleryItem)
-    .filter((item): item is NonNullable<typeof item> => item !== null)
-
-  /*
-    Прив'язка кадрів до кольорів.
-
-    Галерея лишається ОДНІЄЮ: файли кольору просто дописуються в кінець, якщо
-    їх ще немає серед спільних. Обраний колір не ховає решту фото, а лише
-    перемотує слайдер на свій кадр — так це працює в Etsy, на яку показував
-    замовник.
-
-    colorOf — зворотний покажчик «адреса файлу → колір»: саме його слайдеру
-    й треба, щоб знайти потрібний кадр.
-  */
-  const colorOf: Record<string, string> = {}
-  for (const row of product.colorGallery ?? []) {
-    const color = typeof row.color === 'object' ? row.color : null
-    if (!color) continue
-    for (const file of Array.isArray(row.media) ? row.media : []) {
-      const item = toGalleryItem(file)
-      if (!item) continue
-      if (!galleryImages.some((existing) => existing.src === item.src)) galleryImages.push(item)
-      colorOf[item.src] ??= String(color.id)
-    }
-  }
+  const { items: galleryImages, colorOf } = productGallery(product)
+  const card = productCard(product)
 
   const variants: PurchaseVariant[] = (product.variants ?? []).map((variant, index) => {
     const color = typeof variant.color === 'object' ? variant.color : null
@@ -198,7 +162,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
         data={productSchema({
           name: product.title,
           description: product.shortDescription,
-          image: imageUrl(images[0], 'wide'),
+          image: card.cover,
           price: product.priceFrom ?? product.price,
           inStock: Boolean(product.inStock),
           url: `${process.env.NEXT_PUBLIC_SERVER_URL ?? ''}/shop/${product.slug}`,
@@ -293,7 +257,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
               slug={product.slug ?? ''}
               basePrice={product.price}
               baseStock={product.stock ?? 0}
-              image={imageUrl(images[0], 'card') ?? undefined}
+              image={card.cover ?? undefined}
               variants={variants}
               saved={saved.products.has(product.id)}
               authorized={saved.authorized}
@@ -305,8 +269,9 @@ const ProductPage = async ({ params }: { params: Params }) => {
               Products і рядки addonsTitle/addonsNote у словнику на місці.
 
               Щоб повернути — розкоментувати фрагмент нижче й дописати назад
-              два імпорти, які без нього стали невживані:
+              імпорти, які без нього стали невживані:
                 import { KitAddons } from '@/components/site/KitAddons'
+                import { productThumb } from '@/lib/product-media'
                 import type { Product } from '@/payload-types'
 
               {product.isKit && (
@@ -318,7 +283,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
                       title: addon.title,
                       price: addon.priceFrom ?? addon.price,
                       slug: addon.slug ?? '',
-                      image: imageUrl(Array.isArray(addon.images) ? addon.images[0] : null, 'thumbnail') ?? undefined,
+                      image: productThumb(addon),
                       inStock: Boolean(addon.inStock),
                     }))}
                 />
