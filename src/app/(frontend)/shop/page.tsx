@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 
 import { HeroCta } from '@/components/site/HeroCta'
 import { HeroMedia } from '@/components/site/HeroMedia'
@@ -11,7 +10,7 @@ import { landingBanner, landingCopy } from '@/lib/landing'
 import { imageAlt, imageUrl } from '@/lib/media'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
-import { categoryCards, cardKey } from '@/lib/cards'
+import { cardKey, shopCategories } from '@/lib/cards'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
 // Не `force-static`: сторінка читає мову з заголовка запиту — див. lib/locale.ts
@@ -80,8 +79,14 @@ const ShopPage = async () => {
     depth: 1,
   })
 
-  const cards = await categoryCards(locale)
-  const cardFor = (href: string) => cards.get(cardKey(href) ?? '')
+  /*
+    Список карток — із бази: категорії з галочкою «Показувати на сторінці
+    Магазин», у заданому порядку. Тексти з коду лишаються запасним варіантом
+    для тих трьох, що були тут від початку, — див. fromDictionary нижче.
+  */
+  const shown = await shopCategories(locale)
+  const fromDictionary = (slug: string) =>
+    t.categories.items.find((item) => cardKey(item.href) === slug)
   const volumeFor = (card?: { count: number; from: number }) =>
     card && card.count > 0
       ? t.categories.volume(card.count, formatPrice(card.from))
@@ -152,12 +157,13 @@ const ShopPage = async () => {
           <SectionTitle data-figma-node="71:1204">{t.categories.title}</SectionTitle>
         </div>
         <div data-figma-node="158:3682" className="flex flex-col gap-7 md:flex-row md:gap-6">
-          {t.categories.items.map((item, index) => {
-            const card = cardFor(item.href)
+          {shown.map(({ slug, href, card, titleUk }, index) => {
+            const spare = fromDictionary(slug)
+            const title = card?.title ?? spare?.title ?? titleUk ?? slug
             return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={slug}
+              href={href}
               data-figma-node={CARD_NODE_IDS[index]}
               className="group flex flex-1 flex-col gap-5 bg-[#F4F4F4] transition-colors hover:bg-[#EBEBEB] active:bg-[#E0E0E0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
@@ -168,7 +174,7 @@ const ShopPage = async () => {
                 <Picture
                   node={CARD_IMAGE_NODE_IDS[index]}
                   src={card?.image ?? CATEGORY_IMAGES[index]}
-                  alt={item.imageAlt}
+                  alt={spare?.imageAlt ?? title}
                   fill
                   priority
                   sizes="(min-width: 768px) 33vw, 100vw"
@@ -192,7 +198,7 @@ const ShopPage = async () => {
                     data-figma-node={CARD_TITLE_NODE_IDS[index]}
                     className="font-display text-[17px] font-normal leading-[21.76px] tracking-[-0.005em] text-ink"
                   >
-                    {card?.title ?? item.title}
+                    {title}
                   </span>
                   <span
                     data-figma-node={CARD_ARROW_NODE_IDS[index]}
@@ -221,7 +227,7 @@ const ShopPage = async () => {
                   data-figma-node={CARD_SUBTITLE_NODE_IDS[index]}
                   className="text-[13px] font-normal leading-[19.5px] text-muted"
                 >
-                  {card?.subtitle ?? item.subtitle}
+                  {card?.subtitle ?? spare?.subtitle}
                 </span>
                 <span
                   data-figma-node={CARD_VOLUME_NODE_IDS[index]}

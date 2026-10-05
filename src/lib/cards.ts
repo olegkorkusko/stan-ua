@@ -107,6 +107,43 @@ export const directionCards = async (locale: Locale): Promise<Map<string, Card>>
   )
 }
 
+/**
+ * Вітрина магазину: категорії з галочкою «Показувати на сторінці Магазин»,
+ * у заданому порядку.
+ *
+ * Список приходить із бази, а не з коду. Доти три картки були зашиті разом
+ * з адресами, і «Набори для створення» висіли в магазині, хоч належать
+ * навчанню, — прибрати їх або додати нову категорію можна було лише
+ * правкою коду.
+ */
+export const shopCategories = async (locale: Locale) => {
+  const payload = await payloadClient()
+  const where = { showInShop: { not_equals: false } }
+
+  const [categories, ukrainian, cards] = await Promise.all([
+    payload.find({ collection: 'categories', where, sort: 'order', locale, fallbackLocale: false, limit: 20, depth: 0 }),
+    /*
+      Українські назви окремим запитом — як останній запас для англійської
+      версії. Підміняти мову на рівні Payload не можна: тоді «Готові
+      прикраси» перебили б готовий переклад зі словника. А показувати замість
+      назви slug, як було з новою категорією, — гірше за будь-яку з мов.
+    */
+    payload.find({ collection: 'categories', where, limit: 20, depth: 0, locale: 'uk' }),
+    categoryCards(locale),
+  ])
+
+  const titleUk = new Map(ukrainian.docs.map((doc) => [doc.slug ?? '', doc.title]))
+
+  return categories.docs
+    .filter((doc): doc is typeof doc & { slug: string } => Boolean(doc.slug))
+    .map((doc) => ({
+      slug: doc.slug,
+      href: `/shop/category/${doc.slug}`,
+      card: cards.get(doc.slug),
+      titleUk: titleUk.get(doc.slug),
+    }))
+}
+
 /** Категорії магазину: те саме, тільки по товарах. */
 export const categoryCards = async (locale: Locale): Promise<Map<string, Card>> => {
   const payload = await payloadClient()

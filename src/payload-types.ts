@@ -393,6 +393,14 @@ export interface Category {
   parent?: (number | null) | Category;
   image?: (number | null) | Media;
   description?: string | null;
+  /**
+   * Зніміть галочку, якщо категорія належить навчанню, — у каталозі вона лишиться.
+   */
+  showInShop?: boolean | null;
+  /**
+   * Менше число — лівіше на вітрині.
+   */
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1007,6 +1015,8 @@ export interface CategoriesSelect<T extends boolean = true> {
   parent?: T;
   image?: T;
   description?: T;
+  showInShop?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
