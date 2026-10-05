@@ -25,8 +25,6 @@ export const generateMetadata = async (): Promise<Metadata> => {
   return { title: t.title, description: t.description }
 }
 
-const CATEGORY_IMAGES = ['/shop/cat-biseru.jpg', '/shop/cat-knitted.jpg', '/shop/cat-macrame.jpg']
-
 const CARD_NODE_IDS = ['158:3683', '158:3688', '158:3693']
 const CARD_IMAGE_NODE_IDS = ['I158:3683;19:3', 'I158:3688;19:3', 'I158:3693;19:3']
 const CARD_BODY_NODE_IDS = ['I158:3683;269:4375', 'I158:3688;269:4375', 'I158:3693;269:4375']
@@ -168,12 +166,17 @@ const ShopPage = async () => {
               className="group flex flex-1 flex-col gap-5 bg-[#F4F4F4] transition-colors hover:bg-[#EBEBEB] active:bg-[#E0E0E0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <div className="relative aspect-[398/294] w-full overflow-hidden">
-                {/* Фото категорії з адмінки; поки його немає — кадр із макета.
-                    Карток може стати більше, ніж кадрів у коді (їх додають в
-                    адмінці), і тоді зайва отримує заглушку, а не порожній src. */}
+                {/*
+                  Фото тільки з адмінки. Раніше тут стояв запасний кадр із
+                  макета за номером картки — і поки список був сталим, це
+                  працювало. Тепер список із бази: та сама картка на іншому
+                  місці діставала чуже фото, а на власній сторінці категорії
+                  показувалась заглушка. Виходило, що категорія ніби з фото, а
+                  ніби й без. Краще чесна заглушка в обох місцях.
+                */}
                 <Picture
                   node={CARD_IMAGE_NODE_IDS[index]}
-                  src={card?.image ?? CATEGORY_IMAGES[index]}
+                  src={card?.image}
                   alt={spare?.imageAlt ?? title}
                   fill
                   priority

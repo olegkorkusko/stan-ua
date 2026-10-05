@@ -30,13 +30,6 @@ const DIRECTION_ROWS = [
   { id: '157:3690', cards: [0, 1] },
   { id: '261:4316', cards: [2, 3] },
 ]
-const DIRECTION_IMAGES = [
-  '/courses/dir-knitted.jpg',
-  '/courses/dir-biseru.jpg',
-  '/courses/dir-macrame.jpg',
-  '/courses/dir-knitted-2.jpg',
-]
-
 /** Внутрішні ноди інстанса адресуються як I<картка>;<нода компонента>. */
 const inner = (index: number, node: string) => `I${DIRECTION_CARDS[index]};${node}`
 
@@ -160,12 +153,10 @@ const CoursesPage = async () => {
                       висока 358/480 з'їдала півекрана на кожну. На десктопі
                       лишається 668/480 з макета. */}
                   <div className="relative aspect-398/294 w-full overflow-hidden md:aspect-[668/480]">
-                    {/* Фото напряму з адмінки; поки його немає — кадр із макета.
-                        Напрямів може стати більше, ніж кадрів у коді, і тоді
-                        зайвий отримує заглушку, а не порожній src. */}
+                    {/* Фото тільки з адмінки — див. пояснення в shop/page.tsx. */}
                     <Picture
                       node={inner(index, '19:3')}
-                      src={card?.image ?? DIRECTION_IMAGES[index]}
+                      src={card?.image}
                       alt={spare?.imageAlt ?? title}
                       fill
                       priority
