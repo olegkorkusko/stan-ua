@@ -397,6 +397,10 @@ export interface Course {
   tagline?: string | null;
   cover?: (number | null) | Media;
   gallery?: (number | Media)[] | null;
+  /**
+   * Програється при наведенні на картку в каталозі: без звуку, по колу. До 15 МБ — це 10–20 секунд. Обкладинка лишається тим, що видно до наведення.
+   */
+  cardVideo?: (number | null) | Media;
   description?: {
     root: {
       type: string;
@@ -1024,6 +1028,7 @@ export interface CoursesSelect<T extends boolean = true> {
   tagline?: T;
   cover?: T;
   gallery?: T;
+  cardVideo?: T;
   description?: T;
   price?: T;
   oldPrice?: T;

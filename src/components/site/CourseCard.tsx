@@ -1,3 +1,6 @@
+import Image from 'next/image'
+
+import { CardVideo } from '@/components/site/CardVideo'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
 import { Picture } from '@/components/site/Picture'
@@ -34,6 +37,16 @@ import type { Course } from '@/payload-types'
   `I<примірник>;<вузол компонента>`, тож увесь набір виводиться з кореня —
   переписувати десяток рядків на кожну картку не треба.
 */
+/*
+  Наведення: обкладинка наближається, а поверх неї проявляється те, що є —
+  ролик або перше фото з галереї. Клас наближення спільний на всі шари,
+  інакше вони їхали б урізнобіч. Крок 220 мс тут свій, не товарний.
+*/
+const SIZES = '(max-width: 768px) 100vw, 33vw'
+
+const ZOOM =
+  'transition-transform duration-[220ms] ease-out group-hover:scale-[1.07] motion-reduce:transition-none motion-reduce:group-hover:scale-100'
+
 export type CourseCardNodes = ReturnType<typeof courseCardNodes>
 
 export const courseCardNodes = (root: string) => ({
@@ -65,6 +78,10 @@ export const CourseCard = ({
   nodes?: CourseCardNodes
 }) => {
   const cover = imageUrl(course.cover, 'card')
+  const gallery = Array.isArray(course.gallery) ? course.gallery : []
+  const secondary = imageUrl(gallery[0], 'card')
+  // У відео розмірів не буває — imageUrl віддає адресу самого файлу.
+  const cardVideo = imageUrl(course.cardVideo)
   const lessons = course.lessons?.length ?? 0
   const lessonsLabel = lessons > 0 ? plural(lessons, 'МК', 'МК', 'МК') : null
 
@@ -84,10 +101,25 @@ export const CourseCard = ({
           src={cover}
           alt={imageAlt(course.cover, course.title)}
           fill
-          sizes="(max-width: 768px) 100vw, 33vw"
+          sizes={SIZES}
           node={nodes?.cover}
-          className="object-cover transition-transform duration-[220ms] ease-out group-hover:scale-[1.07] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+          className={`object-cover ${ZOOM}`}
         />
+
+        {/* Перше фото з галереї — при наведенні, якщо ролика немає. */}
+        {secondary && (
+          <Image
+            src={secondary}
+            alt=""
+            aria-hidden="true"
+            fill
+            sizes={SIZES}
+            className={`object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 ${ZOOM}`}
+          />
+        )}
+
+        {/* Ролик поверх обох — той самий компонент, що в картці товару. */}
+        {cardVideo && <CardVideo src={cardVideo} className={ZOOM} />}
       </div>
 
       {/* flex-1 + mt-auto нижче: підписи в курсів різної довжини, і без цього

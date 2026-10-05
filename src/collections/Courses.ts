@@ -76,6 +76,24 @@ export const Courses: CollectionConfig = {
             { name: 'tagline', type: 'text', label: 'Підпис під назвою', localized: true },
             { name: 'cover', type: 'upload', relationTo: 'media', label: 'Обкладинка' },
             { name: 'gallery', type: 'upload', relationTo: 'media', hasMany: true, label: 'Галерея робіт' },
+            /*
+              Те саме, що в товарі: ролик для картки в каталозі. Окремо від
+              галереї, бо галерея — це слайдер на сторінці курсу, і ролик став
+              би в ньому кадром, який не гортається.
+
+              Порожньо — картка поводиться як раніше: обкладинка, а при
+              наведенні перше фото з галереї, якщо воно є.
+            */
+            {
+              name: 'cardVideo',
+              type: 'upload',
+              relationTo: 'media',
+              label: 'Відео для картки',
+              admin: {
+                description:
+                  'Програється при наведенні на картку в каталозі: без звуку, по колу. До 15 МБ — це 10–20 секунд. Обкладинка лишається тим, що видно до наведення.',
+              },
+            },
             { name: 'description', type: 'richText', label: 'Опис', localized: true },
             {
               type: 'row',
