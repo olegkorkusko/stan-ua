@@ -57,6 +57,7 @@ export const ProductCard = ({
           alt={coverAlt}
           fill
           sizes={SIZES}
+          quality={85}
           className={`object-cover ${ZOOM}`}
         />
 
@@ -70,6 +71,7 @@ export const ProductCard = ({
             aria-hidden="true"
             fill
             sizes={SIZES}
+            quality={85}
             className={`object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 ${ZOOM}`}
           />
         )}

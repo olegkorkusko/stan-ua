@@ -229,6 +229,8 @@ export const MediaGallery = ({
                   fill
                   priority={index === 0}
                   sizes="(max-width: 1024px) 100vw, 45vw"
+                  // Головне фото товару — без другого стиснення, див. next.config.
+                  quality={90}
                   className="object-cover"
                 />
               )}

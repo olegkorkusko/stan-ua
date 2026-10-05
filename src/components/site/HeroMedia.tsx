@@ -56,5 +56,17 @@ export const HeroMedia = ({
     )
   }
 
-  return <Picture src={image} alt={alt} node={node} fill sizes={sizes} priority={priority} className={className} />
+  // Кадр на всю ширину — найпомітніше місце, тож без другого стиснення.
+  return (
+    <Picture
+      src={image}
+      alt={alt}
+      node={node}
+      fill
+      sizes={sizes}
+      priority={priority}
+      quality={90}
+      className={className}
+    />
+  )
 }
