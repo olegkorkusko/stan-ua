@@ -10,6 +10,9 @@ import { landingBanner, landingCopy } from '@/lib/landing'
 import { imageAlt, imageUrl } from '@/lib/media'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
+import Image from 'next/image'
+
+import { CardVideo } from '@/components/site/CardVideo'
 import { cardKey, shopCategories } from '@/lib/cards'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
@@ -183,6 +186,19 @@ const ShopPage = async () => {
                   sizes="(min-width: 768px) 33vw, 100vw"
                   className="object-cover"
                 />
+                {/* Те саме, що в картці товару: наведення показує друге фото,
+                    а якщо є ролик — ролик. Див. ProductCard. */}
+                {card?.hover && (
+                  <Image
+                    src={card.hover}
+                    alt=""
+                    aria-hidden="true"
+                    fill
+                    sizes="(min-width: 768px) 33vw, 100vw"
+                    className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100"
+                  />
+                )}
+                {card?.video && <CardVideo src={card.video} />}
               </div>
               <div
                 data-figma-node={CARD_BODY_NODE_IDS[index]}

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { notFound } from 'next/navigation'
 
-import { Picture } from '@/components/site/Picture'
+import { HeroMedia } from '@/components/site/HeroMedia'
 import { ProductCard } from '@/components/site/ProductCard'
 import { cardKey } from '@/lib/cards'
 import { dictionary, type Locale } from '@/lib/i18n'
@@ -90,13 +90,12 @@ const CategoryPage = async ({ params }: { params: Params }) => {
     <div className="pb-24">
       <section className="relative flex h-[52svh] min-h-80 items-end overflow-hidden">
         <div className="absolute inset-0">
-          <Picture
-            src={cover}
-            alt={imageAlt(category.image, title)}
-            fill
+          {/* У шапці може стояти своє фото або ролик; порожньо — обкладинка. */}
+          <HeroMedia
+            video={imageUrl(category.heroVideo)}
+            image={imageUrl(category.heroImage, 'hero') ?? cover}
+            alt={imageAlt(category.heroImage ?? category.image, title)}
             priority
-            sizes="100vw"
-            className="object-cover"
           />
           <div className="absolute inset-0 bg-linear-to-t from-ink/65 to-ink/20" />
         </div>

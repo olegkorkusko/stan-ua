@@ -69,7 +69,43 @@ export const Categories: CollectionConfig = {
       label: 'Батьківська категорія',
       admin: { position: 'sidebar' },
     },
-    { name: 'image', type: 'upload', relationTo: 'media', label: 'Обкладинка' },
+    { name: 'image', type: 'upload', relationTo: 'media', label: 'Обкладинка картки' },
+    /*
+      Те саме, що в товару: картка в каталозі й шапка сторінки — різні місця,
+      і медіа в них може бути різним. Обкладинка обовʼязкова за змістом,
+      решта — за бажанням.
+    */
+    {
+      name: 'cardHover',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Фото при наведенні',
+      admin: { description: 'Підміняє обкладинку, коли на картку наводять.' },
+    },
+    {
+      name: 'cardVideo',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Відео при наведенні',
+      admin: {
+        description:
+          'Якщо є — грає замість фото при наведенні: без звуку, по колу. До 15 МБ.',
+      },
+    },
+    {
+      name: 'heroImage',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Фото в шапці сторінки',
+      admin: { description: 'Порожньо — у шапці стане обкладинка.' },
+    },
+    {
+      name: 'heroVideo',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Відео в шапці сторінки',
+      admin: { description: 'Грає саме, по колу й без звуку. Фото лишається першим кадром.' },
+    },
     {
       name: 'description',
       type: 'textarea',

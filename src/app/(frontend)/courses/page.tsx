@@ -8,6 +8,9 @@ import { formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { landingBanner, landingCopy } from '@/lib/landing'
 import { getLocale } from '@/lib/locale'
+import Image from 'next/image'
+
+import { CardVideo } from '@/components/site/CardVideo'
 import { cardKey, directionShelf } from '@/lib/cards'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
@@ -163,6 +166,17 @@ const CoursesPage = async () => {
                       sizes="(min-width: 768px) 50vw, 100vw"
                       className="object-cover"
                     />
+                    {card?.hover && (
+                      <Image
+                        src={card.hover}
+                        alt=""
+                        aria-hidden="true"
+                        fill
+                        sizes="(min-width: 768px) 50vw, 100vw"
+                        className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100"
+                      />
+                    )}
+                    {card?.video && <CardVideo src={card.video} />}
                   </div>
                   <div
                     data-figma-node={inner(index, '269:4375')}

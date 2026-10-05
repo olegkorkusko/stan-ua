@@ -26,7 +26,15 @@ export type Card = {
   /** З адмінки; порожнє — сторінка бере назву з коду. */
   title?: string
   subtitle?: string
+  /** Обкладинка картки. */
   image?: string
+  /** Підміна обкладинки при наведенні. */
+  hover?: string
+  /** Ролик при наведенні — виграє в фото. */
+  video?: string
+  /** Шапка власної сторінки; порожньо — береться обкладинка. */
+  heroImage?: string
+  heroVideo?: string
 }
 
 type Related = { id: number; slug?: string | null }
@@ -46,8 +54,18 @@ const nonEmpty = (value: unknown): string | undefined => {
 }
 
 /** Обсяг рахуємо самі: count() на кожну картку — це запит на картку. */
+type Owner = Related & {
+  title?: string | null
+  subtitle?: unknown
+  image?: unknown
+  cardHover?: unknown
+  cardVideo?: unknown
+  heroImage?: unknown
+  heroVideo?: unknown
+}
+
 const tally = (
-  owners: (Related & { title?: string | null; subtitle?: unknown; image?: unknown })[],
+  owners: Owner[],
   rows: { owner: unknown; price: number }[],
 ): Map<string, Card> => {
   const slugById = new Map(owners.map((owner) => [owner.id, owner.slug ?? undefined]))
@@ -61,6 +79,11 @@ const tally = (
       title: nonEmpty(owner.title),
       subtitle: nonEmpty(owner.subtitle),
       image: imageUrl(owner.image as never, 'card') ?? undefined,
+      hover: imageUrl(owner.cardHover as never, 'card') ?? undefined,
+      // У відео розмірів не буває — imageUrl віддає адресу самого файлу.
+      video: imageUrl(owner.cardVideo as never) ?? undefined,
+      heroImage: imageUrl(owner.heroImage as never, 'hero') ?? undefined,
+      heroVideo: imageUrl(owner.heroVideo as never) ?? undefined,
     })
   }
 
@@ -159,6 +182,10 @@ export const directionCards = async (locale: Locale): Promise<Map<string, Card>>
       title: doc.title,
       subtitle: doc.tagline,
       image: doc.image,
+      cardHover: doc.cardHover,
+      cardVideo: doc.cardVideo,
+      heroImage: doc.heroImage,
+      heroVideo: doc.heroVideo,
     })),
     courses.docs.map((course) => ({ owner: course.direction, price: course.price })),
   )
@@ -227,6 +254,10 @@ export const categoryCards = async (locale: Locale): Promise<Map<string, Card>> 
       title: doc.title,
       subtitle: doc.description,
       image: doc.image,
+      cardHover: doc.cardHover,
+      cardVideo: doc.cardVideo,
+      heroImage: doc.heroImage,
+      heroVideo: doc.heroVideo,
     })),
     products.docs.map((product) => ({ owner: product.category, price: product.price })),
   )

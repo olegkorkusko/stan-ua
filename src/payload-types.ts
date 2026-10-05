@@ -392,6 +392,22 @@ export interface Category {
   slug?: string | null;
   parent?: (number | null) | Category;
   image?: (number | null) | Media;
+  /**
+   * Підміняє обкладинку, коли на картку наводять.
+   */
+  cardHover?: (number | null) | Media;
+  /**
+   * Якщо є — грає замість фото при наведенні: без звуку, по колу. До 15 МБ.
+   */
+  cardVideo?: (number | null) | Media;
+  /**
+   * Порожньо — у шапці стане обкладинка.
+   */
+  heroImage?: (number | null) | Media;
+  /**
+   * Грає саме, по колу й без звуку. Фото лишається першим кадром.
+   */
+  heroVideo?: (number | null) | Media;
   description?: string | null;
   /**
    * Зніміть галочку, якщо категорія належить навчанню, — у каталозі вона лишиться.
@@ -490,6 +506,22 @@ export interface CourseDirection {
   tagline?: string | null;
   description?: string | null;
   image?: (number | null) | Media;
+  /**
+   * Підміняє обкладинку, коли на картку наводять.
+   */
+  cardHover?: (number | null) | Media;
+  /**
+   * Якщо є — грає замість фото при наведенні: без звуку, по колу. До 15 МБ.
+   */
+  cardVideo?: (number | null) | Media;
+  /**
+   * Порожньо — у шапці стане обкладинка.
+   */
+  heroImage?: (number | null) | Media;
+  /**
+   * Грає саме, по колу й без звуку. Фото лишається першим кадром.
+   */
+  heroVideo?: (number | null) | Media;
   order?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -1018,6 +1050,10 @@ export interface CategoriesSelect<T extends boolean = true> {
   slug?: T;
   parent?: T;
   image?: T;
+  cardHover?: T;
+  cardVideo?: T;
+  heroImage?: T;
+  heroVideo?: T;
   description?: T;
   showInShop?: T;
   showInDirections?: T;
@@ -1096,6 +1132,10 @@ export interface CourseDirectionsSelect<T extends boolean = true> {
   tagline?: T;
   description?: T;
   image?: T;
+  cardHover?: T;
+  cardVideo?: T;
+  heroImage?: T;
+  heroVideo?: T;
   order?: T;
   updatedAt?: T;
   createdAt?: T;

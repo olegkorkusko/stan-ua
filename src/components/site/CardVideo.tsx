@@ -25,7 +25,12 @@ export const CardVideo = ({ src, className = '' }: { src: string; className?: st
 
   useEffect(() => {
     const video = ref.current
-    const card = video?.closest('article')
+    /*
+      Картка товару — <article>, картка категорії й напряму — <a>: там уся
+      плитка і є посиланням. Беремо найближчого з обох, бо наведення має
+      ловитися на всю картку, а не на сам ролик.
+    */
+    const card = video?.closest('article, a')
     if (!video || !card) return
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
