@@ -1,5 +1,7 @@
-import { LocaleLink as Link } from '@/components/site/LocaleLink'
+import Image from 'next/image'
 
+import { CardVideo } from '@/components/site/CardVideo'
+import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { Picture } from '@/components/site/Picture'
 import { SaveButton } from '@/components/site/SaveButton'
 import { formatPrice } from '@/lib/format'
@@ -21,7 +23,16 @@ import type { Product } from '@/payload-types'
   Наведення в макеті — зум фото всередині кадру (300×400 → 321×428, ~7%),
   рамка при цьому тримає розмір. Тому кадр кліпить вміст, а масштабується
   тільки зображення.
+
+  Понад макет у кадрі живуть ще два шари: друге фото й ролик. Обидва
+  зʼявляються при наведенні, обидва наближаються так само, як перше фото —
+  тому клас наближення спільний, а не переписаний утретє.
 */
+const SIZES = '(max-width: 768px) 50vw, 25vw'
+
+const ZOOM =
+  'transition-transform duration-500 ease-out group-hover:scale-[1.07] motion-reduce:transition-none motion-reduce:group-hover:scale-100'
+
 export const ProductCard = ({
   product,
   saved = false,
@@ -33,6 +44,9 @@ export const ProductCard = ({
 }) => {
   const images = Array.isArray(product.images) ? product.images : []
   const primary = imageUrl(images[0], 'card')
+  const secondary = imageUrl(images[1], 'card')
+  // У відео розмірів не буває — imageUrl віддає адресу самого файлу.
+  const cardVideo = imageUrl(product.cardVideo)
 
   const colors = (product.variants ?? [])
     .map((variant) => (typeof variant.color === 'object' ? variant.color : null))
@@ -42,13 +56,30 @@ export const ProductCard = ({
   return (
     <article className="group relative flex flex-col gap-3 bg-[#F4F4F4] md:gap-[18px]">
       <div className="relative aspect-[190/228] overflow-hidden bg-paper-deep md:aspect-[348/400]">
-          <Picture
-            src={primary}
-            alt={imageAlt(images[0], product.title)}
+        <Picture
+          src={primary}
+          alt={imageAlt(images[0], product.title)}
+          fill
+          sizes={SIZES}
+          className={`object-cover ${ZOOM}`}
+        />
+
+        {/* Друге фото при наведенні — те, що підказка в адмінці обіцяє від
+            самого початку, але чого картка досі не вміла. Наближається разом
+            із першим, інакше на півдорозі вони їхали б урізнобіч. */}
+        {secondary && (
+          <Image
+            src={secondary}
+            alt=""
+            aria-hidden="true"
             fill
-            sizes="(max-width: 768px) 50vw, 25vw"
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.07] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            sizes={SIZES}
+            className={`object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 ${ZOOM}`}
           />
+        )}
+
+        {/* Відео поверх обох: якщо воно є, саме воно й оживає. */}
+        {cardVideo && <CardVideo src={cardVideo} className={ZOOM} />}
 
         {!product.inStock && (
           <span className="absolute left-3 top-3 bg-paper/90 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">

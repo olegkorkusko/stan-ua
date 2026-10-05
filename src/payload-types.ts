@@ -211,6 +211,10 @@ export interface Product {
    */
   images?: (number | Media)[] | null;
   /**
+   * Програється при наведенні на картку в каталозі: без звуку, по колу. До 15 МБ — це 10–20 секунд. Перше фото лишається тим, що видно до наведення.
+   */
+  cardVideo?: (number | null) | Media;
+  /**
    * Базова ціна. Для окремих варіацій її можна перевизначити нижче.
    */
   price: number;
@@ -942,6 +946,7 @@ export interface ProductsSelect<T extends boolean = true> {
   shortDescription?: T;
   description?: T;
   images?: T;
+  cardVideo?: T;
   price?: T;
   oldPrice?: T;
   generateColors?: T;
