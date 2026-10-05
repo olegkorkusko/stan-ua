@@ -74,17 +74,18 @@ export const MediaGallery = ({
   const { colorId } = useProductColor()
 
   /*
-    Стеля в шість кадрів — з макета: стовпчик крапок під стільки й
-    розрахований. Але кадри, привʼязані до кольору, лишаємо всі: інакше
-    сьоме фото, яке і є «рожевим», просто не існувало б для слайдера, і
-    клік по рожевому нікуди б не вів.
+    Показуємо всі кадри. Раніше тут стояла стеля в шість — рівно стільки
+    крапок намальовано в макеті. Але в «Прозорої Кризи» залито пʼятнадцять
+    фото, у «Квіткового набору» дванадцять, і дев'ять із них просто ніхто
+    не бачив.
+
+    Замість стелі підлаштовуємо крок між крапками: шість стоять по макету,
+    через 72 px, а далі крок стискається, щоб стовпчик не виліз за кадр.
+    Рахунок від 640 px — це висота кадру з запасом на самі крапки.
   */
-  const shown = images.filter(
-    (item, index) =>
-      Boolean(colorOf?.[item.src]) ||
-      images.slice(0, index).filter((earlier) => !colorOf?.[earlier.src]).length < 6,
-  )
+  const shown = images
   const count = shown.length
+  const dotGap = count <= 6 ? 72 : Math.max(12, Math.floor((640 - count * 7) / (count - 1)))
 
   const [active, setActive] = useState(0)
 
@@ -241,7 +242,10 @@ export const MediaGallery = ({
           data-figma-node={nodes?.dots}
           role="tablist"
           aria-label={emptyLabel}
-          className="flex justify-center gap-2 md:w-1.75 md:shrink-0 md:flex-col md:items-center md:justify-center md:gap-18"
+          /* Крок задається змінною й лише на десктопі: на мобільному крапки
+             стоять у рядок, там місця вистачає завжди. */
+          style={{ '--dot-gap': `${dotGap}px` } as CSSProperties}
+          className="flex justify-center gap-2 md:w-1.75 md:shrink-0 md:flex-col md:items-center md:justify-center md:[gap:var(--dot-gap)]"
         >
           {shown.map((image, index) => (
             <button

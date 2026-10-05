@@ -95,9 +95,8 @@ const ProductPage = async ({ params }: { params: Params }) => {
   )
 
   /*
-    Слайдер і прив'язка кадрів до кольорів — з «Фото й відео за кольором».
-    Галерея одна: обраний колір нічого не ховає, лише перемотує стрічку на
-    свій кадр. Див. lib/product-media.ts.
+    Слайдер — зі списку «Фотографії та відео», прив'язка кадрів до кольорів —
+    із поля «Фото кольору» в самих варіаціях. Див. lib/product-media.ts.
   */
   const { items: galleryImages, colorOf } = productGallery(product)
   const card = productCard(product)

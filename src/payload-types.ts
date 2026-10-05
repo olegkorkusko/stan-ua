@@ -227,21 +227,9 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
-   * Це і є слайдер на сторінці товару: кадри йдуть у тому порядку, у якому стоять групи. Вкажіть колір — і свотч перемотуватиме слайдер на першу фотографію цієї групи. Колір можна лишити порожнім: тоді це просто фото без привʼязки.
+   * Слайдер на сторінці товару, у вказаному порядку. Показуються всі кадри.
    */
-  colorGallery?:
-    | {
-        /**
-         * Порожньо — фото показуються всім, але жоден свотч на них не веде.
-         */
-        color?: (number | null) | Color;
-        /**
-         * Відео стане окремим кадром слайдера з кнопкою відтворення.
-         */
-        media: (number | Media)[];
-        id?: string | null;
-      }[]
-    | null;
+  images?: (number | Media)[] | null;
   generateColors?: (number | Color)[] | null;
   generateSizes?: (number | Size)[] | null;
   generateStock?: number | null;
@@ -259,6 +247,9 @@ export interface Product {
          */
         price?: number | null;
         stock: number;
+        /**
+         * Кадр із «Фотографії та відео» — свотч цього кольору перемотуватиме слайдер на нього. Розмір на це не впливає.
+         */
         image?: (number | null) | Media;
         id?: string | null;
       }[]
@@ -974,13 +965,7 @@ export interface ProductsSelect<T extends boolean = true> {
   cardHover?: T;
   cardVideo?: T;
   description?: T;
-  colorGallery?:
-    | T
-    | {
-        color?: T;
-        media?: T;
-        id?: T;
-      };
+  images?: T;
   generateColors?: T;
   generateSizes?: T;
   generateStock?: T;

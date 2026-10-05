@@ -15,7 +15,7 @@ import * as migration_20261005_121759_product_courses from './20261005_121759_pr
 import * as migration_20261005_124014_product_card_video from './20261005_124014_product_card_video';
 import * as migration_20261005_124954_course_card_video from './20261005_124954_course_card_video';
 import * as migration_20261005_125913_product_color_gallery from './20261005_125913_product_color_gallery';
-import * as migration_20261005_153523_product_card_tab from './20261005_153523_product_card_tab';
+import * as migration_20261005_164637_product_card_fields from './20261005_164637_product_card_fields';
 
 export const migrations = [
   {
@@ -104,8 +104,8 @@ export const migrations = [
     name: '20261005_125913_product_color_gallery',
   },
   {
-    up: migration_20261005_153523_product_card_tab.up,
-    down: migration_20261005_153523_product_card_tab.down,
-    name: '20261005_153523_product_card_tab'
+    up: migration_20261005_164637_product_card_fields.up,
+    down: migration_20261005_164637_product_card_fields.down,
+    name: '20261005_164637_product_card_fields'
   },
 ];

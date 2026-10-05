@@ -2,116 +2,6 @@
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.products_color_gallery": {
-      "name": "products_color_gallery",
-      "schema": "",
-      "columns": {
-        "_order": {
-          "name": "_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "color_id": {
-          "name": "color_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "products_color_gallery_order_idx": {
-          "name": "products_color_gallery_order_idx",
-          "columns": [
-            {
-              "expression": "_order",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "products_color_gallery_parent_id_idx": {
-          "name": "products_color_gallery_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "products_color_gallery_color_idx": {
-          "name": "products_color_gallery_color_idx",
-          "columns": [
-            {
-              "expression": "color_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "products_color_gallery_color_id_colors_id_fk": {
-          "name": "products_color_gallery_color_id_colors_id_fk",
-          "tableFrom": "products_color_gallery",
-          "tableTo": "colors",
-          "columnsFrom": [
-            "color_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "products_color_gallery_parent_id_fk": {
-          "name": "products_color_gallery_parent_id_fk",
-          "tableFrom": "products_color_gallery",
-          "tableTo": "products",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.products_variants": {
       "name": "products_variants",
       "schema": "",
@@ -8905,6 +8795,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "e126bde5-d134-4e23-9467-5315927b3fcd",
+  "id": "ed5e40eb-cfaa-4379-acec-5e62be075481",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }
