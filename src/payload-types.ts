@@ -188,6 +188,10 @@ export interface Product {
   id: number;
   title: string;
   /**
+   * Один-два рядки під назвою на сторінці товару.
+   */
+  shortDescription?: string | null;
+  /**
    * Базова ціна. Для окремих варіацій її можна перевизначити у вкладці «Варіації та залишки».
    */
   price: number;
@@ -207,10 +211,6 @@ export interface Product {
    * Якщо є — грає замість фото при наведенні: без звуку, по колу. До 15 МБ, тобто 10–20 секунд.
    */
   cardVideo?: (number | null) | Media;
-  /**
-   * Один-два рядки під назвою на сторінці товару.
-   */
-  shortDescription?: string | null;
   description?: {
     root: {
       type: string;
@@ -967,12 +967,12 @@ export interface PayloadMigration {
  */
 export interface ProductsSelect<T extends boolean = true> {
   title?: T;
+  shortDescription?: T;
   price?: T;
   oldPrice?: T;
   cardImage?: T;
   cardHover?: T;
   cardVideo?: T;
-  shortDescription?: T;
   description?: T;
   colorGallery?:
     | T

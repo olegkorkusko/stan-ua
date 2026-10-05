@@ -114,11 +114,18 @@ export const Products: CollectionConfig = {
         {
           label: 'Картка',
           description:
-            'Усе, що видно в каталозі: назва, ціна, фото. Описи й слайдер — у вкладці «Основне».',
+            'Назва, короткий опис, ціна й фото. Повний опис і слайдер — у вкладці «Основне».',
           fields: [
             // Назва стоїть тут, а не в «Основному»: з неї починається і товар,
             // і картка, і це перше, що хочеться написати, відкривши форму.
             { name: 'title', type: 'text', label: 'Назва', required: true, localized: true },
+            {
+              name: 'shortDescription',
+              type: 'textarea',
+              label: 'Короткий опис',
+              localized: true,
+              admin: { description: 'Один-два рядки під назвою на сторінці товару.' },
+            },
             {
               name: 'price',
               type: 'number',
@@ -171,13 +178,6 @@ export const Products: CollectionConfig = {
         {
           label: 'Основне',
           fields: [
-            {
-              name: 'shortDescription',
-              type: 'textarea',
-              label: 'Короткий опис',
-              localized: true,
-              admin: { description: 'Один-два рядки під назвою на сторінці товару.' },
-            },
             {
               name: 'description',
               type: 'richText',
