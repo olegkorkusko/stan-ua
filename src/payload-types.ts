@@ -188,6 +188,26 @@ export interface Product {
   id: number;
   title: string;
   /**
+   * Базова ціна. Для окремих варіацій її можна перевизначити у вкладці «Варіації та залишки».
+   */
+  price: number;
+  /**
+   * Заповніть, якщо хочете показати перекреслену ціну.
+   */
+  oldPrice?: number | null;
+  /**
+   * Головне фото в каталозі. Порожньо — візьметься перший кадр слайдера.
+   */
+  cardImage?: (number | null) | Media;
+  /**
+   * Підміняє обкладинку, коли на картку наводять. Порожньо — візьметься другий кадр слайдера.
+   */
+  cardHover?: (number | null) | Media;
+  /**
+   * Якщо є — грає замість фото при наведенні: без звуку, по колу. До 15 МБ, тобто 10–20 секунд.
+   */
+  cardVideo?: (number | null) | Media;
+  /**
    * Один-два рядки під назвою на сторінці товару.
    */
   shortDescription?: string | null;
@@ -222,26 +242,6 @@ export interface Product {
         id?: string | null;
       }[]
     | null;
-  /**
-   * Базова ціна. Для окремих варіацій її можна перевизначити нижче.
-   */
-  price: number;
-  /**
-   * Заповніть, якщо хочете показати перекреслену ціну.
-   */
-  oldPrice?: number | null;
-  /**
-   * Головне фото в каталозі. Порожньо — візьметься перший кадр слайдера.
-   */
-  cardImage?: (number | null) | Media;
-  /**
-   * Підміняє обкладинку, коли на картку наводять. Порожньо — візьметься другий кадр слайдера.
-   */
-  cardHover?: (number | null) | Media;
-  /**
-   * Якщо є — грає замість фото при наведенні: без звуку, по колу. До 15 МБ, тобто 10–20 секунд.
-   */
-  cardVideo?: (number | null) | Media;
   generateColors?: (number | Color)[] | null;
   generateSizes?: (number | Size)[] | null;
   generateStock?: number | null;
@@ -291,24 +291,6 @@ export interface Product {
   priceFrom?: number | null;
   inStock?: boolean | null;
   totalStock?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "colors".
- */
-export interface Color {
-  id: number;
-  title: string;
-  /**
-   * Заповнюється автоматично з назви. Змінюйте, тільки якщо розумієте наслідки для SEO.
-   */
-  slug?: string | null;
-  /**
-   * Наприклад #C2410C. Показується кружечком у фільтрі й на картці товару.
-   */
-  hex: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -369,6 +351,24 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "colors".
+ */
+export interface Color {
+  id: number;
+  title: string;
+  /**
+   * Заповнюється автоматично з назви. Змінюйте, тільки якщо розумієте наслідки для SEO.
+   */
+  slug?: string | null;
+  /**
+   * Наприклад #C2410C. Показується кружечком у фільтрі й на картці товару.
+   */
+  hex: string;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -967,6 +967,11 @@ export interface PayloadMigration {
  */
 export interface ProductsSelect<T extends boolean = true> {
   title?: T;
+  price?: T;
+  oldPrice?: T;
+  cardImage?: T;
+  cardHover?: T;
+  cardVideo?: T;
   shortDescription?: T;
   description?: T;
   colorGallery?:
@@ -976,11 +981,6 @@ export interface ProductsSelect<T extends boolean = true> {
         media?: T;
         id?: T;
       };
-  price?: T;
-  oldPrice?: T;
-  cardImage?: T;
-  cardHover?: T;
-  cardVideo?: T;
   generateColors?: T;
   generateSizes?: T;
   generateStock?: T;
