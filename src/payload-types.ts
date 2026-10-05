@@ -227,6 +227,10 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
+   * Рядок у характеристиках, біля «Доставки» й «Оплати». Наприклад «12–14 днів». Порожньо — візьметься спільний строк із Налаштувань сайту.
+   */
+  productionTime?: string | null;
+  /**
    * Слайдер на сторінці товару, у вказаному порядку. Показуються всі кадри.
    */
   images?: (number | Media)[] | null;
@@ -1009,6 +1013,7 @@ export interface ProductsSelect<T extends boolean = true> {
   cardHover?: T;
   cardVideo?: T;
   description?: T;
+  productionTime?: T;
   images?: T;
   generateColors?: T;
   generateSizes?: T;
@@ -1694,7 +1699,7 @@ export interface Setting {
    */
   freeDeliveryFrom?: number | null;
   /**
-   * Стоїть у характеристиках кожного товару, у рядку «Виготовлення». Наприклад «2–3 дні». Порожньо — підставиться текст із коду.
+   * Типовий строк: стоїть у характеристиках тих товарів, де не вказано власний. Власний задається в самому товарі, вкладка «Основне».
    */
   productionTime?: string | null;
   /**

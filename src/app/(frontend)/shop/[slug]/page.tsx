@@ -144,9 +144,13 @@ const ProductPage = async ({ params }: { params: Params }) => {
       titleId: '75:1394',
       valueId: '75:1395',
       title: t.product.madeBy,
-      // Строк виготовлення — з «Налаштувань сайту»: він один на всі товари й
-      // міняється частіше за код. Порожньо — текст із словника.
-      value: settings?.productionTime || t.product.madeByValue,
+      /*
+        Строк виготовлення по черзі: власний у товара, далі типовий із
+        «Налаштувань сайту», далі текст із словника. Строки справді різні —
+        чокер роблять за два дні, криза плететься два тижні, — тож спільне
+        число лишається лише як запасне.
+      */
+      value: product.productionTime || settings?.productionTime || t.product.madeByValue,
     },
   ]
 
