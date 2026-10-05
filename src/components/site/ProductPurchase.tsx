@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 
-import { formatPrice } from '@/lib/format'
+import { useProductColor } from '@/components/site/ProductColor'
 import { useCart } from '@/providers/CartProvider'
 import { useLocale } from '@/components/site/LocaleLink'
 import { dictionary } from '@/lib/i18n'
@@ -64,7 +64,12 @@ export const ProductPurchase = ({
     return [...seen.values()]
   }, [variants])
 
-  const [colorId, setColorId] = useState<string | undefined>(colors[0]?.id)
+  /*
+    Колір живе в контексті, а не тут: від нього залежить не лише ціна й
+    залишок у цій колонці, а й те, які кадри показує слайдер у сусідній.
+    Див. ProductColor.tsx.
+  */
+  const { colorId, setColorId } = useProductColor()
 
   const sizes = useMemo(() => {
     const seen = new Map<string, { id: string; title: string; stock: number }>()

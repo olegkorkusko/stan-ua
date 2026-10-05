@@ -207,9 +207,19 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
-   * Перше фото — головне. Друге показується при наведенні на картку.
+   * Перше фото — головне. Друге показується при наведенні на картку. Відео теж можна: у слайдері воно стане окремим кадром із кнопкою відтворення.
    */
   images?: (number | Media)[] | null;
+  /**
+   * Коли покупець обирає колір, слайдер показує саме ці файли. Колір без свого набору показує спільні «Фотографії».
+   */
+  colorGallery?:
+    | {
+        color: number | Color;
+        media: (number | Media)[];
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Програється при наведенні на картку в каталозі: без звуку, по колу. До 15 МБ — це 10–20 секунд. Перше фото лишається тим, що видно до наведення.
    */
@@ -950,6 +960,13 @@ export interface ProductsSelect<T extends boolean = true> {
   shortDescription?: T;
   description?: T;
   images?: T;
+  colorGallery?:
+    | T
+    | {
+        color?: T;
+        media?: T;
+        id?: T;
+      };
   cardVideo?: T;
   price?: T;
   oldPrice?: T;

@@ -4,12 +4,13 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { notFound } from 'next/navigation'
 
 import { ProductCard } from '@/components/site/ProductCard'
+import { ProductColorProvider } from '@/components/site/ProductColor'
 import { MediaGallery } from '@/components/site/MediaGallery'
 import { JsonLd, productSchema } from '@/components/site/JsonLd'
 import { ProductPurchase, type PurchaseVariant } from '@/components/site/ProductPurchase'
 import { Reviews } from '@/components/site/Reviews'
 import { formatPrice } from '@/lib/format'
-import { imageAlt, imageUrl } from '@/lib/media'
+import { imageAlt, imageUrl, isVideo } from '@/lib/media'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
@@ -93,9 +94,41 @@ const ProductPage = async ({ params }: { params: Params }) => {
   )
 
   const images = Array.isArray(product.images) ? product.images : []
+
+  /*
+    Кадр слайдера. У відео розмірів не буває, тож адресу беремо як є; фото
+    беремо у «широкому» розмірі. Тип мусить проїхати до компонента: інакше
+    він намалює <img> поверх відео й покаже порожній прямокутник.
+  */
+  const toGalleryItem = (item: unknown) => {
+    const video = isVideo(item as never)
+    const src = video ? imageUrl(item as never) : imageUrl(item as never, 'wide')
+    if (!src) return null
+    return {
+      src,
+      alt: imageAlt(item as never, product.title),
+      kind: video ? ('video' as const) : ('image' as const),
+    }
+  }
+
   const galleryImages = images
-    .map((item) => ({ src: imageUrl(item, 'wide'), alt: imageAlt(item, product.title) }))
-    .filter((item): item is { src: string; alt: string } => Boolean(item.src))
+    .map(toGalleryItem)
+    .filter((item): item is NonNullable<typeof item> => item !== null)
+
+  /*
+    Галереї за кольором: ключ — ідентифікатор кольору, рівно той самий, що
+    свотчі кладуть у контекст. Порожні набори відкидаємо тут, щоб компонент
+    не вирішував, чи вважати порожній масив відповіддю.
+  */
+  const galleryByColor: Record<string, typeof galleryImages> = {}
+  for (const row of product.colorGallery ?? []) {
+    const color = typeof row.color === 'object' ? row.color : null
+    if (!color) continue
+    const items = (Array.isArray(row.media) ? row.media : [])
+      .map(toGalleryItem)
+      .filter((item): item is NonNullable<typeof item> => item !== null)
+    if (items.length > 0) galleryByColor[String(color.id)] = items
+  }
 
   const variants: PurchaseVariant[] = (product.variants ?? []).map((variant, index) => {
     const color = typeof variant.color === 'object' ? variant.color : null
@@ -176,6 +209,8 @@ const ProductPage = async ({ params }: { params: Params }) => {
         data-figma-state="default"
         className="mx-auto flex w-full max-w-360 flex-col gap-9 pb-14 md:pt-8.5 md:pb-30"
       >
+        {/* Обраний колір спільний для слайдера й свотчів — див. ProductColor. */}
+        <ProductColorProvider initial={variants.find((v) => v.colorId)?.colorId}>
         <div data-figma-node="72:1299" className="flex flex-col gap-10 lg:flex-row lg:gap-0">
           {/* Ліва колонка — 118:2365. Галерея з активним фото + індикатором.
               Рівно половина (720 із 1440), тому w-1/2, а не flex-1: із flex-1
@@ -183,6 +218,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
           <div data-figma-node="118:2365" className="flex min-w-0 flex-col gap-6 lg:w-1/2">
             <MediaGallery
               images={galleryImages}
+              byColor={galleryByColor}
               emptyLabel={t.product.gallery}
               nodes={{ frame: '72:1300', photo: '72:1385', dots: '116:2366' }}
             />
@@ -331,6 +367,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
             </dl>
           </div>
         </div>
+        </ProductColorProvider>
       </div>
 
       {/* Відгуки — 135:2815. Поза контейнером сторінки навмисно: у макеті це

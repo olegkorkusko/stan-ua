@@ -4,8 +4,13 @@ import Image from 'next/image'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { NoPhoto } from '@/components/site/Picture'
+import { useProductColor } from '@/components/site/ProductColor'
 
-export type GalleryImage = { src: string; alt: string }
+/**
+ * Кадр слайдера. kind не обовʼязковий: сторінка курсу передає самі фото й
+ * про відео не знає.
+ */
+export type GalleryImage = { src: string; alt: string; kind?: 'image' | 'video' }
 
 /*
   Вертикальний слайдер фото. Стоїть і на сторінці товару (галерея 72:1300),
@@ -48,10 +53,17 @@ export type GalleryImage = { src: string; alt: string }
 const FRAME = 'relative w-full overflow-hidden bg-paper-deep aspect-390/420 md:aspect-681/782 md:w-auto md:flex-1'
 export const MediaGallery = ({
   images,
+  byColor,
   emptyLabel,
   nodes,
 }: {
   images: GalleryImage[]
+  /**
+   * Набори кадрів під кожен колір. Обраний колір приходить із контексту —
+   * свотчі стоять в іншій колонці. Кольору без свого набору дістаються
+   * спільні `images`.
+   */
+  byColor?: Record<string, GalleryImage[]>
   emptyLabel: string
   /**
    * Прив'язка до макета. У товару й курсу це різні вузли (72:1300/72:1385/116:2366
@@ -60,13 +72,38 @@ export const MediaGallery = ({
    */
   nodes?: { frame?: string; photo?: string; dots?: string }
 }) => {
+  const { colorId } = useProductColor()
+  const byColorSet = colorId ? byColor?.[colorId] : undefined
+  const source = byColorSet && byColorSet.length > 0 ? byColorSet : images
+
   const [active, setActive] = useState(0)
-  const count = Math.min(images.length, 6)
-  const shown = images.slice(0, 6)
+  const count = Math.min(source.length, 6)
+  const shown = source.slice(0, 6)
 
   const frame = useRef<HTMLDivElement>(null)
   const track = useRef<HTMLUListElement>(null)
   const lastSwitch = useRef(0)
+
+  /*
+    Інший колір — інші кадри, тож показувати треба з першого. Без цього
+    покупець, який гортав до пʼятого фото й перемкнув колір, бачив би
+    порожнечу: стрічка коротша, а зсув лишився старий.
+
+    Скидаємо просто під час рендера, порівнявши з попереднім кольором, —
+    саме так React радить підлаштовувати стан під зміну вхідних даних.
+    В ефекті це був би зайвий прохід із уже намальованим старим кадром.
+  */
+  const [shownColor, setShownColor] = useState(colorId)
+  if (colorId !== shownColor) {
+    setShownColor(colorId)
+    setActive(0)
+  }
+
+  // А от стрічку на мобільному доводиться везти руками: свій scrollLeft вона
+  // тримає сама, і це вже робота з DOM, тобто ефект.
+  useEffect(() => {
+    track.current?.scrollTo({ left: 0, behavior: 'auto' })
+  }, [colorId])
 
   /** Стрічка прокручується вбік — отже, працює мобільна розкладка. */
   const swipeable = () => {
@@ -148,14 +185,35 @@ export const MediaGallery = ({
         >
           {shown.map((image, index) => (
             <li key={image.src} className="relative h-full w-full shrink-0 snap-center">
-              <Image
-                src={image.src}
-                alt={image.alt}
-                fill
-                priority={index === 0}
-                sizes="(max-width: 1024px) 100vw, 45vw"
-                className="object-cover"
-              />
+              {image.kind === 'video' ? (
+                /*
+                  З контролами й без автозапуску: у слайдері кадри гортають, і
+                  ролик, який почав би грати сам, кричав би з-під пальця ще до
+                  того, як на нього подивились. muted — щоб перший дотик до
+                  «грати» не лякав звуком; увімкнути його можна там же.
+
+                  preload="metadata" — щоб кадр не був порожнім до натискання,
+                  але й щоб саме відео не тягнулось, поки його не попросили.
+                */
+                <video
+                  src={image.src}
+                  controls
+                  muted
+                  playsInline
+                  preload="metadata"
+                  aria-label={image.alt}
+                  className="h-full w-full bg-ink object-cover"
+                />
+              ) : (
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  priority={index === 0}
+                  sizes="(max-width: 1024px) 100vw, 45vw"
+                  className="object-cover"
+                />
+              )}
             </li>
           ))}
         </ul>

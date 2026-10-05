@@ -16,6 +16,14 @@ export const imageUrl = (media: MediaLike, size?: 'thumbnail' | 'card' | 'wide' 
   return media.url ?? null
 }
 
+/**
+ * Фото це чи відео. Медіатека приймає і те, і те, а слайдер мусить знати, що
+ * саме малювати: <img> на відео дасть порожній кадр, а <video> на фото —
+ * чорний прямокутник із кнопкою, яка нічого не вмикає.
+ */
+export const isVideo = (media: MediaLike): boolean =>
+  Boolean(media && typeof media === 'object' && media.mimeType?.startsWith('video/'))
+
 export const imageAlt = (media: MediaLike, fallback: string): string => {
   if (!media || typeof media === 'number' || typeof media === 'string') return fallback
   return media.alt || fallback
