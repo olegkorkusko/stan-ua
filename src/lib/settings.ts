@@ -18,10 +18,19 @@ import type { Setting } from '@/payload-types'
 */
 export const siteSettings = cache(async (locale: Locale): Promise<Partial<Setting> | null> => {
   const payload = await payloadClient()
-  return payload.findGlobal({ slug: 'settings', locale, depth: 1 }).catch((error: unknown) => {
-    // Ковтати мовчки не можна: сайт працюватиме далі, але на типових текстах,
-    // і зрозуміти, чому правка в адмінці «не застосувалась», буде ніяк.
-    console.error('Не вдалось прочитати налаштування сайту', error)
-    return null
-  })
+  /*
+    fallbackLocale: false — із тієї самої причини, що й у lib/landing.ts.
+    У конфізі стоїть fallback: true, тож порожнє англійське поле Payload
+    підміняє українським, і на /en зʼявляється українське оголошення чи
+    український строк виготовлення. Порожнє має лишатися порожнім: тоді
+    сторінка візьме переклад із словника.
+  */
+  return payload
+    .findGlobal({ slug: 'settings', locale, fallbackLocale: false, depth: 1 })
+    .catch((error: unknown) => {
+      // Ковтати мовчки не можна: сайт працюватиме далі, але на типових текстах,
+      // і зрозуміти, чому правка в адмінці «не застосувалась», буде ніяк.
+      console.error('Не вдалось прочитати налаштування сайту', error)
+      return null
+    })
 })

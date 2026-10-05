@@ -1405,6 +1405,10 @@ export interface HomePage {
      */
     image?: (number | null) | Media;
     /**
+     * Замість фото: програється саме, по колу й без звуку. До 15 МБ. Фото лишіть — його видно, поки відео вантажиться.
+     */
+    video?: (number | null) | Media;
+    /**
      * Читають ті, хто користується екранним диктором, і Google.
      */
     alt?: string | null;
@@ -1418,6 +1422,10 @@ export interface HomePage {
      * Вертикальне, від 1200 px по довшій стороні. Порожньо — фото з коду.
      */
     image?: (number | null) | Media;
+    /**
+     * Замість фото: програється саме, по колу й без звуку. До 15 МБ. Фото лишіть — його видно, поки відео вантажиться.
+     */
+    video?: (number | null) | Media;
     /**
      * Читають ті, хто користується екранним диктором, і Google.
      */
@@ -1442,6 +1450,14 @@ export interface ShopPage {
     title?: string | null;
     body?: string | null;
     cta?: string | null;
+    /**
+     * Горизонтальне, від 2000 px завширшки. Порожньо — лишиться фото з коду.
+     */
+    image?: (number | null) | Media;
+    /**
+     * Програється саме, по колу й БЕЗ ЗВУКУ — інакше браузер його не запустить. До 15 МБ, тобто 10–20 секунд. Поки вантажиться, видно «Фото банера», тож його варто залишити.
+     */
+    video?: (number | null) | Media;
   };
   categories?: {
     label?: string | null;
@@ -1491,6 +1507,14 @@ export interface CoursesPage {
     title?: string | null;
     body?: string | null;
     cta?: string | null;
+    /**
+     * Горизонтальне, від 2000 px завширшки. Порожньо — лишиться фото з коду.
+     */
+    image?: (number | null) | Media;
+    /**
+     * Програється саме, по колу й БЕЗ ЗВУКУ — інакше браузер його не запустить. До 15 МБ, тобто 10–20 секунд. Поки вантажиться, видно «Фото банера», тож його варто залишити.
+     */
+    video?: (number | null) | Media;
   };
   directions?: {
     label?: string | null;
@@ -1587,6 +1611,10 @@ export interface Setting {
    */
   freeDeliveryFrom?: number | null;
   /**
+   * Стоїть у характеристиках кожного товару, у рядку «Виготовлення». Наприклад «2–3 дні». Порожньо — підставиться текст із коду.
+   */
+  productionTime?: string | null;
+  /**
    * Те, що видно в пошуку й на вкладці браузера. Порожньо — береться назва з коду.
    */
   seoTitle?: string | null;
@@ -1627,6 +1655,7 @@ export interface HomePageSelect<T extends boolean = true> {
     | {
         label?: T;
         image?: T;
+        video?: T;
         alt?: T;
       };
   shop?:
@@ -1634,6 +1663,7 @@ export interface HomePageSelect<T extends boolean = true> {
     | {
         label?: T;
         image?: T;
+        video?: T;
         alt?: T;
       };
   updatedAt?: T;
@@ -1652,6 +1682,8 @@ export interface ShopPageSelect<T extends boolean = true> {
         title?: T;
         body?: T;
         cta?: T;
+        image?: T;
+        video?: T;
       };
   categories?:
     | T
@@ -1695,6 +1727,8 @@ export interface CoursesPageSelect<T extends boolean = true> {
         title?: T;
         body?: T;
         cta?: T;
+        image?: T;
+        video?: T;
       };
   directions?:
     | T
@@ -1755,6 +1789,7 @@ export interface SettingsSelect<T extends boolean = true> {
   instagram?: T;
   telegram?: T;
   freeDeliveryFrom?: T;
+  productionTime?: T;
   seoTitle?: T;
   seoDescription?: T;
   seoImage?: T;

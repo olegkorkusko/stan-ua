@@ -456,6 +456,26 @@
   .show-slow {
     animation: showSlow 0.5s ease-in-out;
   }
+
+  /*
+    Поява спливашки «Додано в кошик». Швидше за показ сторінки й зі зсувом
+    знизу: смужка має прочитатись як щось, що приїхало, а не як частина
+    сторінки, яка там була весь час.
+  */
+  .show-fast {
+    animation: showFast 0.22s ease-out;
+  }
+}
+
+@keyframes showFast {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes draw-x {

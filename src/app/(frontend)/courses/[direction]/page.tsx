@@ -123,7 +123,7 @@ const DirectionPage = async ({ params }: { params: Params }) => {
             ))}
           </div>
         ) : (
-          <p className="mt-12 text-sm text-muted">Курси цього напряму готуються.</p>
+          <p className="mt-12 text-sm text-muted">{t.common.soonCourses}</p>
         )}
       </div>
     </div>

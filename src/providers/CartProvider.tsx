@@ -45,6 +45,9 @@ type CartContext = {
   isOpen: boolean
   /** Поки кошик не приїхав із сервера, показуємо стан завантаження. */
   ready: boolean
+  /** Назва щойно доданого товару — для спливашки. Зникає сама. */
+  notice: string | null
+  dismissNotice: () => void
   add: (item: Omit<CartItem, 'quantity'>, quantity?: number) => void
   remove: (key: string) => void
   setQuantity: (key: string, quantity: number) => void
@@ -70,6 +73,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [suggestion, setSuggestion] = useState<CartSuggestion | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [ready, setReady] = useState(false)
+  const [notice, setNotice] = useState<string | null>(null)
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const skipNextSave = useRef(true)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -134,6 +139,24 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Зміни зберігаються локально одразу, на сервер — із затримкою,
   // щоб натискання «+» п'ять разів поспіль не давало п'ять запитів.
   useEffect(() => {
+    /*
+      Порожній кошик до першої синхронізації — це не кошик, а початковий стан
+      React. Записати його в сховище означає стерти те, що там лежить.
+
+      Саме це й ставалося. Ефекти на монтуванні йдуть по черзі: перший читає
+      сховище й кличе setItems, другий одразу пише в сховище — але пише ще
+      СТАРИЙ стан цього рендера, тобто порожній масив. Сховище на мить стає
+      порожнім. Зазвичай наступний рендер повертає туди вміст, і ніхто нічого
+      не помічає. Але синхронізація з сервером читає сховище після свого
+      запиту, і якщо той відповів швидше за наступний рендер — вона бачить
+      порожньо, вирішує, що кошик порожній з обох боків, і підтверджує це
+      очищенням. Товари зникали мовчки.
+
+      ready вмикається після першої синхронізації. Після неї порожній кошик
+      уже справжній — людина сама все прибрала, — і записати його треба.
+    */
+    if (!ready && items.length === 0) return
+
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
 
     if (skipNextSave.current) {
@@ -161,7 +184,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current)
     }
-  }, [items])
+  }, [items, ready])
 
   const add: CartContext['add'] = useCallback((item, quantity = 1) => {
     track('add_to_cart', {
@@ -183,9 +206,24 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     /*
       Шухляда тут НЕ відкривається. «Купити» означає «поклади в кошик», а не
       «покажи кошик»: людина вибирає далі, а панель перекривала каталог і її
-      щоразу треба було закривати. Що товар додався, видно з лічильника в
-      шапці — там же єдина кнопка, яка кошик відкриває.
+      щоразу треба було закривати.
+
+      Але й мовчати не можна — саме це й сталося, коли шухляду прибрали:
+      натиснув «Купити», і зовні не змінилось нічого, крім цифри в кутку
+      екрана, якої ніхто не бачить. Тому спливашка: каже, що саме додалось,
+      дає дорогу далі й зникає сама. Каталог вона не перекриває.
     */
+    setNotice(item.title)
+    if (noticeTimer.current) clearTimeout(noticeTimer.current)
+    noticeTimer.current = setTimeout(() => setNotice(null), 5000)
+  }, [])
+
+  // Прибрати за собою, якщо людина пішла зі сторінки раніше, ніж минули 5 с.
+  useEffect(() => () => void (noticeTimer.current && clearTimeout(noticeTimer.current)), [])
+
+  const dismissNotice = useCallback(() => {
+    if (noticeTimer.current) clearTimeout(noticeTimer.current)
+    setNotice(null)
   }, [])
 
   /*
@@ -223,6 +261,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       total: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
       isOpen,
       ready,
+      notice,
+      dismissNotice,
       add,
       remove,
       setQuantity,
@@ -230,7 +270,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
     }),
-    [items, suggestion, isOpen, ready, add, remove, setQuantity, clear],
+    [items, suggestion, isOpen, ready, notice, dismissNotice, add, remove, setQuantity, clear],
   )
 
   return <Context.Provider value={value}>{children}</Context.Provider>

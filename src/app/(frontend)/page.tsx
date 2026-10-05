@@ -1,5 +1,6 @@
 import Image from 'next/image'
 
+import { HeroMedia } from '@/components/site/HeroMedia'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { dictionary } from '@/lib/i18n'
 import { imageUrl } from '@/lib/media'
@@ -44,6 +45,9 @@ const HomePage = async () => {
 
   const learnImage = imageUrl(home?.learn?.image, 'wide') ?? '/home/learning.jpg'
   const shopImage = imageUrl(home?.shop?.image, 'wide') ?? '/home/finished-goods.jpg'
+  // Відео необовʼязкове: є — грає поверх фото, немає — лишається фото.
+  const learnVideo = imageUrl(home?.learn?.video)
+  const shopVideo = imageUrl(home?.shop?.video)
 
   return (
     <div
@@ -55,6 +59,7 @@ const HomePage = async () => {
         href="/courses"
         label={home?.learn?.label || t.learnLabel}
         imageSrc={learnImage}
+        videoSrc={learnVideo}
         imageAlt={home?.learn?.alt || t.learnAlt}
         variant="learn"
         panelNodeId="80:1379"
@@ -72,6 +77,7 @@ const HomePage = async () => {
         href="/shop"
         label={home?.shop?.label || t.shopLabel}
         imageSrc={shopImage}
+        videoSrc={shopVideo}
         imageAlt={home?.shop?.alt || t.shopAlt}
         variant="shop"
         panelNodeId="80:1376"
@@ -113,6 +119,8 @@ type BranchProps = {
   href: string
   label: string
   imageSrc: string
+  /** Є — грає замість фото; фото лишається першим кадром. */
+  videoSrc?: string | null
   imageAlt: string
   variant: 'learn' | 'shop'
   panelNodeId: string
@@ -124,6 +132,7 @@ const PortalBranch = ({
   href,
   label,
   imageSrc,
+  videoSrc,
   imageAlt,
   variant,
   panelNodeId,
@@ -154,11 +163,11 @@ const PortalBranch = ({
   // нічого не рухає, клік по фото нікуди не веде.
   return (
     <div className="group relative overflow-hidden transition-[filter] duration-300 has-[[data-portal-cta]:hover]:brightness-[.95] motion-reduce:transition-none">
-      <Image
-        data-figma-node={panelNodeId}
-        src={imageSrc}
+      <HeroMedia
+        node={panelNodeId}
+        video={videoSrc}
+        image={imageSrc}
         alt={imageAlt}
-        fill
         sizes="(min-width: 768px) 50vw, 100vw"
         priority
         className="object-cover transition-transform duration-700 ease-out group-has-[[data-portal-cta]:hover]:scale-105 motion-reduce:transition-none motion-reduce:group-has-[[data-portal-cta]:hover]:scale-100"

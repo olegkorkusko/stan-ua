@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useRef, type ReactNode } from 'react'
 
 import { CartDrawer } from '@/components/site/CartDrawer'
+import { CartNotice } from '@/components/site/CartNotice'
 import { Footer } from '@/components/site/Footer'
 import { Header } from '@/components/site/Header'
 import { dictionary, type Locale } from '@/lib/i18n'
@@ -103,6 +104,7 @@ export const SiteChrome = ({ locale, settings, children }: Props) => {
       </main>
       <Footer settings={settings} t={t} />
       <CartDrawer freeDeliveryFrom={settings?.freeDeliveryFrom} />
+      <CartNotice />
     </>
   )
 }

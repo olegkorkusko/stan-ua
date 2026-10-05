@@ -1,4 +1,7 @@
+import { cache } from 'react'
+
 import type { Locale } from '@/lib/i18n'
+import { imageUrl } from '@/lib/media'
 import { payloadClient } from '@/lib/payload'
 
 /*
@@ -52,25 +55,53 @@ const overlay = <T>(fallback: T, override: unknown): T => {
  * через те, що база відповіла не одразу. У найгіршому разі відвідувач побачить
  * тексти з коду й не помітить різниці.
  */
+type LandingSlug = 'shop-page' | 'courses-page'
+
+/*
+  Сам запис із бази. cache() — бо сторінка питає його двічі: раз по тексти,
+  раз по банер. Без нього це два однакові запити на кожен рендер.
+
+  fallbackLocale: false — інакше англійська версія показує українські тексти.
+  У конфізі стоїть fallback: true, тож порожнє англійське поле Payload
+  підміняє українським. Тут це шкодить: у словнику лежить готовий переклад,
+  а підставлена українська його перекривала — на /en блок «Доставка й оплата»
+  виходив українською посеред англійської сторінки.
+
+  Порожнє поле має лишатися порожнім: тоді overlay віддасть переклад із коду,
+  а коли клієнтка впише англійський текст — переможе він.
+
+  depth: 1 — щоб банер прийшов документом, а не самим лише числом.
+
+  Помилку читання ковтаємо навмисно: сторінка не має падати через те, що база
+  відповіла не одразу. У найгіршому разі відвідувач побачить тексти з коду.
+*/
+const landingGlobal = cache(async (slug: LandingSlug, locale: Locale) => {
+  const payload = await payloadClient()
+  return payload.findGlobal({ slug, locale, fallbackLocale: false, depth: 1 }).catch(() => null)
+})
+
+/** Тексти лендинга: з адмінки поверх коду. */
 export const landingCopy = async <T>(
-  slug: 'shop-page' | 'courses-page',
+  slug: LandingSlug,
   locale: Locale,
   fallback: T,
-): Promise<T> => {
-  const payload = await payloadClient()
-  /*
-    fallbackLocale: false — інакше англійська версія показує українські тексти.
+): Promise<T> => overlay(fallback, await landingGlobal(slug, locale))
 
-    У конфізі стоїть fallback: true, тож порожнє англійське поле Payload
-    підміняє українським. Тут це шкодить: у словнику лежить готовий переклад,
-    а підставлена українська його перекривала — на /en блок «Доставка й
-    оплата» виходив українською посеред англійської сторінки.
+/**
+ * Банер першого екрана. Словник його не описує — overlay вище ходить лише по
+ * ключах, які є в коді, тож завантажене фото крізь нього не проходить. Тому
+ * окрема функція, а не ще одне поле в текстах.
+ *
+ * Порожньо в обох — сторінка підставить файл із public.
+ */
+export const landingBanner = async (slug: LandingSlug, locale: Locale) => {
+  const stored = (await landingGlobal(slug, locale)) as {
+    hero?: { image?: unknown; video?: unknown }
+  } | null
 
-    Порожнє поле має лишатися порожнім: тоді overlay нижче віддасть переклад
-    із коду, а коли клієнтка впише англійський текст — переможе він.
-  */
-  const stored = await payload
-    .findGlobal({ slug, locale, fallbackLocale: false, depth: 0 })
-    .catch(() => null)
-  return overlay(fallback, stored)
+  return {
+    image: imageUrl(stored?.hero?.image as never, 'hero'),
+    // У відео розмірів не буває — imageUrl віддасть адресу самого файлу.
+    video: imageUrl(stored?.hero?.video as never),
+  }
 }

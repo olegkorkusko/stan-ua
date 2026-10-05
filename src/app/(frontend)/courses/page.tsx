@@ -2,11 +2,12 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 
 import { HeroCta } from '@/components/site/HeroCta'
+import { HeroMedia } from '@/components/site/HeroMedia'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { Picture } from '@/components/site/Picture'
 import { formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
-import { landingCopy } from '@/lib/landing'
+import { landingBanner, landingCopy } from '@/lib/landing'
 import { getLocale } from '@/lib/locale'
 import { categoryCards, cardKey, directionCards } from '@/lib/cards'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
@@ -50,6 +51,7 @@ const CoursesPage = async () => {
   const locale = await getLocale()
   // Тексти з адмінки поверх текстів із коду — див. lib/landing.ts
   const t = await landingCopy('courses-page', locale, dictionary(locale).coursesLanding)
+  const banner = await landingBanner('courses-page', locale)
 
   /*
     Четверта картка веде не в курси, а в набори магазину, тому обсягів треба
@@ -82,13 +84,12 @@ const CoursesPage = async () => {
         aria-label={t.hero.imageAlt}
         className="relative h-[539px] w-full overflow-hidden bg-ink md:h-[720px]"
       >
-        <Image
-          src="/courses/hero.jpg"
+        {/* Фото або відео з адмінки; порожньо — кадр із макета. */}
+        <HeroMedia
+          video={banner.video}
+          image={banner.image ?? '/courses/hero.jpg'}
           alt=""
-          fill
           priority
-          sizes="100vw"
-          className="object-cover"
         />
         <div
           aria-hidden="true"

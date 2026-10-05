@@ -10,6 +10,7 @@ import * as migration_20260925_114051_drop_prepayment from './20260925_114051_dr
 import * as migration_20260925_130728_drop_checkbox from './20260925_130728_drop_checkbox';
 import * as migration_20260925_131145_drop_prepaid_amount from './20260925_131145_drop_prepaid_amount';
 import * as migration_20260928_165655_telegram_notify from './20260928_165655_telegram_notify';
+import * as migration_20261005_092345_banner_media_and_production_time from './20261005_092345_banner_media_and_production_time';
 
 export const migrations = [
   {
@@ -70,6 +71,11 @@ export const migrations = [
   {
     up: migration_20260928_165655_telegram_notify.up,
     down: migration_20260928_165655_telegram_notify.down,
-    name: '20260928_165655_telegram_notify'
+    name: '20260928_165655_telegram_notify',
+  },
+  {
+    up: migration_20261005_092345_banner_media_and_production_time.up,
+    down: migration_20261005_092345_banner_media_and_production_time.down,
+    name: '20261005_092345_banner_media_and_production_time'
   },
 ];

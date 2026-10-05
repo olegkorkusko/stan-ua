@@ -2,11 +2,12 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 
 import { HeroCta } from '@/components/site/HeroCta'
+import { HeroMedia } from '@/components/site/HeroMedia'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { Picture } from '@/components/site/Picture'
 import { formatDay, formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
-import { landingCopy } from '@/lib/landing'
+import { landingBanner, landingCopy } from '@/lib/landing'
 import { imageAlt, imageUrl } from '@/lib/media'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
@@ -55,6 +56,7 @@ const ShopPage = async () => {
   const locale = await getLocale()
   // Тексти з адмінки поверх текстів із коду — див. lib/landing.ts
   const t = await landingCopy('shop-page', locale, dictionary(locale).shopLanding)
+  const banner = await landingBanner('shop-page', locale)
 
   /*
     Назва, підпис, фото й кількість — з адмінки; словник лишається запасним
@@ -94,13 +96,12 @@ const ShopPage = async () => {
         aria-label={t.hero.imageAlt}
         className="relative h-[561px] w-full overflow-hidden bg-ink md:h-[720px]"
       >
-        <Image
-          src="/shop/hero-photo.png"
+        {/* Фото або відео з адмінки; порожньо — кадр із макета. */}
+        <HeroMedia
+          video={banner.video}
+          image={banner.image ?? '/shop/hero-photo.png'}
           alt=""
-          fill
           priority
-          sizes="100vw"
-          className="object-cover"
         />
         <div
           aria-hidden="true"

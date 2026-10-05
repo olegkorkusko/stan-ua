@@ -14,6 +14,7 @@ import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 import { savedItems } from '@/lib/saved'
+import { siteSettings } from '@/lib/settings'
 import type { Product } from '@/payload-types'
 import { SectionTitle } from '@/components/site/Typography'
 
@@ -55,6 +56,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
   const payload = await payloadClient()
   const locale = await getLocale()
   const t = dictionary(locale)
+  const settings = await siteSettings(locale)
   const category = typeof product.category === 'object' ? product.category : null
   const categoryId =
     category?.id ?? (typeof product.category === 'number' ? product.category : null)
@@ -138,7 +140,9 @@ const ProductPage = async ({ params }: { params: Params }) => {
       titleId: '75:1394',
       valueId: '75:1395',
       title: t.product.madeBy,
-      value: t.product.madeByValue,
+      // Строк виготовлення — з «Налаштувань сайту»: він один на всі товари й
+      // міняється частіше за код. Порожньо — текст із словника.
+      value: settings?.productionTime || t.product.madeByValue,
     },
   ]
 

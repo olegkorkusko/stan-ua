@@ -63,6 +63,11 @@ type Dictionary = {
     colorLabel: string
     sizeLabel: string
     mayLike: string
+    /** Спливашка після «Купити»: товар поклали в кошик. */
+    added: string
+    addedView: string
+    addedCheckout: string
+    addedClose: string
     add: string
     placeOrder: string
   }
@@ -267,6 +272,9 @@ type Dictionary = {
     loadingCourses: string
     accountLabel: string
     setPassword: string
+    /** Порожній напрям чи категорія: показувати нічого, але сторінка є. */
+    soonCourses: string
+    soonProducts: string
   }
   /** Вхід і реєстрація в кабінеті — AuthForm. */
   auth: {
@@ -449,6 +457,10 @@ const uk: Dictionary = {
     colorLabel: 'Колір',
     sizeLabel: 'Розмір',
     mayLike: 'Може сподобатись',
+    added: 'Додано в кошик',
+    addedView: 'Переглянути',
+    addedCheckout: 'Оформити',
+    addedClose: 'Закрити',
     add: 'Додати +',
     placeOrder: 'Оформити замовлення',
   },
@@ -618,6 +630,8 @@ const uk: Dictionary = {
     loadingCatalog: 'Завантаження каталогу',
     loadingCourses: 'Завантаження курсів',
     accountLabel: 'Кабінет',
+    soonCourses: 'Курси цього напряму готуються.',
+    soonProducts: 'Товари цієї категорії готуються.',
     setPassword: 'Задайте пароль',
   },
   auth: {
@@ -789,19 +803,19 @@ const uk: Dictionary = {
         {
           title: 'Прикраси з бісеру',
           subtitle: 'Браслети, кольє, сережки, чокери',
-          href: '/shop/catalog?category=prykrasy',
+          href: '/shop/category/prykrasy',
           imageAlt: 'Кольє з бісеру ручної роботи',
         },
         {
           title: 'В’язані вироби',
           subtitle: 'Усе для першої роботи в одній коробці',
-          href: '/shop/catalog?category=nabory',
+          href: '/shop/category/nabory',
           imageAlt: 'Гачки, пряжа й в’язані зразки',
         },
         {
           title: 'Аксесуари макраме',
           subtitle: 'Шнур, пряжа, фурнітура',
-          href: '/shop/catalog?category=materialy',
+          href: '/shop/category/materialy',
           imageAlt: 'Шнур і фурнітура для макраме',
         },
       ],
@@ -871,7 +885,7 @@ const uk: Dictionary = {
         {
           title: 'Готові набори',
           subtitle: 'Усе для першої роботи в одній коробці',
-          href: '/shop/catalog?category=nabory',
+          href: '/shop/category/nabory',
           imageAlt: 'Готовий набір для рукоділля',
         },
       ],
@@ -951,6 +965,10 @@ const en: Dictionary = {
     colorLabel: 'Colour',
     sizeLabel: 'Size',
     mayLike: 'You may like',
+    added: 'Added to cart',
+    addedView: 'View cart',
+    addedCheckout: 'Checkout',
+    addedClose: 'Close',
     add: 'Add +',
     placeOrder: 'Place order',
   },
@@ -1120,6 +1138,8 @@ const en: Dictionary = {
     loadingCatalog: 'Loading the catalogue',
     loadingCourses: 'Loading courses',
     accountLabel: 'Account',
+    soonCourses: 'Courses in this direction are on the way.',
+    soonProducts: 'Pieces in this category are on the way.',
     setPassword: 'Set a password',
   },
   auth: {
@@ -1287,19 +1307,19 @@ const en: Dictionary = {
         {
           title: 'Beaded jewellery',
           subtitle: 'Bracelets, necklaces, earrings, chokers',
-          href: '/shop/catalog?category=prykrasy',
+          href: '/shop/category/prykrasy',
           imageAlt: 'Handmade beaded necklace',
         },
         {
           title: 'Knitted pieces',
           subtitle: 'Everything you need for a first project, in one box',
-          href: '/shop/catalog?category=nabory',
+          href: '/shop/category/nabory',
           imageAlt: 'Hooks, yarn and knitted swatches',
         },
         {
           title: 'Macramé supplies',
           subtitle: 'Cord, yarn, findings',
-          href: '/shop/catalog?category=materialy',
+          href: '/shop/category/materialy',
           imageAlt: 'Macramé cord and findings',
         },
       ],
@@ -1366,7 +1386,7 @@ const en: Dictionary = {
         {
           title: 'Ready-made kits',
           subtitle: 'Everything you need for a first project, in one box',
-          href: '/shop/catalog?category=nabory',
+          href: '/shop/category/nabory',
           imageAlt: 'A ready-made craft kit',
         },
       ],
