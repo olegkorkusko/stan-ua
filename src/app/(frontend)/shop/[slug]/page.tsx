@@ -116,18 +116,26 @@ const ProductPage = async ({ params }: { params: Params }) => {
     .filter((item): item is NonNullable<typeof item> => item !== null)
 
   /*
-    Галереї за кольором: ключ — ідентифікатор кольору, рівно той самий, що
-    свотчі кладуть у контекст. Порожні набори відкидаємо тут, щоб компонент
-    не вирішував, чи вважати порожній масив відповіддю.
+    Прив'язка кадрів до кольорів.
+
+    Галерея лишається ОДНІЄЮ: файли кольору просто дописуються в кінець, якщо
+    їх ще немає серед спільних. Обраний колір не ховає решту фото, а лише
+    перемотує слайдер на свій кадр — так це працює в Etsy, на яку показував
+    замовник.
+
+    colorOf — зворотний покажчик «адреса файлу → колір»: саме його слайдеру
+    й треба, щоб знайти потрібний кадр.
   */
-  const galleryByColor: Record<string, typeof galleryImages> = {}
+  const colorOf: Record<string, string> = {}
   for (const row of product.colorGallery ?? []) {
     const color = typeof row.color === 'object' ? row.color : null
     if (!color) continue
-    const items = (Array.isArray(row.media) ? row.media : [])
-      .map(toGalleryItem)
-      .filter((item): item is NonNullable<typeof item> => item !== null)
-    if (items.length > 0) galleryByColor[String(color.id)] = items
+    for (const file of Array.isArray(row.media) ? row.media : []) {
+      const item = toGalleryItem(file)
+      if (!item) continue
+      if (!galleryImages.some((existing) => existing.src === item.src)) galleryImages.push(item)
+      colorOf[item.src] ??= String(color.id)
+    }
   }
 
   const variants: PurchaseVariant[] = (product.variants ?? []).map((variant, index) => {
@@ -218,7 +226,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
           <div data-figma-node="118:2365" className="flex min-w-0 flex-col gap-6 lg:w-1/2">
             <MediaGallery
               images={galleryImages}
-              byColor={galleryByColor}
+              colorOf={colorOf}
               emptyLabel={t.product.gallery}
               nodes={{ frame: '72:1300', photo: '72:1385', dots: '116:2366' }}
             />

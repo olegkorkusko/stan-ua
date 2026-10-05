@@ -53,17 +53,16 @@ export type GalleryImage = { src: string; alt: string; kind?: 'image' | 'video' 
 const FRAME = 'relative w-full overflow-hidden bg-paper-deep aspect-390/420 md:aspect-681/782 md:w-auto md:flex-1'
 export const MediaGallery = ({
   images,
-  byColor,
+  colorOf,
   emptyLabel,
   nodes,
 }: {
   images: GalleryImage[]
   /**
-   * Набори кадрів під кожен колір. Обраний колір приходить із контексту —
-   * свотчі стоять в іншій колонці. Кольору без свого набору дістаються
-   * спільні `images`.
+   * Який кадр якому кольору належить: адреса файлу → id кольору. Обраний
+   * колір приходить із контексту — свотчі стоять в іншій колонці.
    */
-  byColor?: Record<string, GalleryImage[]>
+  colorOf?: Record<string, string>
   emptyLabel: string
   /**
    * Прив'язка до макета. У товару й курсу це різні вузли (72:1300/72:1385/116:2366
@@ -73,37 +72,55 @@ export const MediaGallery = ({
   nodes?: { frame?: string; photo?: string; dots?: string }
 }) => {
   const { colorId } = useProductColor()
-  const byColorSet = colorId ? byColor?.[colorId] : undefined
-  const source = byColorSet && byColorSet.length > 0 ? byColorSet : images
+
+  /*
+    Стеля в шість кадрів — з макета: стовпчик крапок під стільки й
+    розрахований. Але кадри, привʼязані до кольору, лишаємо всі: інакше
+    сьоме фото, яке і є «рожевим», просто не існувало б для слайдера, і
+    клік по рожевому нікуди б не вів.
+  */
+  const shown = images.filter(
+    (item, index) =>
+      Boolean(colorOf?.[item.src]) ||
+      images.slice(0, index).filter((earlier) => !colorOf?.[earlier.src]).length < 6,
+  )
+  const count = shown.length
 
   const [active, setActive] = useState(0)
-  const count = Math.min(source.length, 6)
-  const shown = source.slice(0, 6)
 
   const frame = useRef<HTMLDivElement>(null)
   const track = useRef<HTMLUListElement>(null)
   const lastSwitch = useRef(0)
 
   /*
-    Інший колір — інші кадри, тож показувати треба з першого. Без цього
-    покупець, який гортав до пʼятого фото й перемкнув колір, бачив би
-    порожнечу: стрічка коротша, а зсув лишився старий.
+    Обрали колір — слайдер перемотується на його кадр. Галерея при цьому
+    лишається однією: решта фото нікуди не дівається, їх так само можна
+    догортати. Так це працює в Etsy, на яку показував замовник.
 
-    Скидаємо просто під час рендера, порівнявши з попереднім кольором, —
-    саме так React радить підлаштовувати стан під зміну вхідних даних.
-    В ефекті це був би зайвий прохід із уже намальованим старим кадром.
+    Кадру в цього кольору немає — не рухаємось: смикати слайдер на перше
+    фото через те, що колір не підписали, гірше, ніж не робити нічого.
+
+    Порівняння з попереднім кольором просто в рендері — саме так React радить
+    підлаштовувати стан під зміну вхідних даних; в ефекті це був би зайвий
+    прохід із уже намальованим старим кадром.
   */
+  const target = colorId ? shown.findIndex((item) => colorOf?.[item.src] === colorId) : -1
+
   const [shownColor, setShownColor] = useState(colorId)
   if (colorId !== shownColor) {
     setShownColor(colorId)
-    setActive(0)
+    if (target >= 0) setActive(target)
   }
 
-  // А от стрічку на мобільному доводиться везти руками: свій scrollLeft вона
+  // Стрічку на мобільному доводиться везти руками: свій scrollLeft вона
   // тримає сама, і це вже робота з DOM, тобто ефект.
   useEffect(() => {
-    track.current?.scrollTo({ left: 0, behavior: 'auto' })
-  }, [colorId])
+    const element = track.current
+    if (!element || target < 0) return
+    if (element.scrollWidth > element.clientWidth + 1) {
+      element.scrollTo({ left: target * element.clientWidth, behavior: 'smooth' })
+    }
+  }, [colorId, target])
 
   /** Стрічка прокручується вбік — отже, працює мобільна розкладка. */
   const swipeable = () => {
