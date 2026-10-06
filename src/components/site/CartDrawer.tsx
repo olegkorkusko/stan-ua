@@ -167,7 +167,20 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
       aria-hidden-focus.
     */
     <div
-      className={`fixed inset-0 z-70 overflow-y-auto md:overflow-hidden ${
+      /*
+        overflow-x-hidden тут обовʼязковий, і це не косметика.
+
+        Закрита шухляда стоїть за правим краєм екрана (translate-x-full). Шар
+        на весь екран має overflow-y-auto — а CSS у такому разі робить і
+        overflow-x теж auto, не visible. Тобто невидимий шар бачив панель
+        збоку, вважав це переповненням і малював СВОЮ горизонтальну смугу
+        прокрутки — тонку лінію, приклеєну до низу екрана, яка не зникала
+        ніколи: ні при прокручуванні, ні після перезавантаження.
+
+        Заміряно: clientWidth 382 проти scrollWidth 764, і 4 px висоти з'їдено
+        смугою. На десктопі цього не було — там md:overflow-hidden.
+      */
+      className={`fixed inset-0 z-70 overflow-y-auto overflow-x-hidden md:overflow-hidden ${
         isOpen ? '' : 'pointer-events-none'
       }`}
       aria-hidden={!isOpen}

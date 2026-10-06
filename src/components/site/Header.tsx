@@ -305,7 +305,10 @@ export const Header = ({ locale, announcement, freeDeliveryFrom }: Props) => {
         aria-label={t.header.menu}
         data-figma-node="302:4424"
         data-figma-state="menu-open"
-        className={`fixed inset-0 z-60 flex flex-col overflow-y-auto bg-paper transition-transform duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden ${
+        /* overflow-x-hidden — із тієї самої причини, що в CartDrawer: при
+           overflow-y: auto браузер робить і вісь X прокручуваною, а панель
+           у закритому стані стоїть за краєм екрана. */
+        className={`fixed inset-0 z-60 flex flex-col overflow-y-auto overflow-x-hidden bg-paper transition-transform duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden ${
           menuOpen ? 'translate-x-0' : 'pointer-events-none -translate-x-full'
         }`}
         aria-hidden={!menuOpen}
