@@ -247,7 +247,15 @@ export const MediaGallery = ({
           /* Крок задається змінною й лише на десктопі: на мобільному крапки
              стоять у рядок, там місця вистачає завжди. */
           style={{ '--dot-gap': `${dotGap}px` } as CSSProperties}
-          className="flex justify-center gap-2 md:w-1.75 md:shrink-0 md:flex-col md:items-center md:justify-center md:[gap:var(--dot-gap)]"
+          /*
+            md:mr-2.5 — рівно на стільки крапки звисають праворуч: у кнопок
+            відʼємні поля -mx-2.5, щоб зона натискання була більша за саму
+            крапку. У діапазоні 768–1023 px галерея йде на всю ширину, і цей
+            звис виходив за край екрана — сторінка діставала горизонтальний
+            скрол на 10 px. Від 1024 починається дві колонки, крапки стоять
+            посеред сторінки, і компенсація вже шкодила б: lg:mr-0.
+          */
+          className="flex justify-center gap-2 md:mr-2.5 md:w-1.75 md:shrink-0 md:flex-col md:items-center md:justify-center md:[gap:var(--dot-gap)] lg:mr-0"
         >
           {shown.map((image, index) => (
             <button
