@@ -33,13 +33,19 @@ export const track = (event: string, params: Record<string, unknown> = {}, event
 /**
  * Лічильники вантажаться тільки після згоди — до неї жодного стороннього
  * скрипта на сторінці немає.
+ *
+ * Стан має чотири значення, і `unread` тут не для краси. Згода лежить у
+ * localStorage, а його на сервері немає — тому поки відповідь не прочитана,
+ * ми не малюємо нічого. Доти станом за замовчуванням було «питати», і банер
+ * їхав у HTML усім: браузер його показував, ефект читав localStorage і
+ * прибирав. Хто вже погодився — бачив при кожному перезавантаженні блимання.
  */
 export const Analytics = ({ ga, pixel }: { ga?: string; pixel?: string }) => {
-  const [consent, setConsent] = useState<'unknown' | 'granted' | 'denied'>('unknown')
+  const [consent, setConsent] = useState<'unread' | 'ask' | 'granted' | 'denied'>('unread')
 
   useEffect(() => {
     const stored = window.localStorage.getItem(CONSENT_KEY)
-    if (stored === 'granted' || stored === 'denied') setConsent(stored)
+    setConsent(stored === 'granted' || stored === 'denied' ? stored : 'ask')
   }, [])
 
   const decide = (value: 'granted' | 'denied') => {
@@ -72,7 +78,7 @@ export const Analytics = ({ ga, pixel }: { ga?: string; pixel?: string }) => {
         </Script>
       )}
 
-      {consent === 'unknown' && (
+      {consent === 'ask' && (
         <div className="fixed inset-x-3 bottom-3 z-80 mx-auto max-w-2xl border border-flax bg-paper p-5 shadow-lg sm:inset-x-6 sm:bottom-6">
           <p className="text-sm leading-relaxed">
             Ми користуємось файлами cookie, щоб розуміти, які сторінки корисні, а які ні. Без вашої
