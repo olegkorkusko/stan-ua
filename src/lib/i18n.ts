@@ -284,6 +284,9 @@ type Dictionary = {
     loadingCourses: string
     accountLabel: string
     setPassword: string
+    /** Сторінка подяки: доступи, видані щойно. */
+    accessReady: string
+    accessWait: string
     /** Порожній напрям чи категорія: показувати нічого, але сторінка є. */
     soonCourses: string
     soonProducts: string
@@ -651,6 +654,8 @@ const uk: Dictionary = {
     loadingCatalog: 'Завантаження каталогу',
     loadingCourses: 'Завантаження курсів',
     accountLabel: 'Кабінет',
+    accessReady: 'Доступ уже відкрито — переходьте просто звідси',
+    accessWait: 'Запрошення надіслано на пошту. Якщо листа немає — перевірте «Спам» або відкрийте «Мої доступи».',
     soonCourses: 'Курси цього напряму готуються.',
     soonProducts: 'Товари цієї категорії готуються.',
     setPassword: 'Задайте пароль',
@@ -1168,6 +1173,8 @@ const en: Dictionary = {
     loadingCatalog: 'Loading the catalogue',
     loadingCourses: 'Loading courses',
     accountLabel: 'Account',
+    accessReady: 'Access is ready — open it right here',
+    accessWait: 'The invite has been sent by email. No letter — check Spam or open “My access”.',
     soonCourses: 'Courses in this direction are on the way.',
     soonProducts: 'Pieces in this category are on the way.',
     setPassword: 'Set a password',
