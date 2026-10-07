@@ -5,6 +5,8 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { Picture } from '@/components/site/Picture'
 import { SaveButton } from '@/components/site/SaveButton'
 import { formatPrice } from '@/lib/format'
+import { dictionary } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 import { productCard } from '@/lib/product-media'
 import type { Product } from '@/payload-types'
 
@@ -33,7 +35,7 @@ const SIZES = '(max-width: 768px) 50vw, 25vw'
 const ZOOM =
   'transition-transform duration-500 ease-out group-hover:scale-[1.07] motion-reduce:transition-none motion-reduce:group-hover:scale-100'
 
-export const ProductCard = ({
+export const ProductCard = async ({
   product,
   saved = false,
   authorized = false,
@@ -43,6 +45,7 @@ export const ProductCard = ({
   authorized?: boolean
 }) => {
   const { cover, coverAlt, hover, video } = productCard(product)
+  const t = dictionary(await getLocale()).product
 
   const colors = (product.variants ?? [])
     .map((variant) => (typeof variant.color === 'object' ? variant.color : null))
@@ -79,11 +82,15 @@ export const ProductCard = ({
         {/* Відео поверх обох: якщо воно є, саме воно й оживає. */}
         {video && <CardVideo src={video} className={ZOOM} />}
 
-        {!product.inStock && (
-          <span className="absolute left-3 top-3 bg-paper/90 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-            Немає
-          </span>
-        )}
+        {/* Напис є завжди: «немає» мовчки читалось як «не завантажилось», а
+            передзамовлення взагалі ніяк не позначалось. */}
+        <span
+          className={`absolute left-3 top-3 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${
+            product.inStock ? 'bg-paper/90 text-ink' : 'bg-ink/90 text-paper'
+          }`}
+        >
+          {product.inStock ? t.inStock : t.preorder}
+        </span>
       </div>
 
       <div className="flex flex-col gap-[5px] px-2.5 pb-2.5 md:gap-[18px] md:px-4 md:pb-4">

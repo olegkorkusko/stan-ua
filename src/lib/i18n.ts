@@ -193,6 +193,11 @@ type Dictionary = {
     lastLeft: (count: number) => string
     outOfStock: string
     addToCart: string
+    /** Напис на фото картки в каталозі. */
+    preorder: string
+    /** Кнопка на сторінці товару. */
+    checkout: string
+    preorderCheckout: string
     delivery: string
     deliveryValue: string
     payment: string
@@ -551,6 +556,9 @@ const uk: Dictionary = {
     lastLeft: (count: number) => `Лишилось ${count} шт — ручна робота, партії маленькі`,
     outOfStock: 'Немає в наявності. Напишіть нам — зробимо під замовлення.',
     addToCart: 'Додати в кошик',
+    preorder: 'Передзамовлення',
+    checkout: 'Оформити замовлення',
+    preorderCheckout: 'Оформити передзамовлення',
     delivery: 'Доставка',
     deliveryValue: 'Нова Пошта · Укрпошта',
     payment: 'Оплата',
@@ -1065,6 +1073,9 @@ const en: Dictionary = {
     lastLeft: (count: number) => `Only ${count} left - handmade in small batches`,
     outOfStock: 'Out of stock. Write to us and we will make it to order.',
     addToCart: 'Add to cart',
+    preorder: 'Pre-order',
+    checkout: 'Place an order',
+    preorderCheckout: 'Place a pre-order',
     delivery: 'Shipping',
     deliveryValue: 'Nova Poshta, Ukrposhta',
     payment: 'Payment',

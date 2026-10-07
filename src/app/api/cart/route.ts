@@ -68,7 +68,8 @@ const hydrate = async (payload: Payload, lines: Line[]) => {
     if (product.variants?.length && !variant) continue
 
     const stock = variant ? (variant.stock ?? 0) : (product.stock ?? 0)
-    if (stock <= 0) continue
+    // Нуль — це передзамовлення, не відсутність. Викидати позицію не можна:
+    // покупець додав її свідомо, а зникла б вона мовчки.
 
     const color = variant && typeof variant.color === 'object' ? variant.color : null
     const size = variant && typeof variant.size === 'object' ? variant.size : null
@@ -82,10 +83,10 @@ const hydrate = async (payload: Payload, lines: Line[]) => {
       color: color?.title ?? undefined,
       size: size?.title ?? undefined,
       price: variant?.price ?? product.price,
-      quantity: Math.min(line.quantity, stock),
+      quantity: stock > 0 ? Math.min(line.quantity, stock) : line.quantity,
       image: imageUrl(variant?.image, 'thumbnail') ?? productThumb(product),
       href: `/shop/${product.slug}`,
-      maxQuantity: stock,
+      maxQuantity: stock > 0 ? stock : undefined,
     })
   }
 

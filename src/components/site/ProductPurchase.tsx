@@ -172,7 +172,6 @@ export const ProductPurchase = ({
       <div data-figma-node="148:3561" className="flex gap-2">
         <button
           type="button"
-          disabled={!available}
           onClick={() =>
             add({
               key: `product:${productId}:${variant?.id ?? 'base'}`,
@@ -186,14 +185,15 @@ export const ProductPurchase = ({
               price: variant?.price ?? basePrice,
               image: variant?.image ?? image,
               href: `/shop/${slug}`,
-              maxQuantity: stock,
+              // Нуль означає передзамовлення, а не «не можна»: стелі немає.
+              maxQuantity: available ? stock : undefined,
             })
           }
           data-figma-node="75:1384"
           className="flex flex-1 items-center justify-center rounded-[2px] bg-ink px-8 py-[15px] text-[12px] font-semibold uppercase leading-[14.4px] tracking-[0.16em] text-paper transition-colors hover:bg-indigo active:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-45"
         >
           <span data-figma-node="I75:1384;10:13">
-            {(available ? t.addToCart : t.outOfStock.split('.')[0]).toUpperCase()}
+            {(available ? t.checkout : t.preorderCheckout).toUpperCase()}
           </span>
         </button>
         {/* Серце тут раніше було намальоване, але мертве: ні обробника, ні
