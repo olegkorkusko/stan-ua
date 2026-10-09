@@ -25,6 +25,7 @@ export const track = (event: string, params: Record<string, unknown> = {}, event
   if (typeof window === 'undefined') return
   window.gtag?.('event', event, params)
   const options = eventId ? { eventID: eventId } : undefined
+  if (event === 'view_item') window.fbq?.('track', 'ViewContent', params, options)
   if (event === 'add_to_cart') window.fbq?.('track', 'AddToCart', params, options)
   if (event === 'begin_checkout') window.fbq?.('track', 'InitiateCheckout', params, options)
   if (event === 'purchase') window.fbq?.('track', 'Purchase', params, options)
