@@ -378,6 +378,12 @@ export const fulfillOrder = async (
     })
   }
 
+  /*
+    Налаштування потрібні далі тричі: айді пікселя для Meta, адреси Telegram
+    і пошта для сповіщення. Читаємо один раз тут.
+  */
+  const settings = await payload.findGlobal({ slug: 'settings', depth: 0 }).catch(() => null)
+
   // Покупка в кабінеті Meta. Подія йде з сервера, тому не залежить від того,
   // чи повернувся покупець на сайт після оплати і чи стоїть у нього
   // блокувальник реклами. Дублікат із браузером Meta склеїть за номером
@@ -399,6 +405,7 @@ export const fulfillOrder = async (
     })),
     fbp: order.metaFbp ?? undefined,
     fbc: order.metaFbc ?? undefined,
+    pixelId: settings?.metaPixelId ?? undefined,
   })
 
   const summary = (order.items ?? [])
@@ -412,12 +419,9 @@ export const fulfillOrder = async (
     : ''
 
   /*
-    Налаштування читаємо до сповіщення: у них і адреси Telegram, і пошта.
     Telegram бачать не всі й не завжди — звук буває вимкнений, а замовлення
     треба зібрати сьогодні; порожня пошта означає «досить Telegram».
   */
-  const settings = await payload.findGlobal({ slug: 'settings', depth: 0 }).catch(() => null)
-
   await notifyAdmin(
     `<b>Оплачено ${order.orderNumber}</b>\n${summary}\n\n${formatPrice(order.total)}\n${order.customerName}, ${order.customerPhone}${alarm}`,
     settings?.telegramNotify,
