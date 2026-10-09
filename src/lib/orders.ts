@@ -53,7 +53,7 @@ export const priceCart = async (payload: Payload, input: CartLineInput[]): Promi
     if (variants.length > 0 && !variant) throw new CheckoutError(`Оберіть варіацію: ${product.title}`)
 
     const stock = variant ? (variant.stock ?? 0) : (product.stock ?? 0)
-    // stock > 0 — бо нуль це передзамовлення: товару немає й не мало бути,
+    // stock > 0 — бо нуль це «під замовлення»: товару немає й не мало бути,
     // його зроблять під замовлення. Обмежує лише реальний залишок.
     if (stock > 0 && stock < quantity) {
       throw new CheckoutError(`«${product.title}»: лишилось ${stock} шт`)

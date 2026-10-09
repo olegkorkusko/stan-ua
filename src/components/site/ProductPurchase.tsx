@@ -185,7 +185,7 @@ export const ProductPurchase = ({
               price: variant?.price ?? basePrice,
               image: variant?.image ?? image,
               href: `/shop/${slug}`,
-              // Нуль означає передзамовлення, а не «не можна»: стелі немає.
+              // Нуль означає «під замовлення», а не «не можна»: стелі немає.
               maxQuantity: available ? stock : undefined,
             })
           }

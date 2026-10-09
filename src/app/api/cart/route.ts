@@ -68,7 +68,7 @@ const hydrate = async (payload: Payload, lines: Line[]) => {
     if (product.variants?.length && !variant) continue
 
     const stock = variant ? (variant.stock ?? 0) : (product.stock ?? 0)
-    // Нуль — це передзамовлення, не відсутність. Викидати позицію не можна:
+    // Нуль — це «під замовлення», не відсутність. Викидати позицію не можна:
     // покупець додав її свідомо, а зникла б вона мовчки.
 
     const color = variant && typeof variant.color === 'object' ? variant.color : null

@@ -83,7 +83,7 @@ export const ProductCard = async ({
         {video && <CardVideo src={video} className={ZOOM} />}
 
         {/* Напис є завжди: «немає» мовчки читалось як «не завантажилось», а
-            передзамовлення взагалі ніяк не позначалось. */}
+            «під замовлення» взагалі ніяк не позначалось. */}
         <span
           className={`absolute left-3 top-3 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${
             product.inStock ? 'bg-paper/90 text-ink' : 'bg-ink/90 text-paper'
