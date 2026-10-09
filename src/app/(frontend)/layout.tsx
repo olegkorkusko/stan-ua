@@ -68,9 +68,22 @@ export const generateMetadata = async (): Promise<Metadata> => {
     },
     // Галочка знята — сайт закритий від пошуку, поки його наповнюють.
     ...(settings?.searchVisible === false ? { robots: { index: false, follow: false } } : {}),
-    ...(settings?.googleVerification
-      ? { verification: { google: settings.googleVerification } }
-      : {}),
+    /*
+      Підтвердження права на домен: Google бере код з адмінки, Meta — звідси.
+
+      Код Meta лишається в коді навмисно. Його видають один раз при додаванні
+      домену в Business Settings, він більше ніколи не міняється, і секретом
+      не є — він і так лежить у розмітці кожної сторінки. Заводити заради
+      нього поле в адмінці й міграцію бази означало б більше роботи, ніж
+      користі.
+
+      Навіщо взагалі: без підтвердженого домену Meta не зараховує рекламі
+      покупки з iPhone — Apple вимагає, щоб домен належав рекламодавцю.
+    */
+    verification: {
+      ...(settings?.googleVerification ? { google: settings.googleVerification } : {}),
+      other: { 'facebook-domain-verification': '7lh29a3wsibpy7gf6zowzq7o9bsz7p' },
+    },
   }
 }
 
