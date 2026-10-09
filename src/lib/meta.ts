@@ -26,10 +26,13 @@ type PurchaseEvent = {
   /** Кукі браузера `_fbp` і `_fbc` — головні ключі зіставлення з користувачем. */
   fbp?: string
   fbc?: string
+  /**
+   * Айді пікселя з адмінки. Там його вводить клієнтка, і звідти ж його бере
+   * піксель у браузері — тож вимагати ще й змінну оточення означало б тримати
+   * одне число у двох місцях і чекати, коли вони розійдуться.
+   */
+  pixelId?: string
 }
-
-export const isConfigured = (): boolean =>
-  Boolean(process.env.META_CONVERSIONS_TOKEN && process.env.NEXT_PUBLIC_META_PIXEL_ID)
 
 /** Meta приймає персональні дані лише у вигляді SHA-256 від нормалізованого рядка. */
 const hash = (value: string): string =>
@@ -48,7 +51,9 @@ const normalizePhone = (raw: string): string | null => {
 }
 
 export const sendPurchase = async (event: PurchaseEvent): Promise<boolean> => {
-  if (!isConfigured()) return false
+  // Змінна оточення лишається запасним варіантом — як і для пікселя в браузері.
+  const pixel = event.pixelId || process.env.NEXT_PUBLIC_META_PIXEL_ID
+  if (!pixel || !process.env.META_CONVERSIONS_TOKEN) return false
 
   const phone = event.phone ? normalizePhone(event.phone) : null
   const firstName = event.name?.trim().split(/\s+/)[0]
@@ -66,7 +71,7 @@ export const sendPurchase = async (event: PurchaseEvent): Promise<boolean> => {
 
   try {
     const response = await fetch(
-      `https://graph.facebook.com/${API_VERSION}/${process.env.NEXT_PUBLIC_META_PIXEL_ID}/events`,
+      `https://graph.facebook.com/${API_VERSION}/${pixel}/events`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
