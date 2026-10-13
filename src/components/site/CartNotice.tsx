@@ -43,8 +43,18 @@ export const CartNotice = () => {
         Над шухлядою кошика стояти не може — вона теж фіксована. z-40 проти
         z-50 у шухляди: якщо людина встигла відкрити кошик, смужка ховається
         під ним, а не навпаки.
+
+        По центру на всіх ширинах. Раніше на десктопі вона тулилася в правий
+        кут — туди ж, де тепер кругла кнопка «звʼязатись»; дві плаваючі речі в
+        одному кутку перекривали б одна одну саме тоді, коли покупець щось
+        кладе в кошик.
+
+        bottom-20 на телефоні, а не 4: там смужка розтягнута майже на всю
+        ширину й однаково дістає до кнопки в кутку, а кнопка вища за шаром і
+        накривала б її хрестик. На десктопі цього не треба — смужка вужча за
+        екран і до кнопки не дотягується.
       */
-      className="show-fast fixed inset-x-4 bottom-4 z-40 mx-auto flex max-w-md flex-col gap-3 border border-ink bg-paper p-4 shadow-lg md:inset-x-auto md:right-6 md:bottom-6"
+      className="show-fast fixed inset-x-4 bottom-20 z-40 mx-auto flex max-w-md flex-col gap-3 border border-ink bg-paper p-4 shadow-lg md:bottom-6"
     >
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
