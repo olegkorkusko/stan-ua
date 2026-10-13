@@ -1,0 +1,145 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+
+import { messengerLink } from '@/lib/messengers'
+
+/*
+  Кнопка «звʼязатись»: одна кругла, по кліку над нею розкриваються месенджери.
+
+  Чому внизу ЛІВОРУЧ, а не праворуч, як заведено: праворуч унизу вже живе
+  спливачка «Додано в кошик» (CartNotice, md:right-6 md:bottom-6). Дві плаваючі
+  речі в одному кутку перекривали б одна одну рівно в той момент, коли покупець
+  щось кладе в кошик, — тобто коли обидві найпотрібніші.
+
+  Поверх (z-50) вибрано свідомо: вище за спливачку кошика (z-40), але нижче за
+  шухляду кошика (z-70) і банер про cookie (z-80). Інакше кнопка висіла б
+  поверх відкритого кошика й ловила кліки замість нього.
+
+  Кольори месенджерів тільки при наведенні. Постійні синій і зелений кричали б
+  на тлі приглушеної палітри прикрас, а при наведенні вони якраз підказують,
+  куди веде кнопка.
+*/
+
+const ROUND =
+  'grid h-11 w-11 place-items-center rounded-full shadow-lg transition-[transform,background-color,color,border-color] ' +
+  'duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 ' +
+  'motion-reduce:transition-none md:h-12 md:w-12'
+
+const TELEGRAM =
+  'M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212-.07-.062-.174-.041-.249-.024-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z'
+
+const WHATSAPP =
+  'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z'
+
+type Labels = { open: string; close: string; telegram: string; whatsapp: string }
+
+export const ContactBubbles = ({
+  telegram,
+  whatsapp,
+  labels,
+}: {
+  telegram?: string | null
+  whatsapp?: string | null
+  labels: Labels
+}) => {
+  const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+
+  /*
+    Закриття ззовні. Без нього розкритий список лишався б висіти на екрані,
+    поки покупець не здогадається клікнути саме по кнопці ще раз.
+
+    Слухачів вішаємо лише коли відкрито: висіти на document постійно заради
+    кнопки, якою користуються раз на сесію, нема сенсу.
+  */
+  useEffect(() => {
+    if (!open) return
+
+    const outside = (event: MouseEvent) => {
+      if (!box.current?.contains(event.target as Node)) setOpen(false)
+    }
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
+    document.addEventListener('pointerdown', outside)
+    document.addEventListener('keydown', escape)
+    return () => {
+      document.removeEventListener('pointerdown', outside)
+      document.removeEventListener('keydown', escape)
+    }
+  }, [open])
+
+  const items = [
+    {
+      href: messengerLink(telegram, 'telegram'),
+      label: labels.telegram,
+      path: TELEGRAM,
+      hover: 'hover:border-[#229ED9] hover:bg-[#229ED9] hover:text-paper',
+    },
+    {
+      href: messengerLink(whatsapp, 'whatsapp'),
+      label: labels.whatsapp,
+      path: WHATSAPP,
+      hover: 'hover:border-[#25D366] hover:bg-[#25D366] hover:text-paper',
+    },
+  ].filter((item): item is typeof item & { href: string } => Boolean(item.href))
+
+  // Жодного месенджера не заповнили — нічого не малюємо, порожній кут краще
+  // за кнопку, яка нікуди не веде.
+  if (items.length === 0) return null
+
+  return (
+    <div ref={box} className="fixed bottom-4 left-3 z-50 flex flex-col items-start gap-2.5 sm:bottom-6 sm:left-6 sm:gap-3">
+      {open &&
+        items.map((item, i) => (
+          <a
+            key={item.href}
+            href={item.href}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={item.label}
+            title={item.label}
+            onClick={() => setOpen(false)}
+            /* Затримка — щоб іконки виїжджали одна за одною, а не стрибали
+               разом. Анімація та сама, що в спливачки кошика. */
+            style={{ animationDelay: `${i * 70}ms`, animationFillMode: 'backwards' }}
+            className={`show-fast border border-flax bg-paper text-ink hover:scale-110 motion-reduce:hover:scale-100 ${ROUND} ${item.hover}`}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-current md:h-[22px] md:w-[22px]">
+              <path d={item.path} />
+            </svg>
+          </a>
+        ))}
+
+      <button
+        type="button"
+        onClick={() => setOpen((was) => !was)}
+        aria-expanded={open}
+        aria-label={open ? labels.close : labels.open}
+        title={open ? labels.close : labels.open}
+        className={`bg-ink text-paper hover:scale-110 motion-reduce:hover:scale-100 ${ROUND}`}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`h-5 w-5 transition-transform duration-200 ease-out motion-reduce:transition-none md:h-[22px] md:w-[22px] ${
+            open ? 'rotate-90' : ''
+          }`}
+        >
+          {open ? (
+            <path d="M6 6l12 12M18 6L6 18" />
+          ) : (
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+          )}
+        </svg>
+      </button>
+    </div>
+  )
+}

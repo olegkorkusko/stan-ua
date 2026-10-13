@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { SubscribeForm } from '@/components/site/SubscribeForm'
 import type { dictionary } from '@/lib/i18n'
+import { messengerLink } from '@/lib/messengers'
 import type { Setting } from '@/payload-types'
 
 type Props = {
@@ -105,8 +106,15 @@ export const Footer = ({ settings, t }: Props) => {
                 Instagram
               </a>
             )}
-            {settings?.telegram && (
-              <a href={settings.telegram} className="thread-link" target="_blank" rel="noreferrer">
+            {/* Поле приймає номер, нік і посилання — розбирає messengerLink,
+                той самий, що й для кнопок звʼязку в куті. */}
+            {messengerLink(settings?.telegram, 'telegram') && (
+              <a
+                href={messengerLink(settings?.telegram, 'telegram') as string}
+                className="thread-link"
+                target="_blank"
+                rel="noreferrer"
+              >
                 Telegram
               </a>
             )}

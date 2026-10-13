@@ -65,7 +65,24 @@ export const Settings: GlobalConfig = {
               },
             },
             { name: 'instagram', type: 'text', label: 'Instagram' },
-            { name: 'telegram', type: 'text', label: 'Telegram' },
+            {
+              name: 'telegram',
+              type: 'text',
+              label: 'Telegram',
+              admin: {
+                description:
+                  'Номер, нік або посилання — як зручніше. Саме звідси береться кругла кнопка «написати» в лівому нижньому куті сайту й посилання в підвалі.',
+              },
+            },
+            {
+              name: 'whatsapp',
+              type: 'text',
+              label: 'WhatsApp',
+              admin: {
+                description:
+                  'Номер телефону. Порожньо — кнопки WhatsApp на сайті просто не буде.',
+              },
+            },
           ],
         },
         {

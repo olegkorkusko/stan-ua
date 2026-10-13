@@ -283,6 +283,11 @@ type Dictionary = {
     loadingCatalog: string
     loadingCourses: string
     accountLabel: string
+    /** Кругла кнопка «написати» в куті сайту. */
+    contactOpen: string
+    contactClose: string
+    writeTelegram: string
+    writeWhatsapp: string
     setPassword: string
     /** Сторінка подяки: доступи, видані щойно. */
     accessReady: string
@@ -654,6 +659,10 @@ const uk: Dictionary = {
     loadingCatalog: 'Завантаження каталогу',
     loadingCourses: 'Завантаження курсів',
     accountLabel: 'Кабінет',
+    contactOpen: 'Звʼязатись',
+    contactClose: 'Закрити',
+    writeTelegram: 'Написати нам у Telegram',
+    writeWhatsapp: 'Написати нам у WhatsApp',
     accessReady: 'Доступ уже відкрито — переходьте просто звідси',
     accessWait: 'Запрошення надіслано на пошту. Якщо листа немає — перевірте «Спам» або відкрийте «Мої доступи».',
     soonCourses: 'Курси цього напряму готуються.',
@@ -1173,6 +1182,10 @@ const en: Dictionary = {
     loadingCatalog: 'Loading the catalogue',
     loadingCourses: 'Loading courses',
     accountLabel: 'Account',
+    contactOpen: 'Contact us',
+    contactClose: 'Close',
+    writeTelegram: 'Message us on Telegram',
+    writeWhatsapp: 'Message us on WhatsApp',
     accessReady: 'Access is ready — open it right here',
     accessWait: 'The invite has been sent by email. No letter — check Spam or open “My access”.',
     soonCourses: 'Courses in this direction are on the way.',

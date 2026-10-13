@@ -5,6 +5,7 @@ import { useEffect, useRef, type ReactNode } from 'react'
 
 import { CartDrawer } from '@/components/site/CartDrawer'
 import { CartNotice } from '@/components/site/CartNotice'
+import { ContactBubbles } from '@/components/site/ContactBubbles'
 import { Footer } from '@/components/site/Footer'
 import { Header } from '@/components/site/Header'
 import { dictionary, type Locale } from '@/lib/i18n'
@@ -105,6 +106,18 @@ export const SiteChrome = ({ locale, settings, children }: Props) => {
       <Footer settings={settings} t={t} />
       <CartDrawer freeDeliveryFrom={settings?.freeDeliveryFrom} />
       <CartNotice />
+      {/* На порталі їх немає свідомо: там два екрани на всю висоту й жодного
+          вільного кута, кнопка лізла б просто на фото. */}
+      <ContactBubbles
+        telegram={settings?.telegram}
+        whatsapp={settings?.whatsapp}
+        labels={{
+          open: t.common.contactOpen,
+          close: t.common.contactClose,
+          telegram: t.common.writeTelegram,
+          whatsapp: t.common.writeWhatsapp,
+        }}
+      />
     </>
   )
 }

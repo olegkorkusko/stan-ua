@@ -1693,7 +1693,14 @@ export interface Setting {
    */
   notifyPendingOrders?: boolean | null;
   instagram?: string | null;
+  /**
+   * Номер, нік або посилання — як зручніше. Саме звідси береться кругла кнопка «написати» в лівому нижньому куті сайту й посилання в підвалі.
+   */
   telegram?: string | null;
+  /**
+   * Номер телефону. Порожньо — кнопки WhatsApp на сайті просто не буде.
+   */
+  whatsapp?: string | null;
   /**
    * Це саме число працює у двох місцях: смуга прогресу в кошику й оголошення вгорі сайту. Порожньо — доставка завжди платна, а смуги вгорі немає.
    */
@@ -1876,6 +1883,7 @@ export interface SettingsSelect<T extends boolean = true> {
   notifyPendingOrders?: T;
   instagram?: T;
   telegram?: T;
+  whatsapp?: T;
   freeDeliveryFrom?: T;
   productionTime?: T;
   seoTitle?: T;
