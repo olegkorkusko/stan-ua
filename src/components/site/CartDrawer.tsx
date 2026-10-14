@@ -11,6 +11,7 @@ import { FREE_DELIVERY_FROM } from '@/lib/delivery'
 import { dictionary } from '@/lib/i18n'
 import { useScrollLock } from '@/lib/useScrollLock'
 import { useCart, type CartItem } from '@/providers/CartProvider'
+import { cartKey } from '@/lib/cart-key'
 
 /*
   Шухляда кошика — макет «Кошик» 121:2951 (десктоп) і «Кошик — моб» 315:7174.
@@ -466,7 +467,7 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
                       onClick={() =>
                         add({
                           ...suggestion,
-                          key: `product:${suggestion.id}:base`,
+                          key: cartKey(suggestion.kind, suggestion.id, suggestion.variantId),
                         })
                       }
                       className="label self-start text-ink underline underline-offset-2 transition-opacity hover:opacity-60"

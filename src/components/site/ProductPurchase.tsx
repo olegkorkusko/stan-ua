@@ -7,6 +7,7 @@ import { useCart } from '@/providers/CartProvider'
 import { useLocale } from '@/components/site/LocaleLink'
 import { dictionary } from '@/lib/i18n'
 import { SaveButton } from '@/components/site/SaveButton'
+import { cartKey } from '@/lib/cart-key'
 
 export type PurchaseVariant = {
   id: string
@@ -174,7 +175,7 @@ export const ProductPurchase = ({
           type="button"
           onClick={() =>
             add({
-              key: `product:${productId}:${variant?.id ?? 'base'}`,
+              key: cartKey('product', productId, variant?.id),
               kind: 'product',
               id: productId,
               variantId: variant?.id,

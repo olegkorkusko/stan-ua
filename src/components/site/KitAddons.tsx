@@ -7,6 +7,7 @@ import { useCart } from '@/providers/CartProvider'
 import { useLocale } from '@/components/site/LocaleLink'
 import { Picture } from '@/components/site/Picture'
 import { dictionary } from '@/lib/i18n'
+import { cartKey } from '@/lib/cart-key'
 
 export type Addon = {
   id: string
@@ -78,7 +79,7 @@ export const KitAddons = ({ addons }: { addons: Addon[] }) => {
         onClick={() => {
           for (const addon of selected) {
             add({
-              key: `product:${addon.id}:base`,
+              key: cartKey('product', addon.id),
               kind: 'product',
               id: addon.id,
               title: addon.title,

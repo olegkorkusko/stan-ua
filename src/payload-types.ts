@@ -490,6 +490,10 @@ export interface Course {
   status?: ('draft' | 'published') | null;
   featured?: boolean | null;
   /**
+   * Блок «Може сподобатись» у кошику. Туди потрапляє найдешевше з відміченого — курси й товари змагаються разом. Якщо не відмічено нічого, показується найдешевший товар у наявності.
+   */
+  suggestInCart?: boolean | null;
+  /**
    * Заповнюється автоматично з назви. Змінюйте, тільки якщо розумієте наслідки для SEO.
    */
   slug?: string | null;
@@ -1123,6 +1127,7 @@ export interface CoursesSelect<T extends boolean = true> {
   direction?: T;
   status?: T;
   featured?: T;
+  suggestInCart?: T;
   slug?: T;
   updatedAt?: T;
   createdAt?: T;

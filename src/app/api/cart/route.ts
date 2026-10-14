@@ -6,6 +6,7 @@ import { getPayload, type Payload } from 'payload'
 
 import { imageUrl } from '@/lib/media'
 import { productThumb } from '@/lib/product-media'
+import { cartKey } from '@/lib/cart-key'
 
 const COOKIE = 'mk_cart'
 const YEAR = 60 * 60 * 24 * 365
@@ -47,7 +48,7 @@ const hydrate = async (payload: Payload, lines: Line[]) => {
 
       const direction = typeof course.direction === 'object' ? course.direction?.slug : null
       items.push({
-        key: `course:${course.id}`,
+        key: cartKey('course', course.id),
         kind: 'course' as const,
         id: String(course.id),
         title: course.title,
@@ -74,7 +75,7 @@ const hydrate = async (payload: Payload, lines: Line[]) => {
     const color = variant && typeof variant.color === 'object' ? variant.color : null
     const size = variant && typeof variant.size === 'object' ? variant.size : null
     items.push({
-      key: `product:${product.id}:${variant?.id ?? 'base'}`,
+      key: cartKey('product', product.id, variant?.id),
       kind: 'product' as const,
       id: String(product.id),
       variantId: variant?.id ?? undefined,
@@ -144,10 +145,12 @@ const withCookie = (body: unknown, token: string) => {
   наявних. Порожнім блок не лишаємо: у макеті він є, і дірка на його місці
   виглядала б як поломка.
 */
-const suggest = async (payload: Payload, items: { id: string }[]) => {
-  const chosen = new Set(items.map((item) => item.id))
+const suggest = async (payload: Payload, items: { kind: string; id: string }[]) => {
+  // Ключ із видом, а не самий айді: товар №7 і курс №7 — різні речі, а без
+  // виду вони виглядали б однаково, і пропозиція мовчки зникала б.
+  const chosen = new Set(items.map((item) => `${item.kind}:${item.id}`))
 
-  const pick = async (suggested: boolean) => {
+  const products = async (suggested: boolean) => {
     const found = await payload.find({
       collection: 'products',
       where: {
@@ -158,21 +161,56 @@ const suggest = async (payload: Payload, items: { id: string }[]) => {
       limit: chosen.size + 1,
       depth: 2,
     })
-    return found.docs.find((doc) => !chosen.has(String(doc.id))) ?? null
+    const product = found.docs.find((doc) => !chosen.has(`product:${doc.id}`))
+    if (!product) return null
+    return {
+      kind: 'product' as const,
+      id: String(product.id),
+      title: product.title,
+      price: product.price,
+      image: productThumb(product),
+      href: `/shop/${product.slug}`,
+    }
   }
 
-  const product = (await pick(true)) ?? (await pick(false))
-  if (!product) return null
-
-
-  return {
-    kind: 'product' as const,
-    id: String(product.id),
-    title: product.title,
-    price: product.price,
-    image: productThumb(product),
-    href: `/shop/${product.slug}`,
+  const courses = async () => {
+    const found = await payload.find({
+      collection: 'courses',
+      where: { status: { equals: 'published' }, suggestInCart: { equals: true } },
+      sort: 'price',
+      limit: chosen.size + 1,
+      depth: 1,
+    })
+    const course = found.docs.find((doc) => !chosen.has(`course:${doc.id}`))
+    if (!course) return null
+    const direction = typeof course.direction === 'object' ? course.direction?.slug : null
+    return {
+      kind: 'course' as const,
+      id: String(course.id),
+      title: course.title,
+      price: course.price,
+      image: imageUrl(course.cover, 'thumbnail') ?? undefined,
+      href: direction ? `/courses/${direction}/${course.slug}` : '/courses',
+    }
   }
+
+  /*
+    Спершу — відмічене галочкою, і курси тут нарівні з товарами: перемагає
+    дешевше. Клієнтка відмічає те, що хоче допродати, а не те, до якої
+    колекції воно належить.
+
+    Не відмічено нічого — лишається стара поведінка, найдешевший товар у
+    наявності. Порожнім блок не лишаємо: у макеті він є, і дірка на його
+    місці виглядала б як поломка.
+  */
+  const flagged = (await Promise.all([products(true), courses()])).filter(
+    (item): item is NonNullable<typeof item> => item !== null,
+  )
+  if (flagged.length > 0) {
+    return flagged.reduce((cheapest, item) => (item.price < cheapest.price ? item : cheapest))
+  }
+
+  return products(false)
 }
 
 /*

@@ -250,6 +250,16 @@ export const Courses: CollectionConfig = {
       index: true,
     },
     { name: 'featured', type: 'checkbox', label: 'Показувати на головній', admin: { position: 'sidebar' } },
+    {
+      name: 'suggestInCart',
+      type: 'checkbox',
+      label: 'Пропонувати в кошику',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Блок «Може сподобатись» у кошику. Туди потрапляє найдешевше з відміченого — курси й товари змагаються разом. Якщо не відмічено нічого, показується найдешевший товар у наявності.',
+      },
+    },
     slugField(),
   ],
 }

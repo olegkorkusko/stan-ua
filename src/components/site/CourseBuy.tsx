@@ -6,6 +6,7 @@ import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 import { useLocale } from '@/components/site/LocaleLink'
 import { dictionary } from '@/lib/i18n'
+import { cartKey } from '@/lib/cart-key'
 
 type Props = {
   courseId: string
@@ -49,7 +50,7 @@ export const CourseBuy = ({ courseId, title, href, price, oldPrice, image, save 
           type="button"
           onClick={() => {
             add({
-              key: `course:${courseId}`,
+              key: cartKey('course', courseId),
               kind: 'course',
               id: courseId,
               title,
