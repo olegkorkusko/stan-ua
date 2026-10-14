@@ -2,6 +2,7 @@ import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 
 import { isAdmin, publishedOrAdmin } from '@/access'
 import { slugField } from '@/fields/slug'
+import { SUGGEST_IN_CART } from './hints'
 
 type Variant = { price?: number | null; stock?: number | null; color?: unknown; size?: unknown }
 
@@ -453,8 +454,7 @@ export const Products: CollectionConfig = {
       label: 'Пропонувати в кошику',
       admin: {
         position: 'sidebar',
-        description:
-          'Блок «Може сподобатись» у кошику. Якщо не відмічено жодного товару, показується найдешевший із наявних.',
+        description: SUGGEST_IN_CART,
       },
     },
     slugField(),

@@ -4,6 +4,7 @@ import { ValidationError } from 'payload'
 import { anyone, isAdmin, publishedOrAdmin } from '@/access'
 import { slugField } from '@/fields/slug'
 import { courseChannelProblem } from '@/lib/telegram'
+import { SUGGEST_IN_CART } from './hints'
 
 /** Напрями: вʼязання, бісероплетіння, макраме. Додаються з адмінки, не в коді. */
 export const CourseDirections: CollectionConfig = {
@@ -256,8 +257,7 @@ export const Courses: CollectionConfig = {
       label: 'Пропонувати в кошику',
       admin: {
         position: 'sidebar',
-        description:
-          'Блок «Може сподобатись» у кошику. Туди потрапляє найдешевше з відміченого — курси й товари змагаються разом. Якщо не відмічено нічого, показується найдешевший товар у наявності.',
+        description: SUGGEST_IN_CART,
       },
     },
     slugField(),
