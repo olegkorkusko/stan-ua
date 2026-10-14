@@ -88,7 +88,7 @@ type Props = {
 }
 
 export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
-  const { items, suggestion, total, isOpen, close, remove, setQuantity, add } = useCart()
+  const { items, suggestions, total, isOpen, close, remove, setQuantity, add } = useCart()
   const t = dictionary(useLocale()).cart
 
   useScrollLock(isOpen)
@@ -420,7 +420,7 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
               </span>
             </div>
 
-            {suggestion && (
+            {suggestions.length > 0 && (
               <div
                 data-figma-node="123:2734"
                 className="flex flex-col gap-4 border-t border-hairline-strong pt-5"
@@ -428,54 +428,63 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
                 <span data-figma-node="123:2735" className="label">
                   {t.mayLike.toUpperCase()}
                 </span>
-                <div
-                  data-figma-node="123:2736"
-                  className="flex flex-col gap-4 md:flex-row md:items-center md:gap-3.5"
-                >
-                  <Link
-                    href={suggestion.href}
-                    onClick={close}
-                    className="relative size-18 shrink-0"
+                {/* Заголовок один на блок, рядків — скільки прийшло з кошика.
+                    Зараз два; у макеті намальовано один, решта повторює його
+                    один в один. */}
+                {suggestions.map((suggestion) => (
+                  <div
+                    key={`${suggestion.kind}:${suggestion.id}`}
+                    data-figma-node="123:2736"
+                    className="flex flex-col gap-4 md:flex-row md:items-center md:gap-3.5"
                   >
-                    <Picture
-                      src={suggestion.image}
-                      alt={suggestion.title}
-                      node="123:2737"
-                      fill
-                      sizes="72px"
-                      className="object-cover"
-                    />
-                  </Link>
-                  <div data-figma-node="123:2738" className="flex min-w-0 flex-1 flex-col gap-1.25">
                     <Link
                       href={suggestion.href}
                       onClick={close}
-                      data-figma-node="123:2739"
-                      className="text-[13px]/[19.5px] text-ink"
+                      className="relative size-18 shrink-0"
                     >
-                      {suggestion.title}
+                      <Picture
+                        src={suggestion.image}
+                        alt={suggestion.title}
+                        node="123:2737"
+                        fill
+                        sizes="72px"
+                        className="object-cover"
+                      />
                     </Link>
-                    <span
-                      data-figma-node="123:2740"
-                      className="font-display text-[13px]/[16.9px] text-ink"
+                    <div
+                      data-figma-node="123:2738"
+                      className="flex min-w-0 flex-1 flex-col gap-1.25"
                     >
-                      {formatPrice(suggestion.price)}
-                    </span>
-                    <button
-                      type="button"
-                      data-figma-node="123:2741"
-                      onClick={() =>
-                        add({
-                          ...suggestion,
-                          key: cartKey(suggestion.kind, suggestion.id, suggestion.variantId),
-                        })
-                      }
-                      className="label self-start text-ink underline underline-offset-2 transition-opacity hover:opacity-60"
-                    >
-                      {t.add.toUpperCase()}
-                    </button>
+                      <Link
+                        href={suggestion.href}
+                        onClick={close}
+                        data-figma-node="123:2739"
+                        className="text-[13px]/[19.5px] text-ink"
+                      >
+                        {suggestion.title}
+                      </Link>
+                      <span
+                        data-figma-node="123:2740"
+                        className="font-display text-[13px]/[16.9px] text-ink"
+                      >
+                        {formatPrice(suggestion.price)}
+                      </span>
+                      <button
+                        type="button"
+                        data-figma-node="123:2741"
+                        onClick={() =>
+                          add({
+                            ...suggestion,
+                            key: cartKey(suggestion.kind, suggestion.id, suggestion.variantId),
+                          })
+                        }
+                        className="label self-start text-ink underline underline-offset-2 transition-opacity hover:opacity-60"
+                      >
+                        {t.add.toUpperCase()}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             )}
           </div>

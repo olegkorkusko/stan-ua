@@ -146,6 +146,10 @@ const withCookie = (body: unknown, token: string) => {
   виглядала б як поломка.
 */
 const suggest = async (payload: Payload, items: { kind: string; id: string }[]) => {
+  // Скільки позицій у блоці. Дві, а не три: на телефоні третя відтісняє
+  // кнопку «Оформити замовлення» за межі екрана, і по неї треба гортати.
+  const LIMIT = 2
+
   // Ключ із видом, а не самий айді: товар №7 і курс №7 — різні речі, а без
   // виду вони виглядали б однаково, і пропозиція мовчки зникала б.
   const chosen = new Set(items.map((item) => `${item.kind}:${item.id}`))
@@ -158,19 +162,19 @@ const suggest = async (payload: Payload, items: { kind: string; id: string }[]) 
         ...(suggested ? { suggestInCart: { equals: true } } : {}),
       },
       sort: 'price',
-      limit: chosen.size + 1,
+      limit: chosen.size + LIMIT,
       depth: 2,
     })
-    const product = found.docs.find((doc) => !chosen.has(`product:${doc.id}`))
-    if (!product) return null
-    return {
-      kind: 'product' as const,
-      id: String(product.id),
-      title: product.title,
-      price: product.price,
-      image: productThumb(product),
-      href: `/shop/${product.slug}`,
-    }
+    return found.docs
+      .filter((doc) => !chosen.has(`product:${doc.id}`))
+      .map((product) => ({
+        kind: 'product' as const,
+        id: String(product.id),
+        title: product.title,
+        price: product.price,
+        image: productThumb(product),
+        href: `/shop/${product.slug}`,
+      }))
   }
 
   const courses = async () => {
@@ -178,39 +182,47 @@ const suggest = async (payload: Payload, items: { kind: string; id: string }[]) 
       collection: 'courses',
       where: { status: { equals: 'published' }, suggestInCart: { equals: true } },
       sort: 'price',
-      limit: chosen.size + 1,
+      limit: chosen.size + LIMIT,
       depth: 1,
     })
-    const course = found.docs.find((doc) => !chosen.has(`course:${doc.id}`))
-    if (!course) return null
-    const direction = typeof course.direction === 'object' ? course.direction?.slug : null
-    return {
-      kind: 'course' as const,
-      id: String(course.id),
-      title: course.title,
-      price: course.price,
-      image: imageUrl(course.cover, 'thumbnail') ?? undefined,
-      href: direction ? `/courses/${direction}/${course.slug}` : '/courses',
-    }
+    return found.docs
+      .filter((doc) => !chosen.has(`course:${doc.id}`))
+      .map((course) => {
+        const direction = typeof course.direction === 'object' ? course.direction?.slug : null
+        return {
+          kind: 'course' as const,
+          id: String(course.id),
+          title: course.title,
+          price: course.price,
+          image: imageUrl(course.cover, 'thumbnail') ?? undefined,
+          href: direction ? `/courses/${direction}/${course.slug}` : '/courses',
+        }
+      })
   }
 
   /*
-    Спершу — відмічене галочкою, і курси тут нарівні з товарами: перемагає
+    Спершу — відмічене галочкою, і курси тут нарівні з товарами: вище те, що
     дешевше. Клієнтка відмічає те, що хоче допродати, а не те, до якої
     колекції воно належить.
 
-    Не відмічено нічого — лишається стара поведінка, найдешевший товар у
-    наявності. Порожнім блок не лишаємо: у макеті він є, і дірка на його
-    місці виглядала б як поломка.
+    Якщо відміченого на два місця не набралось, добираємо найдешевшими
+    товарами в наявності. Порожнім блок не лишаємо й напівпорожнім теж: у
+    макеті він є, і дірка на його місці виглядала б як поломка.
   */
-  const flagged = (await Promise.all([products(true), courses()])).filter(
-    (item): item is NonNullable<typeof item> => item !== null,
-  )
-  if (flagged.length > 0) {
-    return flagged.reduce((cheapest, item) => (item.price < cheapest.price ? item : cheapest))
+  const picked = [...(await products(true)), ...(await courses())]
+    .sort((first, second) => first.price - second.price)
+    .slice(0, LIMIT)
+
+  if (picked.length < LIMIT) {
+    const already = new Set(picked.map((item) => `${item.kind}:${item.id}`))
+    for (const product of await products(false)) {
+      if (picked.length >= LIMIT) break
+      if (already.has(`product:${product.id}`)) continue
+      picked.push(product)
+    }
   }
 
-  return products(false)
+  return picked
 }
 
 /*
@@ -265,13 +277,13 @@ export const GET = async () => {
   const lines = stored.length > 0 ? stored : await parityDemoLines(payload)
 
   const items = await hydrate(payload, lines)
-  const suggestion = await suggest(payload, items)
+  const suggestions = await suggest(payload, items)
 
   // Прапорець для перевірки parity: вона знімає кадр одразу після завантаження
   // і не вміє клікати, тож шухляда має бути вже відкритою.
   const parityDemo = stored.length === 0 && lines.length > 0
 
-  return withCookie({ items, suggestion, parityDemo }, cart?.token ?? token)
+  return withCookie({ items, suggestions, parityDemo }, cart?.token ?? token)
 }
 
 export const PUT = async (request: Request) => {
@@ -315,5 +327,5 @@ export const PUT = async (request: Request) => {
     докласти те, що людина щойно поклала.
   */
   const hydrated = await hydrate(payload, items)
-  return withCookie({ items: hydrated, suggestion: await suggest(payload, hydrated) }, cart.token)
+  return withCookie({ items: hydrated, suggestions: await suggest(payload, hydrated) }, cart.token)
 }
