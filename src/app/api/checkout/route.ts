@@ -29,6 +29,9 @@ type Body = {
   paymentMethod: 'card'
   fbp?: string
   fbc?: string
+  utmSource?: string
+  utmCampaign?: string
+  referrer?: string
 }
 
 const required = (body: Body) => {
@@ -123,6 +126,11 @@ export const POST = async (request: Request) => {
         // їх поставити. Порожні — серверна подія просто піде без них.
         metaFbp: typeof body.fbp === 'string' ? body.fbp.slice(0, 255) : undefined,
         metaFbc: typeof body.fbc === 'string' ? body.fbc.slice(0, 255) : undefined,
+        // Звідки покупець узявся. Ріжемо довжину: в utm інколи приїжджає
+        // пів кілобайта службового сміття від рекламних кабінетів.
+        utmSource: typeof body.utmSource === 'string' ? body.utmSource.slice(0, 120) : undefined,
+        utmCampaign: typeof body.utmCampaign === 'string' ? body.utmCampaign.slice(0, 120) : undefined,
+        referrer: typeof body.referrer === 'string' ? body.referrer.slice(0, 200) : undefined,
       },
     })
 

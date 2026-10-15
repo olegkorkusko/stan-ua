@@ -22,6 +22,7 @@ import * as migration_20261005_171225_shelf_media from './20261005_171225_shelf_
 import * as migration_20261005_172931_product_production_time from './20261005_172931_product_production_time';
 import * as migration_20261013_172201_settings_whatsapp from './20261013_172201_settings_whatsapp';
 import * as migration_20261014_153620_courses_suggest_in_cart from './20261014_153620_courses_suggest_in_cart';
+import * as migration_20261015_133717_order_source from './20261015_133717_order_source';
 
 export const migrations = [
   {
@@ -142,6 +143,11 @@ export const migrations = [
   {
     up: migration_20261014_153620_courses_suggest_in_cart.up,
     down: migration_20261014_153620_courses_suggest_in_cart.down,
-    name: '20261014_153620_courses_suggest_in_cart'
+    name: '20261014_153620_courses_suggest_in_cart',
+  },
+  {
+    up: migration_20261015_133717_order_source.up,
+    down: migration_20261015_133717_order_source.down,
+    name: '20261015_133717_order_source'
   },
 ];

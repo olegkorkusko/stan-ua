@@ -276,7 +276,7 @@ export interface Product {
   status?: ('draft' | 'published') | null;
   featured?: boolean | null;
   /**
-   * Блок «Може сподобатись» у кошику. Якщо не відмічено жодного товару, показується найдешевший із наявних.
+   * Блок «Може сподобатись» у кошику — там дві позиції. Потрапляє найдешевше з відміченого, курси й товари змагаються разом. Якщо відміченого на два місця не вистачає, решту добирають найдешевші товари в наявності.
    */
   suggestInCart?: boolean | null;
   /**
@@ -490,7 +490,7 @@ export interface Course {
   status?: ('draft' | 'published') | null;
   featured?: boolean | null;
   /**
-   * Блок «Може сподобатись» у кошику. Туди потрапляє найдешевше з відміченого — курси й товари змагаються разом. Якщо не відмічено нічого, показується найдешевший товар у наявності.
+   * Блок «Може сподобатись» у кошику — там дві позиції. Потрапляє найдешевше з відміченого, курси й товари змагаються разом. Якщо відміченого на два місця не вистачає, решту добирають найдешевші товари в наявності.
    */
   suggestInCart?: boolean | null;
   /**
@@ -583,6 +583,12 @@ export interface Order {
   accessGranted?: boolean | null;
   metaFbp?: string | null;
   metaFbc?: string | null;
+  utmSource?: string | null;
+  utmCampaign?: string | null;
+  /**
+   * Сайт, з якого покупець потрапив до нас уперше.
+   */
+  referrer?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1192,6 +1198,9 @@ export interface OrdersSelect<T extends boolean = true> {
   accessGranted?: T;
   metaFbp?: T;
   metaFbc?: T;
+  utmSource?: T;
+  utmCampaign?: T;
+  referrer?: T;
   updatedAt?: T;
   createdAt?: T;
 }

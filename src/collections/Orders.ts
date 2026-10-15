@@ -232,5 +232,42 @@ export const Orders: CollectionConfig = {
     // зіставляється з людиною, яка бачила рекламу. В адмінці не потрібні.
     { name: 'metaFbp', type: 'text', admin: { hidden: true } },
     { name: 'metaFbc', type: 'text', admin: { hidden: true } },
+
+    /*
+      Звідки прийшов покупець.
+
+      Пишеться на сервері в момент оформлення, тож рахує ВСІХ — і тих, хто не
+      дав згоди на cookie, і тих, у кого блокувальник. Саме через них Google
+      Analytics і піксель Meta показують менше замовлень, ніж є насправді:
+      вони вмикаються лише після згоди, а згоду дає меншість.
+
+      Мітки знімаються при ПЕРШОМУ заході й лежать до оформлення. Інакше
+      джерелом щоразу ставала б сторінка, з якої людина натиснула «оформити»,
+      тобто наш власний кошик, — а це не відповідь на питання «звідки вона
+      взялася».
+    */
+    {
+      name: 'utmSource',
+      type: 'text',
+      label: 'Джерело (utm_source)',
+      index: true,
+      admin: { position: 'sidebar', readOnly: true },
+    },
+    {
+      name: 'utmCampaign',
+      type: 'text',
+      label: 'Кампанія (utm_campaign)',
+      admin: { position: 'sidebar', readOnly: true },
+    },
+    {
+      name: 'referrer',
+      type: 'text',
+      label: 'Звідки перейшов',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Сайт, з якого покупець потрапив до нас уперше.',
+      },
+    },
   ],
 }

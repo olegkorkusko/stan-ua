@@ -9,6 +9,7 @@ import { useCart } from '@/providers/CartProvider'
 import { Suggest, useSuggestions } from '@/components/site/AddressSuggest'
 import { useLocale } from '@/components/site/LocaleLink'
 import { dictionary } from '@/lib/i18n'
+import { rememberSource } from '@/lib/visit-source'
 
 /**
  * Кукі пікселя Meta. Їх не існує, якщо людина не дала згоди на cookie —
@@ -126,6 +127,10 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
           ...form,
           fbp: readCookie('_fbp'),
           fbc: readCookie('_fbc'),
+          // Джерело візиту: зняте при першому заході, див. visit-source.ts.
+          // На відміну від кукі Meta, приходить завжди — від cookie-банера
+          // й блокувальників не залежить.
+          ...rememberSource(),
           paymentMethod: 'card',
           deliveryCity: hasPhysical ? city.label || cityQuery : undefined,
           deliveryBranch: hasPhysical ? branch || branchQuery : undefined,

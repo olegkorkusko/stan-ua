@@ -27,7 +27,7 @@ import { StepRowLabel as StepRowLabel_dffbaaff7e2a3a9215cb6dc964c89b9d } from '@
 import { Icon as Icon_534076e2c753ea5d539a54b05f456b1b } from '@/components/admin/Icon'
 import { Logo as Logo_a44df17d0fc3dcd873dae43dc3bf66bd } from '@/components/admin/Logo'
 import { PasswordPeek as PasswordPeek_85f55f90750d3738de915856c503092c } from '@/components/admin/PasswordPeek'
-import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
+import { OrderSources as OrderSources_fa2714800b61951dd22b9702d7f48977 } from '@/components/admin/OrderSources'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -61,6 +61,6 @@ export const importMap = {
   "@/components/admin/Icon#Icon": Icon_534076e2c753ea5d539a54b05f456b1b,
   "@/components/admin/Logo#Logo": Logo_a44df17d0fc3dcd873dae43dc3bf66bd,
   "@/components/admin/PasswordPeek#PasswordPeek": PasswordPeek_85f55f90750d3738de915856c503092c,
-  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
+  "@/components/admin/OrderSources#OrderSources": OrderSources_fa2714800b61951dd22b9702d7f48977,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
