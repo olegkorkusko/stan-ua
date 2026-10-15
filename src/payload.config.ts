@@ -94,6 +94,9 @@ export default buildConfig({
           path: '/statistics',
         },
       },
+      // Сама по собі `views` посилання в меню не створює — лише адресу.
+      // Пункт списку додаємо окремо.
+      afterNavLinks: ['@/components/admin/StatsNavLink#StatsNavLink'],
     },
   },
   collections: [
