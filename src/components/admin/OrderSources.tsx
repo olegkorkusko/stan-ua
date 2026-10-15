@@ -36,6 +36,19 @@ const startOfPeriod = async (days: number) =>
 
 const money = (value: number) => `${Math.round(value).toLocaleString('uk-UA')} ₴`
 
+/*
+  Дати, з яких ми реально вміємо бачити те чи інше джерело. Це історичні
+  факти, вони вже не зміняться:
+
+  - мітка кліку Meta (metaFbc) — комміт 6bd63cc від 06.08.2026 (Meta CAPI);
+  - utm_source і сайт переходу — комміт c54fced від 15.10.2026.
+
+  Без цього підпису таблиця бреше мовчки: «Прямий захід» виглядає як вибір
+  покупця, хоча насправді це все, що ми до 15.10 не вміли розрізняти.
+*/
+const SINCE_META = '6 серпня 2026'
+const SINCE_LINKS = '15 жовтня 2026'
+
 export const OrderSources = async ({
   initPageResult,
   params,
@@ -182,7 +195,35 @@ export const OrderSources = async ({
           </table>
         )}
 
-        <p style={{ opacity: 0.55, fontSize: '.8rem', marginTop: '2rem' }}>
+        <aside
+          style={{
+            marginTop: '2rem',
+            padding: '1rem 1.25rem',
+            border: '1px solid rgba(128,128,128,.3)',
+            borderRadius: 6,
+            fontSize: '.85rem',
+            lineHeight: 1.55,
+          }}
+        >
+          <strong>З якого часу що рахується</strong>
+          <ul style={{ margin: '.6rem 0 0', paddingInlineStart: '1.1rem' }}>
+            <li>
+              <strong>Реклама Meta</strong> — з {SINCE_META}. Мітку кліку Meta дописує до
+              посилання сама, тож період «30 днів» нею покритий повністю.
+            </li>
+            <li style={{ marginTop: '.4rem' }}>
+              <strong>Instagram, Google, Telegram та інші переходи</strong> — з {SINCE_LINKS}.
+              Доти їх не було чим відрізнити від решти.
+            </li>
+          </ul>
+          <p style={{ margin: '.7rem 0 0' }}>
+            Тому <strong>«Прямий захід» зараз завищений</strong>: до {SINCE_LINKS} туди падали всі,
+            хто приходив не з реклами. Ця цифра спадатиме. Порівнювати місяць до місяця можна буде
+            з середини листопада, коли повні 30 днів складатимуться вже з нових даних.
+          </p>
+        </aside>
+
+        <p style={{ opacity: 0.55, fontSize: '.8rem', marginTop: '1.25rem' }}>
           «Прямий захід» — покупець набрав адресу сам, прийшов із закладки, з пошти або з
           застосунку, який джерела не передає. У частини з них насправді теж була реклама, але
           дізнатися це вже не можна.
