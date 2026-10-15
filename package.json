@@ -13,7 +13,7 @@
     "migrate:create": "payload migrate:create",
     "migrate:status": "payload migrate:status",
     "generate:types": "payload generate:types",
-    "generate:importmap": "payload generate:importmap",
+    "generate:importmap": "S3_BUCKET=importmap S3_ACCESS_KEY_ID=importmap payload generate:importmap",
     "seed": "payload run src/seed/index.ts",
     "seed:content": "payload run src/seed/content.ts",
     "seed:courses": "payload run src/seed/courses-real.ts",
