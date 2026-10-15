@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 
 import { ProductCard } from '@/components/site/ProductCard'
 import { ProductColorProvider } from '@/components/site/ProductColor'
+import { ViewContentTracking } from '@/components/site/ViewContentTracking'
 import { MediaGallery } from '@/components/site/MediaGallery'
 import { JsonLd, productSchema } from '@/components/site/JsonLd'
 import { ProductPurchase, type PurchaseVariant } from '@/components/site/ProductPurchase'
@@ -161,6 +162,13 @@ const ProductPage = async ({ params }: { params: Params }) => {
       додавали до нього ще 96/128 — сумарно виходило 162 замість 34.
     */
     <div>
+      <ViewContentTracking
+        id={String(product.id)}
+        title={product.title}
+        price={product.priceFrom ?? product.price}
+        category={typeof product.category === 'object' ? (product.category?.title ?? undefined) : undefined}
+      />
+
       <JsonLd
         data={productSchema({
           name: product.title,
