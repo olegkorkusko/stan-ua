@@ -79,6 +79,21 @@ export default buildConfig({
       // Кнопка «показати пароль». Рендериться над формою, а саму себе
       // переносить у поле — див. коментар у компоненті.
       beforeLogin: ['@/components/admin/PasswordPeek#PasswordPeek'],
+      /*
+        Власна сторінка «Звідки замовлення» — /admin/statistics.
+
+        Живе в адмінці, а не на сайті, бо це внутрішня цифра: дивиться її
+        клієнтка там само, де й самі замовлення.
+
+        Власні сторінки Payload НЕ захищає — маршрут додає, а хто його
+        відкрив, не питає. Перевірка входу всередині самого компонента.
+      */
+      views: {
+        statistics: {
+          Component: '@/components/admin/OrderSources#OrderSources',
+          path: '/statistics',
+        },
+      },
     },
   },
   collections: [
