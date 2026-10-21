@@ -1,4 +1,6 @@
 import { imageUrl } from '@/lib/media'
+import { cardPrice, priceFor } from '@/lib/price'
+import { getRegion } from '@/lib/region.server'
 import { payloadClient } from '@/lib/payload'
 import type { Locale } from '@/lib/i18n'
 
@@ -157,6 +159,7 @@ export const directionShelf = async (locale: Locale): Promise<ShelfItem[]> => {
 
 /** Напрями курсів: назва, підпис, обкладинка й скільки опублікованих курсів. */
 export const directionCards = async (locale: Locale): Promise<Map<string, Card>> => {
+  const region = await getRegion()
   const payload = await payloadClient()
   const [directions, courses] = await Promise.all([
     // depth: 1 — щоб обкладинка прийшла документом, а не самим лише id.
@@ -187,7 +190,7 @@ export const directionCards = async (locale: Locale): Promise<Map<string, Card>>
       heroImage: doc.heroImage,
       heroVideo: doc.heroVideo,
     })),
-    courses.docs.map((course) => ({ owner: course.direction, price: course.price })),
+    courses.docs.map((course) => ({ owner: course.direction, price: priceFor(course, region) })),
   )
 }
 
@@ -230,6 +233,7 @@ export const shopCategories = async (locale: Locale) => {
 
 /** Категорії магазину: те саме, тільки по товарах. */
 export const categoryCards = async (locale: Locale): Promise<Map<string, Card>> => {
+  const region = await getRegion()
   const payload = await payloadClient()
   const [categories, products] = await Promise.all([
     payload.find({
@@ -259,7 +263,7 @@ export const categoryCards = async (locale: Locale): Promise<Map<string, Card>> 
       heroImage: doc.heroImage,
       heroVideo: doc.heroVideo,
     })),
-    products.docs.map((product) => ({ owner: product.category, price: product.price })),
+    products.docs.map((product) => ({ owner: product.category, price: cardPrice(product, region) })),
   )
 }
 

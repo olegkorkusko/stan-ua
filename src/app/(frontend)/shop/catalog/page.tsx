@@ -5,7 +5,9 @@ import type { Where } from 'payload'
 import { FilterDrawer, type FilterGroup } from '@/components/site/FilterDrawer'
 import { ProductCard } from '@/components/site/ProductCard'
 import { dictionary } from '@/lib/i18n'
+import { formatPrice } from '@/lib/format'
 import { getLocale } from '@/lib/locale'
+import { getPricing } from '@/lib/region.server'
 import { payloadClient } from '@/lib/payload'
 import { savedItems } from '@/lib/saved'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
@@ -29,10 +31,16 @@ type SearchParams = Promise<{
   price?: string
 }>
 
+/*
+  Межі — у гривнях, бо в гривнях лежать обидві ціни. Підписи малюються через
+  formatPrice, тож на англійській версії ті самі межі показуються в доларах за
+  курсом. Самі межі не перераховуємо: це не «до $12», а «до 500 ₴» іншими
+  одиницями — інакше при зміні курсу фільтр мовчки міняв би вибірку.
+*/
 const PRICE_RANGES = [
-  { value: '0-500', label: 'до 500 ₴', min: 0, max: 500 },
-  { value: '500-1000', label: '500–1000 ₴', min: 500, max: 1000 },
-  { value: '1000-', label: 'від 1000 ₴', min: 1000, max: null },
+  { value: '0-500', min: 0, max: 500 },
+  { value: '500-1000', min: 500, max: 1000 },
+  { value: '1000-', min: 1000, max: null },
 ]
 
 const SORTS = [
@@ -57,6 +65,8 @@ const ShopCatalogPage = async ({ searchParams }: { searchParams: SearchParams })
   const params = await searchParams
   const payload = await payloadClient()
   const locale = await getLocale()
+  const { region, money } = await getPricing()
+  const priceField = region === 'intl' ? 'priceFromExport' : 'priceFrom'
   const t = dictionary(locale)
 
   const [categories, colors] = await Promise.all([
@@ -74,12 +84,16 @@ const ShopCatalogPage = async ({ searchParams }: { searchParams: SearchParams })
 
   const range = PRICE_RANGES.find((item) => item.value === params.price)
   if (range) {
-    where.priceFrom = range.max
+    // Фільтруємо за тією самою ціною, яку покупець бачить на картці.
+    where[priceField] = range.max
       ? { greater_than_equal: range.min, less_than_equal: range.max }
       : { greater_than_equal: range.min }
   }
 
-  const sort = SORTS.some((s) => s.value === params.sort) ? params.sort! : '-createdAt'
+  const sort = (SORTS.some((s) => s.value === params.sort) ? params.sort! : '-createdAt').replace(
+    'priceFrom',
+    priceField,
+  )
 
   const products = await payload.find({
     locale,
@@ -145,7 +159,9 @@ const ShopCatalogPage = async ({ searchParams }: { searchParams: SearchParams })
       id: 'price',
       label: t.shop.price,
       options: PRICE_RANGES.map((item) => ({
-        label: item.label,
+        label: item.max
+          ? `${formatPrice(item.min, money)} – ${formatPrice(item.max, money)}`
+          : `${formatPrice(item.min, money)}+`,
         href: buildHref(active, { price: params.price === item.value ? undefined : item.value }),
         checked: params.price === item.value,
       })),

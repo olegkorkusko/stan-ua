@@ -4,7 +4,13 @@ import { isAdmin, publishedOrAdmin } from '@/access'
 import { slugField } from '@/fields/slug'
 import { SUGGEST_IN_CART } from './hints'
 
-type Variant = { price?: number | null; stock?: number | null; color?: unknown; size?: unknown }
+type Variant = {
+  price?: number | null
+  priceExport?: number | null
+  stock?: number | null
+  color?: unknown
+  size?: unknown
+}
 
 const asId = (value: unknown): number | null => {
   if (typeof value === 'number') return value
@@ -72,15 +78,23 @@ const generateVariants: CollectionBeforeChangeHook = ({ data, originalDoc }) => 
 const denormalise: CollectionBeforeChangeHook = ({ data }) => {
   const variants: Variant[] = Array.isArray(data.variants) ? data.variants : []
 
-  if (variants.length > 0) {
+  // Та сама ціна «від», але для закордону: інакше каталог сортував би й
+  // фільтрував англійську версію за внутрішніми цінами.
+  const lowest = (pick: (v: Variant) => unknown, base: unknown) => {
     const prices = variants
-      .map((v) => (typeof v.price === 'number' && v.price > 0 ? v.price : data.price))
+      .map((v) => (typeof pick(v) === 'number' && (pick(v) as number) > 0 ? (pick(v) as number) : base))
       .filter((p): p is number => typeof p === 'number')
-    data.priceFrom = prices.length ? Math.min(...prices) : data.price
+    return prices.length ? Math.min(...prices) : (base as number | undefined)
+  }
+
+  if (variants.length > 0) {
+    data.priceFrom = lowest((v) => v.price, data.price)
+    data.priceFromExport = lowest((v) => v.priceExport ?? data.priceExport ?? v.price, data.priceExport ?? data.price)
     data.inStock = variants.some((v) => (v.stock ?? 0) > 0)
     data.totalStock = variants.reduce((sum, v) => sum + (v.stock ?? 0), 0)
   } else {
     data.priceFrom = data.price
+    data.priceFromExport = data.priceExport ?? data.price
     data.inStock = (data.stock ?? 0) > 0
     data.totalStock = data.stock ?? 0
   }
@@ -136,6 +150,16 @@ export const Products: CollectionConfig = {
               admin: {
                 description:
                   'Базова ціна. Для окремих варіацій її можна перевизначити у вкладці «Варіації та залишки».',
+              },
+            },
+            {
+              name: 'priceExport',
+              type: 'number',
+              label: 'Ціна для закордону, ₴',
+              min: 0,
+              admin: {
+                description:
+                  'Для покупців поза Україною. Сюди закладають пересилку — на сайті їм пишеться «безкоштовна доставка». Порожньо — беремо звичайну ціну.',
               },
             },
             {
@@ -318,13 +342,20 @@ export const Products: CollectionConfig = {
                 {
                   type: 'row',
                   fields: [
-                    { name: 'sku', type: 'text', label: 'Артикул', admin: { width: '34%' } },
+                    { name: 'sku', type: 'text', label: 'Артикул', admin: { width: '25%' } },
                     {
                       name: 'price',
                       type: 'number',
                       label: 'Ціна, ₴',
                       min: 0,
-                      admin: { width: '33%', description: 'Порожньо — береться базова.' },
+                      admin: { width: '25%', description: 'Порожньо — береться базова.' },
+                    },
+                    {
+                      name: 'priceExport',
+                      type: 'number',
+                      label: 'Закордон, ₴',
+                      min: 0,
+                      admin: { width: '25%', description: 'Порожньо — береться базова для закордону.' },
                     },
                     {
                       name: 'stock',
@@ -333,7 +364,7 @@ export const Products: CollectionConfig = {
                       defaultValue: 0,
                       min: 0,
                       required: true,
-                      admin: { width: '33%' },
+                      admin: { width: '25%' },
                     },
                   ],
                 },
@@ -461,6 +492,12 @@ export const Products: CollectionConfig = {
     // Службові поля: заповнюються автоматично, потрібні для фільтрів.
     {
       name: 'priceFrom',
+      type: 'number',
+      index: true,
+      admin: { hidden: true },
+    },
+    {
+      name: 'priceFromExport',
       type: 'number',
       index: true,
       admin: { hidden: true },

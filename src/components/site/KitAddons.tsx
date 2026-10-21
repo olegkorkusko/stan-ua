@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 
+import { useMoney } from '@/providers/MoneyProvider'
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 import { useLocale } from '@/components/site/LocaleLink'
@@ -23,6 +24,7 @@ export type Addon = {
  * додати дрібниці до набору однією дією, не йдучи в каталог і не питаючи нас.
  */
 export const KitAddons = ({ addons }: { addons: Addon[] }) => {
+  const { money } = useMoney()
   const { add } = useCart()
   const t = dictionary(useLocale()).product
   const [chosen, setChosen] = useState<string[]>([])
@@ -66,7 +68,7 @@ export const KitAddons = ({ addons }: { addons: Addon[] }) => {
                   />
                 </span>
                 <span className="flex-1 text-sm">{addon.title}</span>
-                <span className="price text-brass">{formatPrice(addon.price)}</span>
+                <span className="price text-brass">{formatPrice(addon.price, money)}</span>
               </label>
             </li>
           )
@@ -92,7 +94,7 @@ export const KitAddons = ({ addons }: { addons: Addon[] }) => {
         }}
         className="btn btn-outline mt-5 w-full"
       >
-        {selected.length === 0 ? t.addonsEmpty : t.addonsAdd(selected.length, formatPrice(extra))}
+        {selected.length === 0 ? t.addonsEmpty : t.addonsAdd(selected.length, formatPrice(extra, money))}
       </button>
     </section>
   )

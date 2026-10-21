@@ -23,6 +23,10 @@ import * as migration_20261005_172931_product_production_time from './20261005_1
 import * as migration_20261013_172201_settings_whatsapp from './20261013_172201_settings_whatsapp';
 import * as migration_20261014_153620_courses_suggest_in_cart from './20261014_153620_courses_suggest_in_cart';
 import * as migration_20261015_133717_order_source from './20261015_133717_order_source';
+import * as migration_20261021_124151_region_prices from './20261021_124151_region_prices';
+import * as migration_20261021_124302_price_from_export from './20261021_124302_price_from_export';
+import * as migration_20261021_130500_backfill_price_from_export from './20261021_130500_backfill_price_from_export';
+import * as migration_20261021_142402_course_old_price_export from './20261021_142402_course_old_price_export';
 
 export const migrations = [
   {
@@ -148,6 +152,26 @@ export const migrations = [
   {
     up: migration_20261015_133717_order_source.up,
     down: migration_20261015_133717_order_source.down,
-    name: '20261015_133717_order_source'
+    name: '20261015_133717_order_source',
+  },
+  {
+    up: migration_20261021_124151_region_prices.up,
+    down: migration_20261021_124151_region_prices.down,
+    name: '20261021_124151_region_prices',
+  },
+  {
+    up: migration_20261021_124302_price_from_export.up,
+    down: migration_20261021_124302_price_from_export.down,
+    name: '20261021_124302_price_from_export',
+  },
+  {
+    up: migration_20261021_130500_backfill_price_from_export.up,
+    down: migration_20261021_130500_backfill_price_from_export.down,
+    name: '20261021_130500_backfill_price_from_export',
+  },
+  {
+    up: migration_20261021_142402_course_old_price_export.up,
+    down: migration_20261021_142402_course_old_price_export.down,
+    name: '20261021_142402_course_old_price_export'
   },
 ];

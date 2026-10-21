@@ -8,6 +8,8 @@ import { useEffect, useRef, useState } from 'react'
 import { CloseButton } from '@/components/site/CloseButton'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { plural } from '@/lib/format'
+import { RegionSwitch } from '@/components/site/RegionSwitch'
+import { useMoney } from '@/providers/MoneyProvider'
 import { formatPrice } from '@/lib/format'
 import { dictionary, LOCALES, localePath, type Locale } from '@/lib/i18n'
 import { useScrollLock } from '@/lib/useScrollLock'
@@ -37,6 +39,7 @@ const LOCALE_LABELS: Record<Locale, string> = { uk: 'UA', en: 'EN' }
   накриває верх сторінки, поки її не прокрутили.
 */
 export const Header = ({ locale, announcement, freeDeliveryFrom }: Props) => {
+  const { money, region } = useMoney()
   // Словник збираємо тут, а не приймаємо пропом: у ньому є функції,
   // а їх не можна передати із серверного компонента в клієнтський.
   const t = dictionary(locale)
@@ -53,11 +56,18 @@ export const Header = ({ locale, announcement, freeDeliveryFrom }: Props) => {
     Ще один наслідок: складений текст перекладається сам. Вписаний руками —
     ні, його треба перекласти в адмінці окремо для кожної мови.
   */
+  /*
+    Для закордону поріг безглуздий: пересилка вже закладена в ціну товару, тож
+    доставка безкоштовна з першої гривні. Показувати там «безкоштовна від 1500»
+    означало б обіцяти умову, якої немає.
+  */
   const promo =
     announcement?.trim() ||
-    (typeof freeDeliveryFrom === 'number' && freeDeliveryFrom > 0
-      ? t.cart.freeDeliveryFrom(formatPrice(freeDeliveryFrom))
-      : null)
+    (region === 'intl'
+      ? t.cart.freeDeliveryAbroad
+      : typeof freeDeliveryFrom === 'number' && freeDeliveryFrom > 0
+        ? t.cart.freeDeliveryFrom(formatPrice(freeDeliveryFrom, money))
+        : null)
   const currentPath = usePathname()
   // Шлях без мовного префікса: перемикач мов має лишати вас на тій самій
   // сторінці. Беремо його з роутера, а не з заголовка запиту — інакше на
@@ -256,6 +266,9 @@ export const Header = ({ locale, announcement, freeDeliveryFrom }: Props) => {
 
             <div className="flex flex-1 items-center justify-end gap-[18px]">
               <span className="hidden md:block">{languageSwitch}</span>
+              <span className="hidden md:block">
+                <RegionSwitch />
+              </span>
               <Link href="/search" aria-label={t.header.search} className="hidden md:block">
                 <Search strokeWidth={1.25} className="size-5" />
               </Link>
@@ -403,6 +416,7 @@ export const Header = ({ locale, announcement, freeDeliveryFrom }: Props) => {
 
         <div data-figma-node="302:4505" className="flex items-center gap-6 px-4 pt-8">
           <span data-figma-node="302:4506">{languageSwitch}</span>
+          <RegionSwitch />
           <Link
             href="/search"
             data-figma-node="302:4507"

@@ -7,6 +7,9 @@ import { getPayload, type Payload } from 'payload'
 import { imageUrl } from '@/lib/media'
 import { productThumb } from '@/lib/product-media'
 import { cartKey } from '@/lib/cart-key'
+import { priceFor, variantPrice } from '@/lib/price'
+import { getRegion } from '@/lib/region.server'
+import type { Region } from '@/lib/region'
 
 const COOKIE = 'mk_cart'
 const YEAR = 60 * 60 * 24 * 365
@@ -36,7 +39,7 @@ const merge = (a: Line[], b: Line[]): Line[] => {
  * Назви, ціни й залишки віддає сервер, а не памʼять браузера: інакше кошик,
  * пролежавши тиждень, показував би стару ціну або зниклий товар.
  */
-const hydrate = async (payload: Payload, lines: Line[]) => {
+const hydrate = async (payload: Payload, lines: Line[], region: Region) => {
   const items = []
 
   for (const line of lines) {
@@ -52,7 +55,7 @@ const hydrate = async (payload: Payload, lines: Line[]) => {
         kind: 'course' as const,
         id: String(course.id),
         title: course.title,
-        price: course.price,
+        price: priceFor(course, region),
         quantity: 1,
         image: imageUrl(course.cover, 'thumbnail') ?? undefined,
         href: direction ? `/courses/${direction}/${course.slug}` : '/courses',
@@ -83,7 +86,7 @@ const hydrate = async (payload: Payload, lines: Line[]) => {
       variantLabel: [color?.title, size?.title].filter(Boolean).join(' · ') || undefined,
       color: color?.title ?? undefined,
       size: size?.title ?? undefined,
-      price: variant?.price ?? product.price,
+      price: variantPrice(product, variant, region),
       quantity: stock > 0 ? Math.min(line.quantity, stock) : line.quantity,
       image: imageUrl(variant?.image, 'thumbnail') ?? productThumb(product),
       href: `/shop/${product.slug}`,
@@ -145,7 +148,7 @@ const withCookie = (body: unknown, token: string) => {
   наявних. Порожнім блок не лишаємо: у макеті він є, і дірка на його місці
   виглядала б як поломка.
 */
-const suggest = async (payload: Payload, items: { kind: string; id: string }[]) => {
+const suggest = async (payload: Payload, items: { kind: string; id: string }[], region: Region) => {
   // Скільки позицій у блоці. Дві, а не три: на телефоні третя відтісняє
   // кнопку «Оформити замовлення» за межі екрана, і по неї треба гортати.
   const LIMIT = 2
@@ -171,7 +174,7 @@ const suggest = async (payload: Payload, items: { kind: string; id: string }[]) 
         kind: 'product' as const,
         id: String(product.id),
         title: product.title,
-        price: product.price,
+        price: priceFor(product, region),
         image: productThumb(product),
         href: `/shop/${product.slug}`,
       }))
@@ -193,7 +196,7 @@ const suggest = async (payload: Payload, items: { kind: string; id: string }[]) 
           kind: 'course' as const,
           id: String(course.id),
           title: course.title,
-          price: course.price,
+          price: priceFor(course, region),
           image: imageUrl(course.cover, 'thumbnail') ?? undefined,
           href: direction ? `/courses/${direction}/${course.slug}` : '/courses',
         }
@@ -276,8 +279,9 @@ export const GET = async () => {
   const stored = (cart?.items as Line[] | undefined) ?? []
   const lines = stored.length > 0 ? stored : await parityDemoLines(payload)
 
-  const items = await hydrate(payload, lines)
-  const suggestions = await suggest(payload, items)
+  const region = await getRegion()
+  const items = await hydrate(payload, lines, region)
+  const suggestions = await suggest(payload, items, region)
 
   // Прапорець для перевірки parity: вона знімає кадр одразу після завантаження
   // і не вміє клікати, тож шухляда має бути вже відкритою.
@@ -326,6 +330,6 @@ export const PUT = async (request: Request) => {
     показувала підказку, обчислену для порожнього кошика — і пропонувала
     докласти те, що людина щойно поклала.
   */
-  const hydrated = await hydrate(payload, items)
-  return withCookie({ items: hydrated, suggestions: await suggest(payload, hydrated) }, cart.token)
+  const hydrated = await hydrate(payload, items, await getRegion())
+  return withCookie({ items: hydrated, suggestions: await suggest(payload, hydrated, await getRegion()) }, cart.token)
 }

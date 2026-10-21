@@ -10,8 +10,17 @@
   свої — двомовні — зі словника `i18n`, ключами за цими ж значеннями.
 */
 
-export const DELIVERY_METHODS = ['np_branch', 'np_locker', 'np_courier', 'ukrposhta'] as const
+/*
+  `international` — для покупців поза Україною. Перевізника не називаємо
+  навмисно: відправляє власниця сама, чим зручніше на момент відправки, а
+  пересилка вже закладена в закордонну ціну товару.
+*/
+export const DELIVERY_METHODS = ['np_branch', 'np_locker', 'np_courier', 'ukrposhta', 'international'] as const
 export type DeliveryMethod = (typeof DELIVERY_METHODS)[number]
+
+/** Доставка за межі України: адреса звичайна, індекс не український. */
+export const isInternational = (method?: DeliveryMethod | string | null): boolean =>
+  method === 'international'
 
 /*
   Оплата лише карткою. Накладений платіж прибрано: ті гроші збирає Нова Пошта
@@ -27,6 +36,7 @@ export const deliveryMethodOptions: { label: string; value: DeliveryMethod }[] =
   { label: 'Нова Пошта — поштомат', value: 'np_locker' },
   { label: "Нова Пошта — кур'єр", value: 'np_courier' },
   { label: 'Укрпошта', value: 'ukrposhta' },
+  { label: 'За кордон', value: 'international' },
 ]
 
 export const paymentMethodOptions: { label: string; value: PaymentMethod }[] = [

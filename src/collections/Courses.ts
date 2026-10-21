@@ -135,8 +135,32 @@ export const Courses: CollectionConfig = {
             {
               type: 'row',
               fields: [
-                { name: 'price', type: 'number', label: 'Ціна, ₴', required: true, min: 0, admin: { width: '50%' } },
-                { name: 'oldPrice', type: 'number', label: 'Стара ціна, ₴', min: 0, admin: { width: '50%' } },
+                { name: 'price', type: 'number', label: 'Ціна, ₴', required: true, min: 0, admin: { width: '25%' } },
+                {
+                  name: 'oldPrice',
+                  type: 'number',
+                  label: 'Стара ціна, ₴',
+                  min: 0,
+                  admin: { width: '25%', description: 'Закреслена ціна для покупців з України.' },
+                },
+                {
+                  name: 'priceExport',
+                  type: 'number',
+                  label: 'Для закордону, ₴',
+                  min: 0,
+                  admin: { width: '25%', description: 'Порожньо — беремо звичайну ціну.' },
+                },
+                {
+                  name: 'oldPriceExport',
+                  type: 'number',
+                  label: 'Стара для закордону, ₴',
+                  min: 0,
+                  admin: {
+                    width: '25%',
+                    description:
+                      'Закреслена ціна для закордону. Порожньо — за кордоном знижки не показуємо.',
+                  },
+                },
               ],
             },
             {

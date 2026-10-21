@@ -196,6 +196,10 @@ export interface Product {
    */
   price: number;
   /**
+   * Для покупців поза Україною. Сюди закладають пересилку — на сайті їм пишеться «безкоштовна доставка». Порожньо — беремо звичайну ціну.
+   */
+  priceExport?: number | null;
+  /**
    * Заповніть, якщо хочете показати перекреслену ціну.
    */
   oldPrice?: number | null;
@@ -250,6 +254,10 @@ export interface Product {
          * Порожньо — береться базова.
          */
         price?: number | null;
+        /**
+         * Порожньо — береться базова для закордону.
+         */
+        priceExport?: number | null;
         stock: number;
         /**
          * Кадр із «Фотографії та відео» — свотч цього кольору перемотуватиме слайдер на нього. Розмір на це не впливає.
@@ -284,6 +292,7 @@ export interface Product {
    */
   slug?: string | null;
   priceFrom?: number | null;
+  priceFromExport?: number | null;
   inStock?: boolean | null;
   totalStock?: number | null;
   updatedAt: string;
@@ -460,7 +469,18 @@ export interface Course {
     [k: string]: unknown;
   } | null;
   price: number;
+  /**
+   * Закреслена ціна для покупців з України.
+   */
   oldPrice?: number | null;
+  /**
+   * Порожньо — беремо звичайну ціну.
+   */
+  priceExport?: number | null;
+  /**
+   * Закреслена ціна для закордону. Порожньо — за кордоном знижки не показуємо.
+   */
+  oldPriceExport?: number | null;
   level?: ('beginner' | 'medium' | 'advanced') | null;
   lessons?:
     | {
@@ -559,11 +579,15 @@ export interface Order {
   customerName: string;
   customerPhone: string;
   customerEmail: string;
-  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta') | null;
+  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'international') | null;
+  /**
+   * Тільки для доставки за кордон.
+   */
+  deliveryCountry?: string | null;
   deliveryCity?: string | null;
   deliveryBranch?: string | null;
   /**
-   * Тільки для Укрпошти.
+   * Укрпошта й закордон.
    */
   deliveryPostcode?: string | null;
   comment?: string | null;
@@ -614,7 +638,7 @@ export interface Customer {
         id?: string | null;
       }[]
     | null;
-  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta') | null;
+  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'international') | null;
   deliveryCity?: string | null;
   deliveryBranch?: string | null;
   paymentMethod?: ('card' | 'cod') | null;
@@ -1018,6 +1042,7 @@ export interface ProductsSelect<T extends boolean = true> {
   title?: T;
   shortDescription?: T;
   price?: T;
+  priceExport?: T;
   oldPrice?: T;
   cardImage?: T;
   cardHover?: T;
@@ -1036,6 +1061,7 @@ export interface ProductsSelect<T extends boolean = true> {
         size?: T;
         sku?: T;
         price?: T;
+        priceExport?: T;
         stock?: T;
         image?: T;
         id?: T;
@@ -1051,6 +1077,7 @@ export interface ProductsSelect<T extends boolean = true> {
   suggestInCart?: T;
   slug?: T;
   priceFrom?: T;
+  priceFromExport?: T;
   inStock?: T;
   totalStock?: T;
   updatedAt?: T;
@@ -1111,6 +1138,8 @@ export interface CoursesSelect<T extends boolean = true> {
   description?: T;
   price?: T;
   oldPrice?: T;
+  priceExport?: T;
+  oldPriceExport?: T;
   level?: T;
   lessons?:
     | T
@@ -1181,6 +1210,7 @@ export interface OrdersSelect<T extends boolean = true> {
   customerPhone?: T;
   customerEmail?: T;
   deliveryMethod?: T;
+  deliveryCountry?: T;
   deliveryCity?: T;
   deliveryBranch?: T;
   deliveryPostcode?: T;
@@ -1723,6 +1753,11 @@ export interface Setting {
    * Типовий строк: стоїть у характеристиках тих товарів, де не вказано власний. Власний задається в самому товарі, вкладка «Основне».
    */
   productionTime?: string | null;
+  exportCurrency?: ('USD' | 'EUR') | null;
+  /**
+   * Скільки гривень коштує 1 долар або євро. Оновлюйте вручну: поки тут старе число, закордонні ціни показуються за старим курсом. Порожньо — ціни лишаються в гривнях.
+   */
+  exportRate?: number | null;
   /**
    * Те, що видно в пошуку й на вкладці браузера. Порожньо — береться назва з коду.
    */
@@ -1900,6 +1935,8 @@ export interface SettingsSelect<T extends boolean = true> {
   whatsapp?: T;
   freeDeliveryFrom?: T;
   productionTime?: T;
+  exportCurrency?: T;
+  exportRate?: T;
   seoTitle?: T;
   seoDescription?: T;
   seoImage?: T;

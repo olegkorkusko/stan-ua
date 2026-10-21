@@ -9,6 +9,7 @@ import { dictionary } from '@/lib/i18n'
 import { landingBanner, landingCopy } from '@/lib/landing'
 import { imageAlt, imageUrl } from '@/lib/media'
 import { getLocale } from '@/lib/locale'
+import { getPricing } from '@/lib/region.server'
 import { payloadClient } from '@/lib/payload'
 import Image from 'next/image'
 
@@ -54,6 +55,7 @@ const JOURNAL_CARD_BODIES_TEXT = ['I99:2189;97:6', 'I99:2194;97:6', 'I99:2199;97
 
 const ShopPage = async () => {
   const locale = await getLocale()
+  const { money } = await getPricing()
   // Тексти з адмінки поверх текстів із коду — див. lib/landing.ts
   const t = await landingCopy('shop-page', locale, dictionary(locale).shopLanding)
   const banner = await landingBanner('shop-page', locale)
@@ -90,7 +92,7 @@ const ShopPage = async () => {
     t.categories.items.find((item) => cardKey(item.href) === slug)
   const volumeFor = (card?: { count: number; from: number }) =>
     card && card.count > 0
-      ? t.categories.volume(card.count, formatPrice(card.from))
+      ? t.categories.volume(card.count, formatPrice(card.from, money))
       : t.categories.soon
 
   return (

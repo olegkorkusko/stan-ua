@@ -7,6 +7,8 @@ import { SaveButton } from '@/components/site/SaveButton'
 import { formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
+import { cardPrice } from '@/lib/price'
+import { getPricing } from '@/lib/region.server'
 import { productCard } from '@/lib/product-media'
 import type { Product } from '@/payload-types'
 
@@ -46,6 +48,7 @@ export const ProductCard = async ({
 }) => {
   const { cover, coverAlt, hover, video } = productCard(product)
   const t = dictionary(await getLocale()).product
+  const { region, money } = await getPricing()
 
   const colors = (product.variants ?? [])
     .map((variant) => (typeof variant.color === 'object' ? variant.color : null))
@@ -105,7 +108,7 @@ export const ProductCard = async ({
               </Link>
             </h3>
             <span className="shrink-0 text-[13px] font-normal leading-[17.8px] text-ink md:font-display md:leading-[16.9px]">
-              {formatPrice(product.priceFrom ?? product.price)}
+              {formatPrice(cardPrice(product, region), money)}
             </span>
           </div>
 

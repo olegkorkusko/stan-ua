@@ -8,6 +8,7 @@ import { formatPrice } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { landingBanner, landingCopy } from '@/lib/landing'
 import { getLocale } from '@/lib/locale'
+import { getPricing } from '@/lib/region.server'
 import Image from 'next/image'
 
 import { CardVideo } from '@/components/site/CardVideo'
@@ -44,6 +45,7 @@ const STEP_BODIES = ['102:2186', '102:2191', '102:2196']
 
 const CoursesPage = async () => {
   const locale = await getLocale()
+  const { money } = await getPricing()
   // Тексти з адмінки поверх текстів із коду — див. lib/landing.ts
   const t = await landingCopy('courses-page', locale, dictionary(locale).coursesLanding)
   const banner = await landingBanner('courses-page', locale)
@@ -67,7 +69,7 @@ const CoursesPage = async () => {
     const toCourses = item.kind === 'direction'
     if (!item.card || item.card.count === 0) return toCourses ? t.directions.soon : shopCopy.soon
     const label = toCourses ? t.directions.volume : shopCopy.volume
-    return label(item.card.count, formatPrice(item.card.from))
+    return label(item.card.count, formatPrice(item.card.from, money))
   }
 
   // У макеті картки стоять по дві в ряд; скільки їх — вирішує адмінка.

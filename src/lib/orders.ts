@@ -2,6 +2,8 @@ import crypto from 'crypto'
 import type { Payload } from 'payload'
 
 import { formatPrice } from '@/lib/format'
+import { priceFor, variantPrice } from '@/lib/price'
+import type { Region } from '@/lib/region'
 import { sendPurchase } from '@/lib/meta'
 import { createCourseInvite, notifyAdmin } from '@/lib/telegram'
 
@@ -29,7 +31,11 @@ export class CheckoutError extends Error {}
  * Ціни й залишки беремо з бази, а не з кошика браузера. Клієнтський кошик —
  * це лише список того, що людина хоче купити; сума завжди рахується тут.
  */
-export const priceCart = async (payload: Payload, input: CartLineInput[]): Promise<PricedLine[]> => {
+export const priceCart = async (
+  payload: Payload,
+  input: CartLineInput[],
+  region: Region,
+): Promise<PricedLine[]> => {
   if (!Array.isArray(input) || input.length === 0) throw new CheckoutError('Кошик порожній')
 
   const lines: PricedLine[] = []
@@ -40,7 +46,13 @@ export const priceCart = async (payload: Payload, input: CartLineInput[]): Promi
     if (item.kind === 'course') {
       const course = await payload.findByID({ collection: 'courses', id: item.id, depth: 0 }).catch(() => null)
       if (!course || course.status !== 'published') throw new CheckoutError('Курс більше не продається')
-      lines.push({ kind: 'course', title: course.title, quantity: 1, price: course.price, course: course.id })
+      lines.push({
+        kind: 'course',
+        title: course.title,
+        quantity: 1,
+        price: priceFor(course, region),
+        course: course.id,
+      })
       continue
     }
 
@@ -66,7 +78,7 @@ export const priceCart = async (payload: Payload, input: CartLineInput[]): Promi
       kind: 'product',
       title: product.title,
       quantity,
-      price: variant?.price ?? product.price,
+      price: variantPrice(product, variant, region),
       product: product.id,
       variantId: variant?.id ?? undefined,
       variantLabel: [colorTitle, sizeTitle].filter(Boolean).join(' · ') || undefined,

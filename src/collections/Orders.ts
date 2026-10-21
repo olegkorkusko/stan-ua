@@ -1,7 +1,7 @@
 import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
 
 import { isAdmin } from '@/access'
-import { deliveryMethodOptions, storedPaymentMethodOptions } from '@/lib/delivery'
+import { deliveryMethodOptions, isInternational, storedPaymentMethodOptions } from '@/lib/delivery'
 
 /*
   Лист із номером накладної.
@@ -21,7 +21,16 @@ const notifyTracking: CollectionAfterChangeHook = async ({ doc, previousDoc, ope
   if (!number || number === previousDoc?.trackingNumber?.trim?.()) return doc
   if (!doc.customerEmail) return doc
 
-  const carrier = doc.deliveryMethod === 'ukrposhta' ? 'Укрпошта' : 'Нова Пошта'
+  /*
+    Третій випадок тут обов'язковий: доти будь-що, крім Укрпошти, підписувалось
+    «Нова Пошта», і закордонна посилка приходила б покупцеві з назвою
+    перевізника, який за кордон не возить.
+  */
+  const carrier = isInternational(doc.deliveryMethod)
+    ? 'пошта'
+    : doc.deliveryMethod === 'ukrposhta'
+      ? 'Укрпошта'
+      : 'Нова Пошта'
 
   await req.payload
     .sendEmail({
@@ -149,13 +158,19 @@ export const Orders: CollectionConfig = {
         {
           type: 'row',
           fields: [
-            { name: 'deliveryCity', type: 'text', label: 'Місто', admin: { width: '40%' } },
-            { name: 'deliveryBranch', type: 'text', label: 'Відділення / адреса', admin: { width: '40%' } },
+            {
+              name: 'deliveryCountry',
+              type: 'text',
+              label: 'Країна',
+              admin: { width: '20%', description: 'Тільки для доставки за кордон.' },
+            },
+            { name: 'deliveryCity', type: 'text', label: 'Місто', admin: { width: '35%' } },
+            { name: 'deliveryBranch', type: 'text', label: 'Відділення / адреса', admin: { width: '30%' } },
             {
               name: 'deliveryPostcode',
               type: 'text',
               label: 'Індекс',
-              admin: { width: '20%', description: 'Тільки для Укрпошти.' },
+              admin: { width: '15%', description: 'Укрпошта й закордон.' },
             },
           ],
         },

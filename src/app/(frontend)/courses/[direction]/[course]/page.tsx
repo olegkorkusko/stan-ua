@@ -16,6 +16,8 @@ import { plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
+import { oldPriceFor, priceFor } from '@/lib/price'
+import { getPricing } from '@/lib/region.server'
 import { payloadClient } from '@/lib/payload'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
@@ -50,6 +52,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
 
   const payload = await payloadClient()
   const locale = await getLocale()
+  const { region } = await getPricing()
   const t = dictionary(locale)
   const reviews = await payload.find({
     locale,
@@ -108,7 +111,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
         data={courseSchema({
           name: course.title,
           description: course.tagline,
-          price: course.price,
+          price: priceFor(course, region),
           url: `${process.env.NEXT_PUBLIC_SERVER_URL ?? ''}/courses/${directionSlug}/${course.slug}`,
           lessons: lessons.length,
         })}
@@ -181,8 +184,8 @@ const CoursePage = async ({ params }: { params: Params }) => {
                 courseId={String(course.id)}
                 title={course.title}
                 href={`/courses/${directionSlug}/${course.slug}`}
-                price={course.price}
-                oldPrice={course.oldPrice}
+                price={priceFor(course, region)}
+                oldPrice={oldPriceFor(course, region)}
                 image={imageUrl(course.cover, 'card') ?? undefined}
                 save={
                   <SaveButton

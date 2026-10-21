@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import { CloseButton } from '@/components/site/CloseButton'
 import { LocaleLink as Link, useLocale } from '@/components/site/LocaleLink'
 import { Picture } from '@/components/site/Picture'
+import { useMoney } from '@/providers/MoneyProvider'
 import { formatPrice } from '@/lib/format'
 import { FREE_DELIVERY_FROM } from '@/lib/delivery'
 import { dictionary } from '@/lib/i18n'
@@ -88,6 +89,7 @@ type Props = {
 }
 
 export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
+  const { money, region } = useMoney()
   const { items, suggestions, total, isOpen, close, remove, setQuantity, add } = useCart()
   const t = dictionary(useLocale()).cart
 
@@ -238,11 +240,20 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
             Назву шухляди тримає aria-label на <aside>, тож для читача екрана
             нічого не загубилось.
           */}
-          {hasPhysical && (
+          {/*
+            За кордоном смуги прогресу немає: пересилка вже в ціні товару, тож
+            доставка безкоштовна з першої позиції й «добирати до порогу» нема
+            чого. Лишається сам напис.
+          */}
+          {hasPhysical && region === 'intl' && (
+            <p className="text-[13px]/[19.5px] text-ink">{t.freeDeliveryAbroad}</p>
+          )}
+
+          {hasPhysical && region === 'ua' && (
             <div data-figma-node="122:2723" className="flex flex-col gap-2.5">
               <p data-figma-node="122:2724" className="text-[13px]/[19.5px] text-ink">
                 {left > 0
-                  ? t.freeDeliveryLeft.replace('{sum}', formatPrice(left))
+                  ? t.freeDeliveryLeft.replace('{sum}', formatPrice(left, money))
                   : t.freeDeliveryReached}
               </p>
               {/*
@@ -312,7 +323,7 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
                           data-figma-node={node?.price}
                           className="font-display text-[13px]/[16.9px] text-ink"
                         >
-                          {formatPrice(item.price * item.quantity)}
+                          {formatPrice(item.price * item.quantity, money)}
                         </span>
                         {variantOf(item) && (
                           <span data-figma-node={node?.variant} className={muted}>
@@ -393,7 +404,7 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
                 {t.items}
               </span>
               <span data-figma-node="123:2727" className="text-[13px]/[19.5px] text-ink">
-                {formatPrice(total)}
+                {formatPrice(total, money)}
               </span>
             </div>
 
@@ -416,7 +427,7 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
                 {t.toPay}
               </span>
               <span data-figma-node="123:2733" className="title-sm">
-                {formatPrice(total)}
+                {formatPrice(total, money)}
               </span>
             </div>
 
@@ -467,7 +478,7 @@ export const CartDrawer = ({ freeDeliveryFrom }: Props) => {
                         data-figma-node="123:2740"
                         className="font-display text-[13px]/[16.9px] text-ink"
                       >
-                        {formatPrice(suggestion.price)}
+                        {formatPrice(suggestion.price, money)}
                       </span>
                       <button
                         type="button"

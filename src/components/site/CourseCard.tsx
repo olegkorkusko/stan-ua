@@ -7,6 +7,8 @@ import { Picture } from '@/components/site/Picture'
 import { SaveButton } from '@/components/site/SaveButton'
 import { formatPrice, plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
+import { priceFor } from '@/lib/price'
+import { getPricing } from '@/lib/region.server'
 import type { Course } from '@/payload-types'
 
 /*
@@ -63,7 +65,7 @@ export const courseCardNodes = (root: string) => ({
   lessons: `I${root};12:17`,
 })
 
-export const CourseCard = ({
+export const CourseCard = async ({
   course,
   directionSlug,
   saved = false,
@@ -77,6 +79,7 @@ export const CourseCard = ({
   /** Ідентифікатори вузлів Figma для екранів, які звіряються попіксельно. */
   nodes?: CourseCardNodes
 }) => {
+  const { region, money } = await getPricing()
   const cover = imageUrl(course.cover, 'card')
   const gallery = Array.isArray(course.gallery) ? course.gallery : []
   const secondary = imageUrl(gallery[0], 'card')
@@ -160,7 +163,7 @@ export const CourseCard = ({
             data-figma-node={nodes?.price}
             className="font-display text-[13px] font-normal leading-[17px] text-ink"
           >
-            {formatPrice(course.price)}
+            {formatPrice(priceFor(course, region), money)}
           </span>
           {lessonsLabel && (
             <span

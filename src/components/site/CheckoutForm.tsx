@@ -4,10 +4,12 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { useEffect, useRef, useState } from 'react'
 
 import { track } from '@/components/site/Analytics'
+import { useMoney } from '@/providers/MoneyProvider'
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 import { Suggest, useSuggestions } from '@/components/site/AddressSuggest'
 import { useLocale } from '@/components/site/LocaleLink'
+import { DELIVERY_METHODS } from '@/lib/delivery'
 import { dictionary } from '@/lib/i18n'
 import { rememberSource } from '@/lib/visit-source'
 
@@ -20,13 +22,6 @@ const readCookie = (name: string): string | undefined =>
     .split('; ')
     .find((row) => row.startsWith(`${name}=`))
     ?.slice(name.length + 1)
-
-const DELIVERY = [
-  { value: 'np_branch', label: 'Нова Пошта — відділення' },
-  { value: 'np_locker', label: 'Нова Пошта — поштомат' },
-  { value: 'np_courier', label: "Нова Пошта — кур'єр до дверей" },
-  { value: 'ukrposhta', label: 'Укрпошта' },
-]
 
 /**
  * Те, що покупець уже вказував у кабінеті. Підставляється у форму, щоб не
@@ -43,9 +38,18 @@ export type CheckoutProfile = {
 }
 
 export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) => {
+  const { money, region } = useMoney()
   const { items, total, clear } = useCart()
   const locale = useLocale()
   const t = dictionary(locale).checkout
+  /*
+    Назви способів доставки — зі словника, а не списком у цьому файлі.
+    Захардкоджені українською, вони лишались українськими й на англійській
+    версії: покупець із-за кордону бачив «Нова Пошта — відділення» посеред
+    англійської форми. Тепер обидві мови беруться з того самого місця, що й у
+    кабінеті.
+  */
+  const methodLabels = dictionary(locale).account.delivery.methods
   const formRef = useRef<HTMLFormElement>(null)
 
   const [form, setForm] = useState({
@@ -54,7 +58,7 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
     customerEmail: profile?.email ?? '',
     comment: '',
     promoCode: '',
-    deliveryMethod: profile?.deliveryMethod || 'np_branch',
+    deliveryMethod: profile?.deliveryMethod || (region === 'intl' ? 'international' : 'np_branch'),
     paymentMethod: 'card' as const,
     newsletter: false,
   })
@@ -86,9 +90,18 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
   // Укрпошта має власну адресну логіку: місто, вулиця й індекс, без довідника
   // відділень Нової Пошти.
   const isUkrposhta = form.deliveryMethod === 'ukrposhta'
+  /*
+    За кордон відправляє власниця сама, перевізника на сайті не вибирають:
+    пересилка вже закладена в закордонну ціну товару. Тому довідник Нової
+    Пошти тут мовчить так само, як і для Укрпошти, а адреса пишеться вручну.
+  */
+  const isIntl = form.deliveryMethod === 'international'
+  const isPlainAddress = isUkrposhta || isIntl
 
-  const cities = useSuggestions('city', cityQuery, undefined, !isUkrposhta)
-  const branches = useSuggestions('branch', branchQuery, city.ref, !isUkrposhta)
+  const [country, setCountry] = useState('')
+
+  const cities = useSuggestions('city', cityQuery, undefined, !isPlainAddress)
+  const branches = useSuggestions('branch', branchQuery, city.ref, !isPlainAddress)
 
   const set = (key: keyof typeof form) => (value: string) => setForm((f) => ({ ...f, [key]: value }))
 
@@ -134,7 +147,8 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
           paymentMethod: 'card',
           deliveryCity: hasPhysical ? city.label || cityQuery : undefined,
           deliveryBranch: hasPhysical ? branch || branchQuery : undefined,
-          deliveryPostcode: hasPhysical && isUkrposhta ? postcode : undefined,
+          deliveryPostcode: hasPhysical && isPlainAddress ? postcode : undefined,
+          deliveryCountry: hasPhysical && isIntl ? country.trim() : undefined,
           items: items.map((item) => ({
             kind: item.kind,
             id: item.id,
@@ -243,27 +257,37 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
           <section>
             <p className="label">{t.delivery}</p>
             <div className="mt-4 space-y-2">
-              {DELIVERY.map((option) => (
+              {DELIVERY_METHODS.map((option) => (
                 <label
-                  key={option.value}
+                  key={option}
                   className={`flex cursor-pointer items-center gap-3 border px-3.5 py-3 text-sm transition-colors ${
-                    form.deliveryMethod === option.value ? 'border-ink' : 'border-flax hover:border-muted'
+                    form.deliveryMethod === option ? 'border-ink' : 'border-flax hover:border-muted'
                   }`}
                 >
                   <input
                     type="radio"
                     name="delivery"
-                    value={option.value}
-                    checked={form.deliveryMethod === option.value}
+                    value={option}
+                    checked={form.deliveryMethod === option}
                     onChange={(e) => set('deliveryMethod')(e.target.value)}
                     className="accent-ink"
                   />
-                  {option.label}
+                  {methodLabels[option]}
                 </label>
               ))}
             </div>
 
             <div className="mt-4 grid gap-3">
+              {isIntl && (
+                <input
+                  className="field"
+                  placeholder={t.country}
+                  autoComplete="country-name"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                />
+              )}
+
               <Suggest
                 placeholder={t.city}
                 value={cityQuery}
@@ -283,7 +307,7 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
 
               <Suggest
                 placeholder={
-                  form.deliveryMethod === 'np_courier' || isUkrposhta ? t.address : t.branch
+                  form.deliveryMethod === 'np_courier' || isPlainAddress ? t.address : t.branch
                 }
                 value={branch || branchQuery}
                 show={!branch && form.deliveryMethod !== 'np_courier'}
@@ -294,17 +318,30 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
                 }}
                 onPick={(item) => setBranch(item.label)}
               />
-              {isUkrposhta && (
+              {isPlainAddress && (
                 <div>
+                  {/*
+                    Український індекс — рівно п'ять цифр, і ми їх так і
+                    фільтруємо. Закордонний під один шаблон не зводиться:
+                    «00-001» у Польщі, «SW1A 1AA» у Британії, «K1A 0B1» у
+                    Канаді. Тому там лишаємо поле вільним.
+                  */}
                   <input
                     className="field"
                     placeholder={t.postcode}
-                    inputMode="numeric"
-                    maxLength={5}
+                    inputMode={isIntl ? 'text' : 'numeric'}
+                    maxLength={isIntl ? 12 : 5}
+                    autoComplete="postal-code"
                     value={postcode}
-                    onChange={(e) => setPostcode(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                    onChange={(e) =>
+                      setPostcode(
+                        isIntl ? e.target.value.slice(0, 12) : e.target.value.replace(/\D/g, '').slice(0, 5),
+                      )
+                    }
                   />
-                  <p className="mt-1.5 text-xs text-muted">{t.postcodeHint}</p>
+                  <p className="mt-1.5 text-xs text-muted">
+                    {isIntl ? t.postcodeHintIntl : t.postcodeHint}
+                  </p>
                 </div>
               )}
             </div>
@@ -373,7 +410,7 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
                   {item.variantLabel && <span className="text-muted"> · {item.variantLabel}</span>}
                   {item.quantity > 1 && <span className="text-muted"> × {item.quantity}</span>}
                 </span>
-                <span className="price shrink-0">{formatPrice(item.price * item.quantity)}</span>
+                <span className="price shrink-0">{formatPrice(item.price * item.quantity, money)}</span>
               </li>
             ))}
           </ul>
@@ -394,7 +431,7 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
           <div className="mt-5 flex flex-col gap-2 border-t border-flax pt-5">
             <div className="flex items-baseline justify-between">
               <span className="label">{t.toPay}</span>
-              <span className="price text-lg text-brass">{formatPrice(payNow)}</span>
+              <span className="price text-lg text-brass">{formatPrice(payNow, money)}</span>
             </div>
           </div>
 

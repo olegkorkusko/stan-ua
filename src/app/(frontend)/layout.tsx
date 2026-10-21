@@ -5,6 +5,9 @@ import { Analytics } from '@/components/site/Analytics'
 import { LocaleProvider } from '@/components/site/LocaleLink'
 import { SiteChrome } from '@/components/site/SiteChrome'
 import { getLocale } from '@/lib/locale'
+import { moneyFor } from '@/lib/price'
+import { getRegion } from '@/lib/region.server'
+import { MoneyProvider } from '@/providers/MoneyProvider'
 import { imageUrl } from '@/lib/media'
 import { siteSettings } from '@/lib/settings'
 import { CartProvider } from '@/providers/CartProvider'
@@ -95,11 +98,13 @@ export const generateMetadata = async (): Promise<Metadata> => {
 const RootLayout = async ({ children }: { children: React.ReactNode }) => {
   const locale = await getLocale()
   const settings = await siteSettings(locale)
+  const region = await getRegion()
 
   return (
     <html lang={locale} className={`${unbounded.variable} ${manrope.variable}`}>
       <body className="min-h-screen">
         <LocaleProvider locale={locale}>
+          <MoneyProvider money={moneyFor(locale, settings)} region={region}>
           <CartProvider>
             <SiteChrome locale={locale} settings={settings}>
               {children}
@@ -115,6 +120,7 @@ const RootLayout = async ({ children }: { children: React.ReactNode }) => {
               pixel={settings?.metaPixelId || process.env.NEXT_PUBLIC_META_PIXEL_ID}
             />
           </CartProvider>
+          </MoneyProvider>
         </LocaleProvider>
       </body>
     </html>

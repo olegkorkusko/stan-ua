@@ -15,6 +15,8 @@ import { imageUrl } from '@/lib/media'
 import { productCard, productGallery } from '@/lib/product-media'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
+import { cardPrice, priceFor, variantPrice } from '@/lib/price'
+import { getPricing } from '@/lib/region.server'
 import { payloadClient } from '@/lib/payload'
 import { savedItems } from '@/lib/saved'
 import { siteSettings } from '@/lib/settings'
@@ -58,6 +60,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
 
   const payload = await payloadClient()
   const locale = await getLocale()
+  const { region, money } = await getPricing()
   const t = dictionary(locale)
   const settings = await siteSettings(locale)
   const category = typeof product.category === 'object' ? product.category : null
@@ -112,7 +115,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
       colorHex: color?.hex,
       sizeId: size ? String(size.id) : undefined,
       sizeTitle: size?.title,
-      price: variant.price ?? product.price,
+      price: variantPrice(product, variant, region),
       stock: variant.stock ?? 0,
       image: imageUrl(variant.image, 'card') ?? undefined,
     }
@@ -165,7 +168,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
       <ViewContentTracking
         id={String(product.id)}
         title={product.title}
-        price={product.priceFrom ?? product.price}
+        price={cardPrice(product, region)}
         category={typeof product.category === 'object' ? (product.category?.title ?? undefined) : undefined}
       />
 
@@ -174,7 +177,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
           name: product.title,
           description: product.shortDescription,
           image: card.cover,
-          price: product.priceFrom ?? product.price,
+          price: cardPrice(product, region),
           inStock: Boolean(product.inStock),
           url: `${process.env.NEXT_PUBLIC_SERVER_URL ?? ''}/shop/${product.slug}`,
           rating: ratingCount ? { value: ratingValue, count: ratingCount } : null,
@@ -258,7 +261,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
                 на курсі як ціна, на товарі як звичайний рядок тексту.
               */}
               <p data-figma-node="73:1377" className="price text-2xl text-brass">
-                {formatPrice(product.priceFrom ?? product.price)}
+                {formatPrice(cardPrice(product, region), money)}
               </p>
             </div>
 
@@ -266,7 +269,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
               productId={String(product.id)}
               title={product.title}
               slug={product.slug ?? ''}
-              basePrice={product.price}
+              basePrice={priceFor(product, region)}
               baseStock={product.stock ?? 0}
               image={card.cover ?? undefined}
               variants={variants}
@@ -292,7 +295,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
                     .map((addon) => ({
                       id: String(addon.id),
                       title: addon.title,
-                      price: addon.priceFrom ?? addon.price,
+                      price: cardPrice(addon, region),
                       slug: addon.slug ?? '',
                       image: productThumb(addon),
                       inStock: Boolean(addon.inStock),

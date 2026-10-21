@@ -32,7 +32,17 @@ type Dictionary = {
     learn: string
     finished: string
   }
-  header: { menu: string; closeMenu: string; search: string; account: string; cart: string; home: string }
+  header: {
+    menu: string
+    closeMenu: string
+    search: string
+    account: string
+    cart: string
+    home: string
+    /** Перемикач регіону доставки: від нього залежить ціна. */
+    shipTo: string
+    region: { ua: string; intl: string }
+  }
   cart: {
     title: string
     empty: string
@@ -50,6 +60,8 @@ type Dictionary = {
     /** «До безкоштовної доставки — ще 440 ₴»; {sum} — скільки лишилось добрати. */
     freeDeliveryLeft: string
     freeDeliveryReached: string
+    /** Для покупців поза Україною: пересилка вже закладена в ціну товару. */
+    freeDeliveryAbroad: string
     /** Промо-смуга вгорі сайту, коли власниця не вписала свій текст. */
     freeDeliveryFrom: (sum: string) => string
     summary: string
@@ -331,6 +343,9 @@ type Dictionary = {
     address: string
     postcode: string
     postcodeHint: string
+    /** Доставка за кордон: країну довідник не підказує, пишуть руками. */
+    country: string
+    postcodeHintIntl: string
     deliveryNote: string
     payment: string
     card: string
@@ -449,6 +464,8 @@ const uk: Dictionary = {
     account: 'Кабінет',
     cart: 'Кошик',
     home: 'STAN_UA — головна',
+    shipTo: 'Куди доставляти',
+    region: { ua: 'Україна', intl: 'За кордон' },
   },
   cart: {
     title: 'Кошик',
@@ -465,6 +482,7 @@ const uk: Dictionary = {
     close: 'Закрити',
     freeDeliveryLeft: 'До безкоштовної доставки — ще {sum}',
     freeDeliveryReached: 'Доставка безкоштовна',
+    freeDeliveryAbroad: 'Безкоштовна доставка за кордон',
     freeDeliveryFrom: (sum: string) => `Безкоштовна доставка від ${sum}`,
     summary: 'Підсумок',
     items: 'Товари',
@@ -703,6 +721,8 @@ const uk: Dictionary = {
     address: 'Вулиця, будинок, квартира',
     postcode: 'Поштовий індекс',
     postcodeHint: "П'ять цифр — індекс відділення Укрпошти за адресою.",
+    country: 'Країна',
+    postcodeHintIntl: 'Поштовий індекс у форматі вашої країни.',
     deliveryNote: 'Доставка за тарифами перевізника.',
     payment: 'Оплата',
     card: 'Карткою онлайн · Apple Pay · Google Pay',
@@ -756,8 +776,9 @@ const uk: Dictionary = {
       methods: {
         np_branch: 'Нова Пошта — відділення',
         np_locker: 'Нова Пошта — поштомат',
-        np_courier: 'Нова Пошта — курʼєр',
+        np_courier: 'Нова Пошта — курʼєр до дверей',
         ukrposhta: 'Укрпошта',
+        international: 'За кордон',
       },
       payments: { card: 'Карткою онлайн' },
     },
@@ -972,6 +993,8 @@ const en: Dictionary = {
     account: 'Account',
     cart: 'Cart',
     home: 'MK — home',
+    shipTo: 'Ship to',
+    region: { ua: 'Ukraine', intl: 'Worldwide' },
   },
   cart: {
     title: 'Cart',
@@ -988,6 +1011,7 @@ const en: Dictionary = {
     close: 'Close',
     freeDeliveryLeft: '{sum} away from free shipping',
     freeDeliveryReached: 'Free shipping unlocked',
+    freeDeliveryAbroad: 'Free worldwide shipping',
     freeDeliveryFrom: (sum: string) => `Free shipping from ${sum}`,
     summary: 'Summary',
     items: 'Items',
@@ -1226,6 +1250,8 @@ const en: Dictionary = {
     address: 'Street, building, apartment',
     postcode: 'Postcode',
     postcodeHint: 'Five digits — the Ukrposhta postcode for this address.',
+    country: 'Country',
+    postcodeHintIntl: 'Postcode in your country format.',
     deliveryNote: 'Shipping is charged at the carrier rate.',
     payment: 'Payment',
     card: 'Card online · Apple Pay · Google Pay',
@@ -1280,6 +1306,7 @@ const en: Dictionary = {
         np_locker: 'Nova Poshta - locker',
         np_courier: 'Nova Poshta - courier',
         ukrposhta: 'Ukrposhta',
+        international: 'International',
       },
       payments: { card: 'Card online' },
     },

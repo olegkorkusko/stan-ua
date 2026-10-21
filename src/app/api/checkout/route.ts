@@ -9,7 +9,9 @@ import {
   priceCart,
   type CartLineInput,
 } from '@/lib/orders'
-import { asDeliveryMethod } from '@/lib/delivery'
+import { asDeliveryMethod, isInternational } from '@/lib/delivery'
+import { getRegion } from '@/lib/region.server'
+import type { Region } from '@/lib/region'
 import { formatPrice } from '@/lib/format'
 import { notifyAdmin } from '@/lib/telegram'
 import { buildPurchaseForm, isConfigured } from '@/lib/wayforpay'
@@ -24,6 +26,7 @@ type Body = {
   deliveryCity?: string
   deliveryBranch?: string
   deliveryPostcode?: string
+  deliveryCountry?: string
   comment?: string
   newsletter?: boolean
   paymentMethod: 'card'
@@ -50,7 +53,18 @@ export const POST = async (request: Request) => {
     const validationError = required(body)
     if (validationError) return NextResponse.json({ error: validationError }, { status: 400 })
 
-    const lines = await priceCart(payload, body.items)
+    /*
+      Регіон беремо зі СПОСОБУ ДОСТАВКИ, а cookie лише як запасний варіант.
+
+      Cookie правиться з браузера: інакше досить було б виставити собі «ua»,
+      обрати доставку за кордон — і купити за внутрішньою ціною, без пересилки.
+      Спосіб доставки покупець теж обирає сам, але він визначає, куди реально
+      поїде посилка, тож обманювати тут нічого.
+    */
+    const deliveryMethod = asDeliveryMethod(body.deliveryMethod)
+    const region: Region = isInternational(deliveryMethod) ? 'intl' : await getRegion()
+
+    const lines = await priceCart(payload, body.items, region)
     const hasPhysical = lines.some((line) => line.kind === 'product')
 
     // Спосіб доставки перевіряємо нарівні з містом і відділенням. Раніше його
@@ -60,8 +74,6 @@ export const POST = async (request: Request) => {
     // неможливо, а покупець при цьому бачив «дякуємо». З форми таке не
     // приходить, але API відкритий, і мовчки втрачати спосіб доставки не
     // можна: це межа довіри, а не внутрішній виклик.
-    const deliveryMethod = asDeliveryMethod(body.deliveryMethod)
-
     if (hasPhysical && !deliveryMethod) {
       return NextResponse.json({ error: 'Оберіть спосіб доставки' }, { status: 400 })
     }
@@ -74,6 +86,20 @@ export const POST = async (request: Request) => {
     // посилку не оформити, тож просимо одразу, а не листуванням потім.
     if (hasPhysical && deliveryMethod === 'ukrposhta' && !/^\d{5}$/.test(body.deliveryPostcode ?? '')) {
       return NextResponse.json({ error: 'Вкажіть поштовий індекс — пʼять цифр' }, { status: 400 })
+    }
+
+    if (hasPhysical && isInternational(deliveryMethod)) {
+      if (!body.deliveryCountry?.trim()) {
+        return NextResponse.json({ error: 'Вкажіть країну' }, { status: 400 })
+      }
+      /*
+        Індекс просимо, але формат не перевіряємо: польський «00-001»,
+        британський «SW1A 1AA» і канадський «K1A 0B1» не зводяться до одного
+        шаблону, а український на п'ять цифр відкинув би їх усі.
+      */
+      if (!body.deliveryPostcode?.trim()) {
+        return NextResponse.json({ error: 'Вкажіть поштовий індекс' }, { status: 400 })
+      }
     }
 
     const subtotal = lines.reduce((sum, line) => sum + line.price * line.quantity, 0)
@@ -111,7 +137,11 @@ export const POST = async (request: Request) => {
         deliveryMethod: hasPhysical ? deliveryMethod : undefined,
         deliveryCity: body.deliveryCity,
         deliveryBranch: body.deliveryBranch,
-        deliveryPostcode: deliveryMethod === 'ukrposhta' ? body.deliveryPostcode : undefined,
+        deliveryCountry: isInternational(deliveryMethod) ? body.deliveryCountry?.trim() : undefined,
+        deliveryPostcode:
+          deliveryMethod === 'ukrposhta' || isInternational(deliveryMethod)
+            ? body.deliveryPostcode
+            : undefined,
         comment: body.comment,
         // Згода на розсилку живе в замовленні, бо покупця ще немає: його
         // заводить fulfillOrder уже після підтвердженої оплати.

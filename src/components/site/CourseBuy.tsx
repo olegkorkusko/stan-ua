@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 
+import { useMoney } from '@/providers/MoneyProvider'
 import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 import { useLocale } from '@/components/site/LocaleLink'
@@ -34,14 +35,15 @@ type Props = {
  * лишатися за нею.
  */
 export const CourseBuy = ({ courseId, title, href, price, oldPrice, image, save }: Props) => {
+  const { money } = useMoney()
   const { add } = useCart()
   const t = dictionary(useLocale()).courses
 
   return (
     <div className="border border-flax bg-paper p-6">
       <div className="flex items-baseline gap-3">
-        <span className="price text-2xl text-brass">{formatPrice(price)}</span>
-        {oldPrice ? <span className="text-sm text-muted line-through">{formatPrice(oldPrice)}</span> : null}
+        <span className="price text-2xl text-brass">{formatPrice(price, money)}</span>
+        {oldPrice ? <span className="text-sm text-muted line-through">{formatPrice(oldPrice, money)}</span> : null}
       </div>
 
       {/* Кнопка й серце — в один рядок, як на товарі. */}
