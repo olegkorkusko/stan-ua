@@ -15,7 +15,7 @@ import { imageUrl } from '@/lib/media'
 import { productCard, productGallery } from '@/lib/product-media'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
-import { cardPrice, priceFor, variantPrice } from '@/lib/price'
+import { cardPrice, oldPriceFor, priceFor, variantPrice } from '@/lib/price'
 import { getPricing } from '@/lib/region.server'
 import { payloadClient } from '@/lib/payload'
 import { savedItems } from '@/lib/saved'
@@ -61,6 +61,7 @@ const ProductPage = async ({ params }: { params: Params }) => {
   const payload = await payloadClient()
   const locale = await getLocale()
   const { region, money } = await getPricing()
+  const oldPrice = oldPriceFor(product, region)
   const t = dictionary(locale)
   const settings = await siteSettings(locale)
   const category = typeof product.category === 'object' ? product.category : null
@@ -260,9 +261,19 @@ const ProductPage = async ({ params }: { params: Params }) => {
                 сама величина на двох сусідніх сторінках виглядає по-різному —
                 на курсі як ціна, на товарі як звичайний рядок тексту.
               */}
-              <p data-figma-node="73:1377" className="price text-2xl text-brass">
-                {formatPrice(cardPrice(product, region), money)}
-              </p>
+              {/*
+                Закреслена ціна — поруч, як на сторінці курсу. Малюється лише
+                коли заповнена, тож для товарів без акції розмітка та сама, що
+                звіряється з макетом.
+              */}
+              <div className="flex items-baseline gap-3">
+                <p data-figma-node="73:1377" className="price text-2xl text-brass">
+                  {formatPrice(cardPrice(product, region), money)}
+                </p>
+                {oldPrice ? (
+                  <span className="text-sm text-muted line-through">{formatPrice(oldPrice, money)}</span>
+                ) : null}
+              </div>
             </div>
 
             <ProductPurchase
