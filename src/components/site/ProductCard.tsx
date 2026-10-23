@@ -140,6 +140,14 @@ export const ProductCard = async ({
                 style={{ background: color.hex }}
               />
             ))}
+            {/*
+              Кружечків у макеті три, а кольорів буває вісім — решта просто
+              зникала, і картка мовчки обіцяла менший вибір, ніж є. Підпис
+              показуємо лише коли є що ховати.
+            */}
+            {colors.length > 3 && (
+              <span className="text-xs leading-none text-muted">+{colors.length - 3}</span>
+            )}
           </div>
         )}
       </div>

@@ -102,6 +102,34 @@ const ProductPage = async ({ params }: { params: Params }) => {
   const { items: galleryImages, colorOf } = productGallery(product)
   const card = productCard(product)
 
+  /*
+    Колір, обраний при заході, і порядок фото мусять збігатися.
+
+    Беремо перший КОЛІР У НАЯВНОСТІ, і лише якщо таких немає — найперший за
+    списком. Доти бралася просто перша варіація з адмінки: у хустини це
+    «Кораловий» із нулем, і товар із двома наявними кольорами зустрічав
+    покупця написом «під замовлення».
+
+    А фото цього кольору ставимо на початок стрічки. Інакше галерея при
+    завантаженні плавно їде з першого кадру на потрібний — вона це робить
+    навмисно при зміні кольору, але на вході така прокрутка виглядає як
+    смикання. Сортування стабільне: решта кадрів лишаються в тому порядку,
+    у якому їх виклала власниця.
+  */
+  const initialColorId = ((product.variants ?? []).find(
+    (variant) => (variant.stock ?? 0) > 0 && typeof variant.color === 'object' && variant.color,
+  ) ?? (product.variants ?? []).find((variant) => typeof variant.color === 'object' && variant.color))
+    ?.color
+  const initialColor =
+    typeof initialColorId === 'object' && initialColorId ? String(initialColorId.id) : undefined
+
+  const gallery = initialColor
+    ? [...galleryImages].sort(
+        (a, b) =>
+          Number(colorOf?.[b.src] === initialColor) - Number(colorOf?.[a.src] === initialColor),
+      )
+    : galleryImages
+
   const variants: PurchaseVariant[] = (product.variants ?? []).map((variant, index) => {
     const color = typeof variant.color === 'object' ? variant.color : null
     const size = typeof variant.size === 'object' ? variant.size : null
@@ -201,18 +229,14 @@ const ProductPage = async ({ params }: { params: Params }) => {
           Кружечки тепер теж сортуються наявними вперед — вибір і перший
           кружечок мусять збігатися.
         */}
-        <ProductColorProvider
-          initial={
-            (variants.find((v) => v.colorId && v.stock > 0) ?? variants.find((v) => v.colorId))?.colorId
-          }
-        >
+        <ProductColorProvider initial={initialColor}>
         <div data-figma-node="72:1299" className="flex flex-col gap-10 lg:flex-row lg:gap-0">
           {/* Ліва колонка — 118:2365. Галерея з активним фото + індикатором.
               Рівно половина (720 із 1440), тому w-1/2, а не flex-1: із flex-1
               права колонка не стискалася під свій вміст і забирала 770. */}
           <div data-figma-node="118:2365" className="flex min-w-0 flex-col gap-6 lg:w-1/2">
             <MediaGallery
-              images={galleryImages}
+              images={gallery}
               colorOf={colorOf}
               emptyLabel={t.product.gallery}
               nodes={{ frame: '72:1300', photo: '72:1385', dots: '116:2366' }}

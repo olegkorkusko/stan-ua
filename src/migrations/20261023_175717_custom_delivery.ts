@@ -1,45 +1,29 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+/*
+  Новий спосіб доставки «Інша адреса» — одним значенням до переліку.
+
+  Написано руками, а не згенеровано. Генератор порівнює код із ТІЄЮ базою, до
+  якої під'єднаний, а в моїй локальній лежали ще й зміни з гілки закордонних
+  цін. Через це він вирішив, що їх треба прибрати, і дописав у цю міграцію
+  DROP COLUMN на price_export, export_rate і решту. На проді тих колонок немає
+  — деплой упав би на першому ж DROP; а якби гілка з цінами колись злилась,
+  міграція тихо знесла б її поля.
+
+  ADD VALUE замість перестворення типу: воно додає значення, нічого не
+  чіпаючи, і тому байдуже, які ще значення в переліку вже є. IF NOT EXISTS
+  робить міграцію безпечною для повторного запуску.
+*/
+export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "orders" ALTER COLUMN "delivery_method" SET DATA TYPE text;
-  DROP TYPE "public"."enum_orders_delivery_method";
-  CREATE TYPE "public"."enum_orders_delivery_method" AS ENUM('np_branch', 'np_locker', 'np_courier', 'ukrposhta', 'custom');
-  ALTER TABLE "orders" ALTER COLUMN "delivery_method" SET DATA TYPE "public"."enum_orders_delivery_method" USING "delivery_method"::"public"."enum_orders_delivery_method";
-  ALTER TABLE "customers" ALTER COLUMN "delivery_method" SET DATA TYPE text;
-  DROP TYPE "public"."enum_customers_delivery_method";
-  CREATE TYPE "public"."enum_customers_delivery_method" AS ENUM('np_branch', 'np_locker', 'np_courier', 'ukrposhta', 'custom');
-  ALTER TABLE "customers" ALTER COLUMN "delivery_method" SET DATA TYPE "public"."enum_customers_delivery_method" USING "delivery_method"::"public"."enum_customers_delivery_method";
-  DROP INDEX "products_price_from_export_idx";
-  ALTER TABLE "products_variants" DROP COLUMN "price_export";
-  ALTER TABLE "products" DROP COLUMN "price_export";
-  ALTER TABLE "products" DROP COLUMN "old_price_export";
-  ALTER TABLE "products" DROP COLUMN "price_from_export";
-  ALTER TABLE "courses" DROP COLUMN "price_export";
-  ALTER TABLE "courses" DROP COLUMN "old_price_export";
-  ALTER TABLE "settings" DROP COLUMN "export_currency";
-  ALTER TABLE "settings" DROP COLUMN "export_rate";
-  DROP TYPE "public"."enum_settings_export_currency";`)
+    ALTER TYPE "public"."enum_orders_delivery_method" ADD VALUE IF NOT EXISTS 'custom';
+    ALTER TYPE "public"."enum_customers_delivery_method" ADD VALUE IF NOT EXISTS 'custom';`)
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
-  await db.execute(sql`
-   CREATE TYPE "public"."enum_settings_export_currency" AS ENUM('USD', 'EUR');
-  ALTER TABLE "orders" ALTER COLUMN "delivery_method" SET DATA TYPE text;
-  DROP TYPE "public"."enum_orders_delivery_method";
-  CREATE TYPE "public"."enum_orders_delivery_method" AS ENUM('np_branch', 'np_locker', 'np_courier', 'ukrposhta', 'international');
-  ALTER TABLE "orders" ALTER COLUMN "delivery_method" SET DATA TYPE "public"."enum_orders_delivery_method" USING "delivery_method"::"public"."enum_orders_delivery_method";
-  ALTER TABLE "customers" ALTER COLUMN "delivery_method" SET DATA TYPE text;
-  DROP TYPE "public"."enum_customers_delivery_method";
-  CREATE TYPE "public"."enum_customers_delivery_method" AS ENUM('np_branch', 'np_locker', 'np_courier', 'ukrposhta', 'international');
-  ALTER TABLE "customers" ALTER COLUMN "delivery_method" SET DATA TYPE "public"."enum_customers_delivery_method" USING "delivery_method"::"public"."enum_customers_delivery_method";
-  ALTER TABLE "products_variants" ADD COLUMN "price_export" numeric;
-  ALTER TABLE "products" ADD COLUMN "price_export" numeric;
-  ALTER TABLE "products" ADD COLUMN "old_price_export" numeric;
-  ALTER TABLE "products" ADD COLUMN "price_from_export" numeric;
-  ALTER TABLE "courses" ADD COLUMN "price_export" numeric;
-  ALTER TABLE "courses" ADD COLUMN "old_price_export" numeric;
-  ALTER TABLE "settings" ADD COLUMN "export_currency" "enum_settings_export_currency" DEFAULT 'USD';
-  ALTER TABLE "settings" ADD COLUMN "export_rate" numeric;
-  CREATE INDEX "products_price_from_export_idx" ON "products" USING btree ("price_from_export");`)
+export async function down(_args: MigrateDownArgs): Promise<void> {
+  /*
+    Назад не відкочуємо. Прибрати значення з переліку в PostgreSQL не можна
+    інакше, ніж перестворивши тип, а це впаде на першому ж замовленні, яке цей
+    спосіб уже використало. Зайве значення в переліку нікому не заважає.
+  */
 }
