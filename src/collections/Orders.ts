@@ -158,19 +158,22 @@ export const Orders: CollectionConfig = {
         {
           type: 'row',
           fields: [
+            { name: 'deliveryCity', type: 'text', label: 'Місто', admin: { width: '40%' } },
             {
-              name: 'deliveryCountry',
+              name: 'deliveryBranch',
               type: 'text',
-              label: 'Країна',
-              admin: { width: '20%', description: 'Тільки для доставки за кордон.' },
+              label: 'Відділення / адреса',
+              admin: {
+                width: '40%',
+                description:
+                  'Для доставки за кордон сюди приходить уся адреса одним рядком, разом із країною та індексом — її пишуть у вільній формі.',
+              },
             },
-            { name: 'deliveryCity', type: 'text', label: 'Місто', admin: { width: '35%' } },
-            { name: 'deliveryBranch', type: 'text', label: 'Відділення / адреса', admin: { width: '30%' } },
             {
               name: 'deliveryPostcode',
               type: 'text',
               label: 'Індекс',
-              admin: { width: '15%', description: 'Укрпошта й закордон.' },
+              admin: { width: '20%', description: 'Тільки для Укрпошти.' },
             },
           ],
         },

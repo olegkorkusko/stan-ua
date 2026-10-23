@@ -28,6 +28,7 @@ import * as migration_20261021_124302_price_from_export from './20261021_124302_
 import * as migration_20261021_130500_backfill_price_from_export from './20261021_130500_backfill_price_from_export';
 import * as migration_20261021_142402_course_old_price_export from './20261021_142402_course_old_price_export';
 import * as migration_20261021_143408_product_old_price_export from './20261021_143408_product_old_price_export';
+import * as migration_20261023_165543_drop_delivery_country from './20261023_165543_drop_delivery_country';
 
 export const migrations = [
   {
@@ -178,6 +179,11 @@ export const migrations = [
   {
     up: migration_20261021_143408_product_old_price_export.up,
     down: migration_20261021_143408_product_old_price_export.down,
-    name: '20261021_143408_product_old_price_export'
+    name: '20261021_143408_product_old_price_export',
+  },
+  {
+    up: migration_20261023_165543_drop_delivery_country.up,
+    down: migration_20261023_165543_drop_delivery_country.down,
+    name: '20261023_165543_drop_delivery_country'
   },
 ];

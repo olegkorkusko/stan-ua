@@ -96,9 +96,9 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
     Пошти тут мовчить так само, як і для Укрпошти, а адреса пишеться вручну.
   */
   const isIntl = form.deliveryMethod === 'international'
+  // Довідник Нової Пошти мовчить і для Укрпошти, і для закордону: там адресу
+  // пишуть руками.
   const isPlainAddress = isUkrposhta || isIntl
-
-  const [country, setCountry] = useState('')
 
   const cities = useSuggestions('city', cityQuery, undefined, !isPlainAddress)
   const branches = useSuggestions('branch', branchQuery, city.ref, !isPlainAddress)
@@ -145,10 +145,9 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
           // й блокувальників не залежить.
           ...rememberSource(),
           paymentMethod: 'card',
-          deliveryCity: hasPhysical ? city.label || cityQuery : undefined,
           deliveryBranch: hasPhysical ? branch || branchQuery : undefined,
-          deliveryPostcode: hasPhysical && isPlainAddress ? postcode : undefined,
-          deliveryCountry: hasPhysical && isIntl ? country.trim() : undefined,
+          deliveryCity: hasPhysical && !isIntl ? city.label || cityQuery : undefined,
+          deliveryPostcode: hasPhysical && isUkrposhta ? postcode : undefined,
           items: items.map((item) => ({
             kind: item.kind,
             id: item.id,
@@ -278,16 +277,33 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
             </div>
 
             <div className="mt-4 grid gap-3">
-              {isIntl && (
-                <input
-                  className="field"
-                  placeholder={t.country}
-                  autoComplete="country-name"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                />
-              )}
+              {/*
+                За кордон — одне поле замість чотирьох.
 
+                Довідника Нової Пошти там немає, а розкладати адресу на країну,
+                місто, вулицю й індекс безглуздо: формати надто різні («00-001»
+                у Польщі, «SW1A 1AA» у Британії), і кожне окреме поле — це ще
+                один привід не дооформити замовлення. Власниця відправляє
+                сама, їй потрібен рядок, який можна переписати на посилку.
+              */}
+              {isIntl ? (
+                <div>
+                  <label htmlFor="delivery-address" className="sr-only">
+                    {t.fullAddress}
+                  </label>
+                  <textarea
+                    id="delivery-address"
+                    className="field"
+                    rows={3}
+                    placeholder={t.fullAddress}
+                    autoComplete="street-address"
+                    value={branchQuery}
+                    onChange={(e) => setBranchQuery(e.target.value)}
+                  />
+                  <p className="mt-1.5 text-xs text-muted">{t.fullAddressHint}</p>
+                </div>
+              ) : (
+                <>
               <Suggest
                 placeholder={t.city}
                 value={cityQuery}
@@ -318,7 +334,7 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
                 }}
                 onPick={(item) => setBranch(item.label)}
               />
-              {isPlainAddress && (
+              {isUkrposhta && (
                 <div>
                   {/*
                     Український індекс — рівно п'ять цифр, і ми їх так і
@@ -329,20 +345,16 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
                   <input
                     className="field"
                     placeholder={t.postcode}
-                    inputMode={isIntl ? 'text' : 'numeric'}
-                    maxLength={isIntl ? 12 : 5}
+                    inputMode="numeric"
+                    maxLength={5}
                     autoComplete="postal-code"
                     value={postcode}
-                    onChange={(e) =>
-                      setPostcode(
-                        isIntl ? e.target.value.slice(0, 12) : e.target.value.replace(/\D/g, '').slice(0, 5),
-                      )
-                    }
+                    onChange={(e) => setPostcode(e.target.value.replace(/\D/g, '').slice(0, 5))}
                   />
-                  <p className="mt-1.5 text-xs text-muted">
-                    {isIntl ? t.postcodeHintIntl : t.postcodeHint}
-                  </p>
+                  <p className="mt-1.5 text-xs text-muted">{t.postcodeHint}</p>
                 </div>
+              )}
+                </>
               )}
             </div>
 

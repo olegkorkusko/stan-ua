@@ -26,7 +26,6 @@ type Body = {
   deliveryCity?: string
   deliveryBranch?: string
   deliveryPostcode?: string
-  deliveryCountry?: string
   comment?: string
   newsletter?: boolean
   paymentMethod: 'card'
@@ -78,7 +77,19 @@ export const POST = async (request: Request) => {
       return NextResponse.json({ error: 'Оберіть спосіб доставки' }, { status: 400 })
     }
 
-    if (hasPhysical && (!body.deliveryCity?.trim() || !body.deliveryBranch?.trim())) {
+    /*
+      Закордонна адреса — одним рядком, і це єдине, що ми від неї вимагаємо.
+
+      Розкладати її на місто, вулицю й індекс не можна: формати різні
+      («00-001» у Польщі, «SW1A 1AA» у Британії, «K1A 0B1» у Канаді), а
+      український шаблон на п'ять цифр відкинув би їх усі. Власниця відправляє
+      посилку сама, їй потрібен рядок, який можна переписати на бланк.
+    */
+    if (hasPhysical && isInternational(deliveryMethod)) {
+      if (!body.deliveryBranch?.trim()) {
+        return NextResponse.json({ error: 'Вкажіть адресу доставки' }, { status: 400 })
+      }
+    } else if (hasPhysical && (!body.deliveryCity?.trim() || !body.deliveryBranch?.trim())) {
       return NextResponse.json({ error: 'Вкажіть місто й відділення' }, { status: 400 })
     }
 
@@ -86,20 +97,6 @@ export const POST = async (request: Request) => {
     // посилку не оформити, тож просимо одразу, а не листуванням потім.
     if (hasPhysical && deliveryMethod === 'ukrposhta' && !/^\d{5}$/.test(body.deliveryPostcode ?? '')) {
       return NextResponse.json({ error: 'Вкажіть поштовий індекс — пʼять цифр' }, { status: 400 })
-    }
-
-    if (hasPhysical && isInternational(deliveryMethod)) {
-      if (!body.deliveryCountry?.trim()) {
-        return NextResponse.json({ error: 'Вкажіть країну' }, { status: 400 })
-      }
-      /*
-        Індекс просимо, але формат не перевіряємо: польський «00-001»,
-        британський «SW1A 1AA» і канадський «K1A 0B1» не зводяться до одного
-        шаблону, а український на п'ять цифр відкинув би їх усі.
-      */
-      if (!body.deliveryPostcode?.trim()) {
-        return NextResponse.json({ error: 'Вкажіть поштовий індекс' }, { status: 400 })
-      }
     }
 
     const subtotal = lines.reduce((sum, line) => sum + line.price * line.quantity, 0)
@@ -137,11 +134,7 @@ export const POST = async (request: Request) => {
         deliveryMethod: hasPhysical ? deliveryMethod : undefined,
         deliveryCity: body.deliveryCity,
         deliveryBranch: body.deliveryBranch,
-        deliveryCountry: isInternational(deliveryMethod) ? body.deliveryCountry?.trim() : undefined,
-        deliveryPostcode:
-          deliveryMethod === 'ukrposhta' || isInternational(deliveryMethod)
-            ? body.deliveryPostcode
-            : undefined,
+        deliveryPostcode: deliveryMethod === 'ukrposhta' ? body.deliveryPostcode : undefined,
         comment: body.comment,
         // Згода на розсилку живе в замовленні, бо покупця ще немає: його
         // заводить fulfillOrder уже після підтвердженої оплати.

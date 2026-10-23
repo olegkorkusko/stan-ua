@@ -343,9 +343,9 @@ type Dictionary = {
     address: string
     postcode: string
     postcodeHint: string
-    /** Доставка за кордон: країну довідник не підказує, пишуть руками. */
-    country: string
-    postcodeHintIntl: string
+    /** Доставка за кордон: уся адреса одним полем, довідника для неї немає. */
+    fullAddress: string
+    fullAddressHint: string
     deliveryNote: string
     payment: string
     card: string
@@ -721,8 +721,8 @@ const uk: Dictionary = {
     address: 'Вулиця, будинок, квартира',
     postcode: 'Поштовий індекс',
     postcodeHint: "П'ять цифр — індекс відділення Укрпошти за адресою.",
-    country: 'Країна',
-    postcodeHintIntl: 'Поштовий індекс у форматі вашої країни.',
+    fullAddress: 'Адреса доставки',
+    fullAddressHint: 'Країна, місто, вулиця, будинок, квартира та поштовий індекс — усе в одному полі.',
     deliveryNote: 'Доставка за тарифами перевізника.',
     payment: 'Оплата',
     card: 'Карткою онлайн · Apple Pay · Google Pay',
@@ -1250,8 +1250,8 @@ const en: Dictionary = {
     address: 'Street, building, apartment',
     postcode: 'Postcode',
     postcodeHint: 'Five digits — the Ukrposhta postcode for this address.',
-    country: 'Country',
-    postcodeHintIntl: 'Postcode in your country format.',
+    fullAddress: 'Delivery address',
+    fullAddressHint: 'Country, city, street, building, apartment and postcode — all in one field.',
     deliveryNote: 'Shipping is charged at the carrier rate.',
     payment: 'Payment',
     card: 'Card online · Apple Pay · Google Pay',

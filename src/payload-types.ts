@@ -584,14 +584,13 @@ export interface Order {
   customerPhone: string;
   customerEmail: string;
   deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'international') | null;
-  /**
-   * Тільки для доставки за кордон.
-   */
-  deliveryCountry?: string | null;
   deliveryCity?: string | null;
+  /**
+   * Для доставки за кордон сюди приходить уся адреса одним рядком, разом із країною та індексом — її пишуть у вільній формі.
+   */
   deliveryBranch?: string | null;
   /**
-   * Укрпошта й закордон.
+   * Тільки для Укрпошти.
    */
   deliveryPostcode?: string | null;
   comment?: string | null;
@@ -1215,7 +1214,6 @@ export interface OrdersSelect<T extends boolean = true> {
   customerPhone?: T;
   customerEmail?: T;
   deliveryMethod?: T;
-  deliveryCountry?: T;
   deliveryCity?: T;
   deliveryBranch?: T;
   deliveryPostcode?: T;
