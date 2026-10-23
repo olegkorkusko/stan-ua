@@ -331,6 +331,9 @@ type Dictionary = {
     address: string
     postcode: string
     postcodeHint: string
+    /** «Інша адреса»: довідника немає, пишуть усе одним рядком. */
+    fullAddress: string
+    fullAddressHint: string
     deliveryNote: string
     payment: string
     card: string
@@ -703,6 +706,8 @@ const uk: Dictionary = {
     address: 'Вулиця, будинок, квартира',
     postcode: 'Поштовий індекс',
     postcodeHint: "П'ять цифр — індекс відділення Укрпошти за адресою.",
+    fullAddress: 'Адреса доставки',
+    fullAddressHint: 'Місто, вулиця, будинок, квартира та поштовий індекс — усе в одному полі. Для доставки за кордон вкажіть і країну.',
     deliveryNote: 'Доставка за тарифами перевізника.',
     payment: 'Оплата',
     card: 'Карткою онлайн · Apple Pay · Google Pay',
@@ -758,6 +763,7 @@ const uk: Dictionary = {
         np_locker: 'Нова Пошта — поштомат',
         np_courier: 'Нова Пошта — курʼєр',
         ukrposhta: 'Укрпошта',
+        custom: 'Інша адреса',
       },
       payments: { card: 'Карткою онлайн' },
     },
@@ -1226,6 +1232,8 @@ const en: Dictionary = {
     address: 'Street, building, apartment',
     postcode: 'Postcode',
     postcodeHint: 'Five digits — the Ukrposhta postcode for this address.',
+    fullAddress: 'Delivery address',
+    fullAddressHint: 'City, street, building, apartment and postcode — all in one field. For delivery abroad add the country too.',
     deliveryNote: 'Shipping is charged at the carrier rate.',
     payment: 'Payment',
     card: 'Card online · Apple Pay · Google Pay',
@@ -1280,6 +1288,7 @@ const en: Dictionary = {
         np_locker: 'Nova Poshta - locker',
         np_courier: 'Nova Poshta - courier',
         ukrposhta: 'Ukrposhta',
+        custom: 'Other address',
       },
       payments: { card: 'Card online' },
     },

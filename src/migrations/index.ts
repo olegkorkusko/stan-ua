@@ -24,6 +24,7 @@ import * as migration_20261013_172201_settings_whatsapp from './20261013_172201_
 import * as migration_20261014_153620_courses_suggest_in_cart from './20261014_153620_courses_suggest_in_cart';
 import * as migration_20261015_133717_order_source from './20261015_133717_order_source';
 import * as migration_20261023_171945_button_labels from './20261023_171945_button_labels';
+import * as migration_20261023_175717_custom_delivery from './20261023_175717_custom_delivery';
 
 export const migrations = [
   {
@@ -149,11 +150,16 @@ export const migrations = [
   {
     up: migration_20261015_133717_order_source.up,
     down: migration_20261015_133717_order_source.down,
-    name: '20261015_133717_order_source'
+    name: '20261015_133717_order_source',
   },
   {
     up: migration_20261023_171945_button_labels.up,
     down: migration_20261023_171945_button_labels.down,
-    name: '20261023_171945_button_labels'
+    name: '20261023_171945_button_labels',
+  },
+  {
+    up: migration_20261023_175717_custom_delivery.up,
+    down: migration_20261023_175717_custom_delivery.down,
+    name: '20261023_175717_custom_delivery'
   },
 ];

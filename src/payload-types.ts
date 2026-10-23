@@ -559,7 +559,7 @@ export interface Order {
   customerName: string;
   customerPhone: string;
   customerEmail: string;
-  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta') | null;
+  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'custom') | null;
   deliveryCity?: string | null;
   deliveryBranch?: string | null;
   /**
@@ -614,7 +614,7 @@ export interface Customer {
         id?: string | null;
       }[]
     | null;
-  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta') | null;
+  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'custom') | null;
   deliveryCity?: string | null;
   deliveryBranch?: string | null;
   paymentMethod?: ('card' | 'cod') | null;

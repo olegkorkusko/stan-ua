@@ -10,8 +10,18 @@
   свої — двомовні — зі словника `i18n`, ключами за цими ж значеннями.
 */
 
-export const DELIVERY_METHODS = ['np_branch', 'np_locker', 'np_courier', 'ukrposhta'] as const
+/*
+  `custom` — коли адреси немає в довіднику Нової Пошти: хутір без відділення,
+  гуртожиток, адреса за кордоном. Покупець пише її вільним рядком, а власниця
+  домовляється про спосіб окремо. Без цього такі замовлення просто не
+  оформлювались: форма вимагала обрати місто зі списку.
+*/
+export const DELIVERY_METHODS = ['np_branch', 'np_locker', 'np_courier', 'ukrposhta', 'custom'] as const
 export type DeliveryMethod = (typeof DELIVERY_METHODS)[number]
+
+/** Адреса вільним рядком: довідника немає, формат не перевіряємо. */
+export const isCustomAddress = (method?: DeliveryMethod | string | null): boolean =>
+  method === 'custom'
 
 /*
   Оплата лише карткою. Накладений платіж прибрано: ті гроші збирає Нова Пошта
@@ -27,6 +37,7 @@ export const deliveryMethodOptions: { label: string; value: DeliveryMethod }[] =
   { label: 'Нова Пошта — поштомат', value: 'np_locker' },
   { label: "Нова Пошта — кур'єр", value: 'np_courier' },
   { label: 'Укрпошта', value: 'ukrposhta' },
+  { label: 'Інша адреса', value: 'custom' },
 ]
 
 export const paymentMethodOptions: { label: string; value: PaymentMethod }[] = [
@@ -84,7 +95,10 @@ export const deliveryLine = (order: {
   if (!method) return null
 
   const label = deliveryMethodOptions.find((option) => option.value === method)?.label ?? method
-  const where = [order.deliveryCity?.trim(), order.deliveryBranch?.trim()].filter(Boolean).join(', ')
+  // Для «іншої адреси» міста немає — усе лежить одним рядком у deliveryBranch.
+  const where = [isCustomAddress(method) ? undefined : order.deliveryCity?.trim(), order.deliveryBranch?.trim()]
+    .filter(Boolean)
+    .join(', ')
   const postcode = method === 'ukrposhta' ? order.deliveryPostcode?.trim() : undefined
 
   return [label, where, postcode].filter(Boolean).join(' · ')

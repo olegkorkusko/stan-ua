@@ -9,7 +9,7 @@ import {
   priceCart,
   type CartLineInput,
 } from '@/lib/orders'
-import { asDeliveryMethod, deliveryLine } from '@/lib/delivery'
+import { asDeliveryMethod, deliveryLine, isCustomAddress } from '@/lib/delivery'
 import { formatPrice } from '@/lib/format'
 import { notifyAdmin } from '@/lib/telegram'
 import { buildPurchaseForm, isConfigured } from '@/lib/wayforpay'
@@ -66,7 +66,17 @@ export const POST = async (request: Request) => {
       return NextResponse.json({ error: 'Оберіть спосіб доставки' }, { status: 400 })
     }
 
-    if (hasPhysical && (!body.deliveryCity?.trim() || !body.deliveryBranch?.trim())) {
+    /*
+      «Інша адреса» перевіряється інакше: там немає ні міста зі списку, ні
+      індексу — лише рядок, який покупець написав сам. Вимагати від нього
+      місто окремо означало б не дати оформити саме те замовлення, заради
+      якого цей спосіб і з'явився.
+    */
+    if (hasPhysical && isCustomAddress(deliveryMethod)) {
+      if (!body.deliveryBranch?.trim()) {
+        return NextResponse.json({ error: 'Вкажіть адресу доставки' }, { status: 400 })
+      }
+    } else if (hasPhysical && (!body.deliveryCity?.trim() || !body.deliveryBranch?.trim())) {
       return NextResponse.json({ error: 'Вкажіть місто й відділення' }, { status: 400 })
     }
 
