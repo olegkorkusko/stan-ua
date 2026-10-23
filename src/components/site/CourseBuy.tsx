@@ -14,6 +14,8 @@ type Props = {
   href: string
   price: number
   oldPrice?: number | null
+  /** Напис кнопки з адмінки. Порожньо — типовий зі словника. */
+  buyLabel?: string | null
   image?: string
   /**
    * Серце «Обране» — стає в один рядок із кнопкою купівлі, як на сторінці
@@ -33,7 +35,7 @@ type Props = {
  * решту курсів, ні зрозуміти, що сталося. Рішення піти на оформлення має
  * лишатися за нею.
  */
-export const CourseBuy = ({ courseId, title, href, price, oldPrice, image, save }: Props) => {
+export const CourseBuy = ({ courseId, title, href, price, oldPrice, image, save, buyLabel }: Props) => {
   const { add } = useCart()
   const t = dictionary(useLocale()).courses
 
@@ -61,7 +63,7 @@ export const CourseBuy = ({ courseId, title, href, price, oldPrice, image, save 
           }}
           className="btn btn-primary w-full flex-1"
         >
-          {t.buy}
+          {buyLabel?.trim() || t.buy}
         </button>
         {save}
       </div>

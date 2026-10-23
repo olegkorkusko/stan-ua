@@ -16,6 +16,7 @@ import { plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
+import { siteSettings } from '@/lib/settings'
 import { payloadClient } from '@/lib/payload'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
@@ -50,6 +51,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
 
   const payload = await payloadClient()
   const locale = await getLocale()
+  const settings = await siteSettings(locale)
   const t = dictionary(locale)
   const reviews = await payload.find({
     locale,
@@ -183,6 +185,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
                 href={`/courses/${directionSlug}/${course.slug}`}
                 price={course.price}
                 oldPrice={course.oldPrice}
+                buyLabel={settings?.buttonCourse}
                 image={imageUrl(course.cover, 'card') ?? undefined}
                 save={
                   <SaveButton

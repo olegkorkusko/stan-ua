@@ -8,6 +8,7 @@ import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 import { Suggest, useSuggestions } from '@/components/site/AddressSuggest'
 import { useLocale } from '@/components/site/LocaleLink'
+import { DELIVERY_METHODS } from '@/lib/delivery'
 import { dictionary } from '@/lib/i18n'
 import { rememberSource } from '@/lib/visit-source'
 
@@ -20,13 +21,6 @@ const readCookie = (name: string): string | undefined =>
     .split('; ')
     .find((row) => row.startsWith(`${name}=`))
     ?.slice(name.length + 1)
-
-const DELIVERY = [
-  { value: 'np_branch', label: 'Нова Пошта — відділення' },
-  { value: 'np_locker', label: 'Нова Пошта — поштомат' },
-  { value: 'np_courier', label: "Нова Пошта — кур'єр до дверей" },
-  { value: 'ukrposhta', label: 'Укрпошта' },
-]
 
 /**
  * Те, що покупець уже вказував у кабінеті. Підставляється у форму, щоб не
@@ -46,6 +40,12 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
   const { items, total, clear } = useCart()
   const locale = useLocale()
   const t = dictionary(locale).checkout
+  /*
+    Підписи способів доставки — зі словника, а не списком у цьому файлі.
+    Захардкоджені українською, вони лишались українськими й на англійській
+    версії. Тепер обидві мови беруться звідти ж, звідки їх бере кабінет.
+  */
+  const methodLabels = dictionary(locale).account.delivery.methods
   const formRef = useRef<HTMLFormElement>(null)
 
   const [form, setForm] = useState({
@@ -86,9 +86,15 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
   // Укрпошта має власну адресну логіку: місто, вулиця й індекс, без довідника
   // відділень Нової Пошти.
   const isUkrposhta = form.deliveryMethod === 'ukrposhta'
+  /*
+    «Інша адреса» — довідник Нової Пошти мовчить, покупець пише все сам.
+    Те саме поле `deliveryBranch`, що й для решти способів: адреса має
+    приїхати власниці одним рядком, яким він і є.
+  */
+  const isCustom = form.deliveryMethod === 'custom'
 
-  const cities = useSuggestions('city', cityQuery, undefined, !isUkrposhta)
-  const branches = useSuggestions('branch', branchQuery, city.ref, !isUkrposhta)
+  const cities = useSuggestions('city', cityQuery, undefined, !isUkrposhta && !isCustom)
+  const branches = useSuggestions('branch', branchQuery, city.ref, !isUkrposhta && !isCustom)
 
   const set = (key: keyof typeof form) => (value: string) => setForm((f) => ({ ...f, [key]: value }))
 
@@ -132,8 +138,8 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
           // й блокувальників не залежить.
           ...rememberSource(),
           paymentMethod: 'card',
-          deliveryCity: hasPhysical ? city.label || cityQuery : undefined,
           deliveryBranch: hasPhysical ? branch || branchQuery : undefined,
+          deliveryCity: hasPhysical && !isCustom ? city.label || cityQuery : undefined,
           deliveryPostcode: hasPhysical && isUkrposhta ? postcode : undefined,
           items: items.map((item) => ({
             kind: item.kind,
@@ -243,27 +249,51 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
           <section>
             <p className="label">{t.delivery}</p>
             <div className="mt-4 space-y-2">
-              {DELIVERY.map((option) => (
+              {DELIVERY_METHODS.map((option) => (
                 <label
-                  key={option.value}
+                  key={option}
                   className={`flex cursor-pointer items-center gap-3 border px-3.5 py-3 text-sm transition-colors ${
-                    form.deliveryMethod === option.value ? 'border-ink' : 'border-flax hover:border-muted'
+                    form.deliveryMethod === option ? 'border-ink' : 'border-flax hover:border-muted'
                   }`}
                 >
                   <input
                     type="radio"
                     name="delivery"
-                    value={option.value}
-                    checked={form.deliveryMethod === option.value}
+                    value={option}
+                    checked={form.deliveryMethod === option}
                     onChange={(e) => set('deliveryMethod')(e.target.value)}
                     className="accent-ink"
                   />
-                  {option.label}
+                  {methodLabels[option]}
                 </label>
               ))}
             </div>
 
             <div className="mt-4 grid gap-3">
+              {isCustom ? (
+                <div>
+                  <label htmlFor="delivery-address" className="sr-only">
+                    {t.fullAddress}
+                  </label>
+                  {/*
+                    Одне поле замість міста, вулиці й індексу. Розкладати його
+                    на частини нема сенсу: сюди пишуть якраз те, чого немає в
+                    довіднику, і формат наперед невідомий — від хутора без
+                    відділення до закордонної адреси.
+                  */}
+                  <textarea
+                    id="delivery-address"
+                    className="field"
+                    rows={3}
+                    placeholder={t.fullAddress}
+                    autoComplete="street-address"
+                    value={branchQuery}
+                    onChange={(e) => setBranchQuery(e.target.value)}
+                  />
+                  <p className="mt-1.5 text-xs text-muted">{t.fullAddressHint}</p>
+                </div>
+              ) : (
+                <>
               <Suggest
                 placeholder={t.city}
                 value={cityQuery}
@@ -306,6 +336,8 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
                   />
                   <p className="mt-1.5 text-xs text-muted">{t.postcodeHint}</p>
                 </div>
+              )}
+                </>
               )}
             </div>
 
