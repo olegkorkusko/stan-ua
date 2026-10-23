@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import type { Payload } from 'payload'
 
 import { formatPrice } from '@/lib/format'
+import { deliveryLine } from '@/lib/delivery'
 import { sendPurchase } from '@/lib/meta'
 import { createCourseInvite, notifyAdmin } from '@/lib/telegram'
 
@@ -422,8 +423,20 @@ export const fulfillOrder = async (
     Telegram бачать не всі й не завжди — звук буває вимкнений, а замовлення
     треба зібрати сьогодні; порожня пошта означає «досить Telegram».
   */
+  // Куди відправляти — у самому повідомленні, щоб не йти по це в адмінку.
+  const shipping = deliveryLine(order)
+
   await notifyAdmin(
-    `<b>Оплачено ${order.orderNumber}</b>\n${summary}\n\n${formatPrice(order.total)}\n${order.customerName}, ${order.customerPhone}${alarm}`,
+    [
+      `<b>Оплачено ${order.orderNumber}</b>`,
+      summary,
+      '',
+      formatPrice(order.total),
+      `${order.customerName}, ${order.customerPhone}`,
+      shipping,
+    ]
+      .filter((line) => line !== null && line !== undefined)
+      .join('\n') + alarm,
     settings?.telegramNotify,
   )
   const notifyTo = settings?.orderNotifyEmail
@@ -440,6 +453,7 @@ export const fulfillOrder = async (
           `${formatPrice(order.total)}`,
           `${order.customerName}, ${order.customerPhone}`,
           order.customerEmail,
+          shipping ? `\n${shipping}` : '',
           undelivered.length ? `\nУВАГА: доступ не видано — ${undelivered.join(', ')}` : '',
         ]
           .filter(Boolean)

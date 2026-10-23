@@ -61,3 +61,31 @@ export const asPaymentMethod = (value: unknown): PaymentMethod | undefined =>
  * кошику бракує 440 ₴.
  */
 export const FREE_DELIVERY_FROM = 2500
+
+/*
+  Рядок доставки для службових повідомлень — у Telegram власниці й у лист.
+
+  Доти в повідомленні були лише товар, сума й контакти: куди відправляти,
+  доводилось дивитись в адмінці. Зібрати посилку з самого повідомлення було
+  не можна, і за кожним замовленням доводилось іти в браузер.
+
+  Складається тут, а не в кожному з трьох повідомлень окремо (Telegram про
+  неоплачене, Telegram про оплачене, лист власниці): вони різні, а адреса в
+  них має бути однакова.
+*/
+export const deliveryLine = (order: {
+  deliveryMethod?: string | null
+  deliveryCity?: string | null
+  deliveryBranch?: string | null
+  deliveryPostcode?: string | null
+}): string | null => {
+  const method = order.deliveryMethod
+  // Цифрове замовлення — самі курси, відправляти нічого.
+  if (!method) return null
+
+  const label = deliveryMethodOptions.find((option) => option.value === method)?.label ?? method
+  const where = [order.deliveryCity?.trim(), order.deliveryBranch?.trim()].filter(Boolean).join(', ')
+  const postcode = method === 'ukrposhta' ? order.deliveryPostcode?.trim() : undefined
+
+  return [label, where, postcode].filter(Boolean).join(' · ')
+}

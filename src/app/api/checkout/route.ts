@@ -9,7 +9,7 @@ import {
   priceCart,
   type CartLineInput,
 } from '@/lib/orders'
-import { asDeliveryMethod } from '@/lib/delivery'
+import { asDeliveryMethod, deliveryLine } from '@/lib/delivery'
 import { formatPrice } from '@/lib/format'
 import { notifyAdmin } from '@/lib/telegram'
 import { buildPurchaseForm, isConfigured } from '@/lib/wayforpay'
@@ -155,6 +155,13 @@ export const POST = async (request: Request) => {
         .map((line) => `• ${line.title}${line.quantity > 1 ? ` × ${line.quantity}` : ''}`)
         .join('\n')
 
+      const shipping = deliveryLine({
+        deliveryMethod,
+        deliveryCity: body.deliveryCity,
+        deliveryBranch: body.deliveryBranch,
+        deliveryPostcode: body.deliveryPostcode,
+      })
+
       const text = [
         `Нове замовлення ${orderNumber} — ОЧІКУЄ ОПЛАТИ`,
         '',
@@ -163,6 +170,7 @@ export const POST = async (request: Request) => {
         `${formatPrice(total)}`,
         `${body.customerName.trim()}, ${body.customerPhone.trim()}`,
         body.customerEmail.trim(),
+        ...(shipping ? ['', shipping] : []),
         '',
         // Порада залежить від того, чому замовлення неоплачене.
         isConfigured()
