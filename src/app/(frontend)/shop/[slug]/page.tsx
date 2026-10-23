@@ -193,7 +193,19 @@ const ProductPage = async ({ params }: { params: Params }) => {
         className="mx-auto flex w-full max-w-360 flex-col gap-9 pb-14 md:pt-8.5 md:pb-30"
       >
         {/* Обраний колір спільний для слайдера й свотчів — див. ProductColor. */}
-        <ProductColorProvider initial={variants.find((v) => v.colorId)?.colorId}>
+        {/*
+          Першим обираємо колір, який Є в наявності, і лише якщо таких немає —
+          найперший за списком. Доти бралася просто перша варіація з адмінки:
+          у хустини це «Кораловий» з нульовим залишком, і товар із двома
+          наявними кольорами зустрічав покупця написом «під замовлення».
+          Кружечки тепер теж сортуються наявними вперед — вибір і перший
+          кружечок мусять збігатися.
+        */}
+        <ProductColorProvider
+          initial={
+            (variants.find((v) => v.colorId && v.stock > 0) ?? variants.find((v) => v.colorId))?.colorId
+          }
+        >
         <div data-figma-node="72:1299" className="flex flex-col gap-10 lg:flex-row lg:gap-0">
           {/* Ліва колонка — 118:2365. Галерея з активним фото + індикатором.
               Рівно половина (720 із 1440), тому w-1/2, а не flex-1: із flex-1
@@ -267,6 +279,8 @@ const ProductPage = async ({ params }: { params: Params }) => {
               title={product.title}
               slug={product.slug ?? ''}
               basePrice={product.price}
+              checkoutLabel={settings?.buttonInStock}
+              preorderLabel={settings?.buttonPreorder}
               baseStock={product.stock ?? 0}
               image={card.cover ?? undefined}
               variants={variants}

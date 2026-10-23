@@ -47,10 +47,26 @@ export const ProductCard = async ({
   const { cover, coverAlt, hover, video } = productCard(product)
   const t = dictionary(await getLocale()).product
 
-  const colors = (product.variants ?? [])
-    .map((variant) => (typeof variant.color === 'object' ? variant.color : null))
-    .filter((color): color is NonNullable<typeof color> => Boolean(color))
-    .filter((color, index, all) => all.findIndex((c) => c.id === color.id) === index)
+  /*
+    Наявні кольори — першими, як і на сторінці товару. На картці видно лише
+    три кружечки, і показувати в них те, чого немає, — найгірший з варіантів:
+    людина заходить саме по них.
+  */
+  const byColor = new Map<number | string, { id: number | string; title: string; hex?: string; available: boolean }>()
+  for (const variant of product.variants ?? []) {
+    const color = typeof variant.color === 'object' ? variant.color : null
+    if (!color) continue
+    const available = (variant.stock ?? 0) > 0
+    const known = byColor.get(color.id)
+    // Наявність збираємо з УСІХ варіацій кольору, а не з першої-ліпшої:
+    // червоний може закінчитись у розмірі S і лишатись у M.
+    if (known) {
+      if (available) known.available = true
+      continue
+    }
+    byColor.set(color.id, { id: color.id, title: color.title, hex: color.hex ?? undefined, available })
+  }
+  const colors = [...byColor.values()].sort((a, b) => Number(b.available) - Number(a.available))
 
   return (
     <article className="group relative flex flex-col gap-3 bg-[#F4F4F4] md:gap-[18px]">
