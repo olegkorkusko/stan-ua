@@ -5,7 +5,9 @@ import { LocaleLink as Link } from '@/components/site/LocaleLink'
 
 import { ClearCartOnPaid } from '@/components/site/ClearCartOnPaid'
 import { PurchaseTracking } from '@/components/site/PurchaseTracking'
+import { whatsappGroup } from '@/lib/course-access'
 import { getLocale } from '@/lib/locale'
+import { linkKind } from '@/lib/messengers'
 import { payloadClient } from '@/lib/payload'
 import type { Order } from '@/payload-types'
 
@@ -52,12 +54,21 @@ const courseInvites = async (
   const orderIdOf = (value: unknown) =>
     typeof value === 'object' && value !== null ? (value as { id?: number }).id : value
 
-  return (customer?.access ?? [])
-    .filter((item) => orderIdOf(item.relatedOrder) === order.id && item.telegramInviteLink)
-    .map((item) => ({
-      href: item.telegramInviteLink as string,
-      title: typeof item.course === 'object' ? (item.course?.title ?? '') : '',
-    }))
+  /*
+    Посилань на курс буває два: збережене в записі доступу (персональне
+    запрошення в Telegram або Canva) і група у WhatsApp із самого курсу — вона
+    одна для всіх, тож у записі її немає. Покупець іде туди, де він є.
+  */
+  return (customer?.access ?? []).flatMap((item) => {
+    if (orderIdOf(item.relatedOrder) !== order.id) return []
+    const course = typeof item.course === 'object' ? item.course : null
+    const title = course?.title ?? ''
+    const whatsapp = course ? whatsappGroup(course) : null
+
+    return [item.telegramInviteLink, whatsapp !== item.telegramInviteLink ? whatsapp : null]
+      .filter((href): href is string => Boolean(href))
+      .map((href) => ({ href, title }))
+  })
 }
 
 const ThanksPage = async ({ searchParams }: { searchParams: SearchParams }) => {
@@ -127,7 +138,9 @@ const ThanksPage = async ({ searchParams }: { searchParams: SearchParams }) => {
               rel="noreferrer"
               className="btn btn-primary"
             >
-              {invite.title ? `${t.account.openTelegram} · ${invite.title}` : t.account.openTelegram}
+              {invite.title
+                ? `${t.account.open[linkKind(invite.href)]} · ${invite.title}`
+                : t.account.open[linkKind(invite.href)]}
             </a>
           ))}
         </div>

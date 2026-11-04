@@ -12,17 +12,54 @@ import { Reviews } from '@/components/site/Reviews'
 import { MediaGallery } from '@/components/site/MediaGallery'
 import { SaveButton } from '@/components/site/SaveButton'
 import { viewerOwnsCourse } from '@/lib/access'
+import { whatsappGroup, withCanva, withTelegram } from '@/lib/course-access'
 import { plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { siteSettings } from '@/lib/settings'
 import { payloadClient } from '@/lib/payload'
+import type { Course } from '@/payload-types'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
 export const dynamic = 'force-dynamic'
 
 type Params = Promise<{ direction: string; course: string }>
+
+/*
+  «Що ви отримаєте» — з того, що в курсі СПРАВДІ заповнене, а не зі способу
+  видачі.
+
+  Способи складаються: під «Всі» буває і Telegram з Canva, і Canva з групою у
+  WhatsApp, і будь-яка інша пара. Поки тут стояла розвилка за accessType,
+  курсу без каналу сторінка все одно обіцяла «запрошення в Telegram-канал».
+*/
+const accessPromise = (course: Course): string => {
+  const parts = [
+    withTelegram.includes(course.accessType) && course.telegramChatId
+      ? 'персональне запрошення в закритий Telegram-канал курсу'
+      : null,
+    withCanva.includes(course.accessType) && course.canvaUrl
+      ? 'посилання на проєкт у Canva — з відео, схемами й рекомендаціями'
+      : null,
+    whatsappGroup(course) ? 'посилання на групу курсу у WhatsApp' : null,
+  ].filter(Boolean) as string[]
+
+  // Жодного способу — таке не публікується, лишається хіба в чернетці.
+  if (parts.length === 0) {
+    return 'Доступ приходить одразу після оплати: посилання прийде на пошту й лишиться у вашому кабінеті.'
+  }
+
+  // «а також», а не «і»: у переліку вже є тире й коми, і ще одне «і» злипається.
+  const list =
+    parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(', ')}, а також ${parts.at(-1)}`
+  const tail =
+    parts.length === 1
+      ? 'Посилання прийде на пошту й лишиться у вашому кабінеті'
+      : 'Посилання прийдуть на пошту й лишаться у вашому кабінеті'
+
+  return `Одразу після оплати ви отримаєте ${list}. ${tail} — доступ безтерміновий.`
+}
 
 const findCourse = async (slug: string) => {
   const payload = await payloadClient()
@@ -263,11 +300,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
           <div className="max-w-3xl border border-flax p-8">
             <p className="label">{t.courses.afterPayment}</p>
             <h2 className="mt-3 text-2xl">{t.courses.whatYouGet}</h2>
-            <p className="mt-4 text-sm leading-relaxed text-muted">
-              {course.accessType === 'canva'
-                ? 'Одразу після оплати відкриється посилання на проєкт із відео, схемами й рекомендаціями. Воно ж прийде на пошту й лишиться у вашому кабінеті.'
-                : 'Одразу після оплати ви отримаєте персональне запрошення в закритий Telegram-канал курсу. Посилання прийде на пошту й лишиться у вашому кабінеті — доступ безтерміновий.'}
-            </p>
+            <p className="mt-4 text-sm leading-relaxed text-muted">{accessPromise(course)}</p>
           </div>
         </section>
       </div>

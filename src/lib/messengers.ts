@@ -38,3 +38,15 @@ export const messengerLink = (
   // Telegram шукає за номером тільки з плюсом, WhatsApp — тільки без нього.
   return kind === 'telegram' ? `https://t.me/+${phone}` : `https://wa.me/${phone}`
 }
+
+/**
+ * Куди веде посилання на доступ — за самим посиланням, а не за полем.
+ *
+ * У записі доступу (`customers.access.telegramInviteLink`) лежить ОДНЕ
+ * посилання, і залежно від курсу це запрошення в Telegram, посилання на Canva
+ * або група у WhatsApp. Поле називається telegramInviteLink історично, тож
+ * кнопка над ним досі підписувалась «Відкрити в Telegram» — і на курсах із
+ * Canva це була неправда ще до WhatsApp.
+ */
+export const linkKind = (href: string): 'telegram' | 'whatsapp' | 'canva' =>
+  /whatsapp\.com|wa\.me/i.test(href) ? 'whatsapp' : /canva\./i.test(href) ? 'canva' : 'telegram'
