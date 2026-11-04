@@ -8,7 +8,6 @@ import { useEffect, useRef, useState } from 'react'
 import { CloseButton } from '@/components/site/CloseButton'
 import { LocaleLink as Link } from '@/components/site/LocaleLink'
 import { plural } from '@/lib/format'
-import { RegionSwitch } from '@/components/site/RegionSwitch'
 import { useMoney } from '@/providers/MoneyProvider'
 import { formatPrice } from '@/lib/format'
 import { dictionary, LOCALES, localePath, type Locale } from '@/lib/i18n'
@@ -266,9 +265,6 @@ export const Header = ({ locale, announcement, freeDeliveryFrom }: Props) => {
 
             <div className="flex flex-1 items-center justify-end gap-[18px]">
               <span className="hidden md:block">{languageSwitch}</span>
-              <span className="hidden md:block">
-                <RegionSwitch />
-              </span>
               <Link href="/search" aria-label={t.header.search} className="hidden md:block">
                 <Search strokeWidth={1.25} className="size-5" />
               </Link>
@@ -416,7 +412,6 @@ export const Header = ({ locale, announcement, freeDeliveryFrom }: Props) => {
 
         <div data-figma-node="302:4505" className="flex items-center gap-6 px-4 pt-8">
           <span data-figma-node="302:4506">{languageSwitch}</span>
-          <RegionSwitch />
           <Link
             href="/search"
             data-figma-node="302:4507"

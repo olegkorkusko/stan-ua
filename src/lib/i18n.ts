@@ -39,9 +39,6 @@ type Dictionary = {
     account: string
     cart: string
     home: string
-    /** Перемикач регіону доставки: від нього залежить ціна. */
-    shipTo: string
-    region: { ua: string; intl: string }
   }
   cart: {
     title: string
@@ -468,8 +465,6 @@ const uk: Dictionary = {
     account: 'Кабінет',
     cart: 'Кошик',
     home: 'STAN_UA — головна',
-    shipTo: 'Куди доставляти',
-    region: { ua: 'Україна', intl: 'За кордон' },
   },
   cart: {
     title: 'Кошик',
@@ -1001,8 +996,6 @@ const en: Dictionary = {
     account: 'Account',
     cart: 'Cart',
     home: 'MK — home',
-    shipTo: 'Ship to',
-    region: { ua: 'Ukraine', intl: 'Worldwide' },
   },
   cart: {
     title: 'Cart',
