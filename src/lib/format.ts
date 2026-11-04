@@ -10,21 +10,20 @@ import type { Money } from '@/lib/price'
   Другим аргументом приходить валюта показу — її дає moneyFor() з мови сайту й
   курсу в налаштуваннях. Без нього формат той самий, що був: гривні.
 
-  Копійки в чужій валюті лишаємо. «$12» замість «$12.34» виглядає як рівна
-  ціна, якою воно не є, а в банку покупець однаково побачить точну суму. Гривні
-  ж округлюємо: цін із копійками в магазині немає.
+  Округлюємо до цілого в обох валютах. Копійки тут нічого не уточнюють:
+  долари — це перерахунок гривневої ціни за курсом, який клієнтка вписує руками
+  й міняє раз на місяць, тож «$35.71» виглядає точніше, ніж воно є. Списується
+  все одно гривня, і точну суму покупець побачить у банку.
 */
 export const formatPrice = (value?: number | null, money?: Money | null): string => {
   if (typeof value !== 'number' || Number.isNaN(value)) return '—'
 
-  if (money) {
-    const converted = value / money.rate
-    return `${converted < 0 ? '-' : ''}${money.currency === 'EUR' ? '€' : '$'}${Math.abs(converted).toFixed(2)}`
-  }
+  const rounded = Math.round(money ? value / money.rate : value)
+  const grouped = String(Math.abs(rounded)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  const sign = rounded < 0 ? '-' : ''
 
-  const rounded = Math.round(value)
-  const grouped = String(Math.abs(rounded)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
-  return `${rounded < 0 ? '-' : ''}${grouped} ₴`
+  if (money) return `${sign}${money.currency === 'EUR' ? '€' : '$'}${grouped}`
+  return `${sign}${grouped} ₴`
 }
 
 /** «10 майстер-класів» / «11 майстер-класів» / «1 майстер-клас». */
