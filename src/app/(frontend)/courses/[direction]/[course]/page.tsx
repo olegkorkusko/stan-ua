@@ -18,6 +18,7 @@ import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { oldPriceFor, priceFor } from '@/lib/price'
 import { getPricing } from '@/lib/region.server'
+import { siteSettings } from '@/lib/settings'
 import { payloadClient } from '@/lib/payload'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
 
@@ -53,6 +54,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
   const payload = await payloadClient()
   const locale = await getLocale()
   const { region } = await getPricing()
+  const settings = await siteSettings(locale)
   const t = dictionary(locale)
   const reviews = await payload.find({
     locale,
@@ -186,6 +188,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
                 href={`/courses/${directionSlug}/${course.slug}`}
                 price={priceFor(course, region)}
                 oldPrice={oldPriceFor(course, region)}
+                buyLabel={settings?.buttonCourse}
                 image={imageUrl(course.cover, 'card') ?? undefined}
                 save={
                   <SaveButton

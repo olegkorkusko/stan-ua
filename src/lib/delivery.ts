@@ -11,16 +11,41 @@
 */
 
 /*
+  `custom` — коли адреси немає в довіднику Нової Пошти: хутір без відділення,
+  гуртожиток, незвична адреса. Покупець пише її вільним рядком, а власниця
+  домовляється про спосіб окремо. Без цього такі замовлення просто не
+  оформлювались: форма вимагала обрати місто зі списку.
+
   `international` — для покупців поза Україною. Перевізника не називаємо
   навмисно: відправляє власниця сама, чим зручніше на момент відправки, а
   пересилка вже закладена в закордонну ціну товару.
+
+  Так, обидва — це «адреса вільним рядком», і здається, що вистачило б одного.
+  Не вистачить: вибір `international` ВМИКАЄ закордонну ціну (checkout, route),
+  а `custom` лишає українську. Злити їх означало б або рахувати закордонну ціну
+  мешканцю хутора, або віддати товар за кордон за українською.
 */
-export const DELIVERY_METHODS = ['np_branch', 'np_locker', 'np_courier', 'ukrposhta', 'international'] as const
+export const DELIVERY_METHODS = [
+  'np_branch',
+  'np_locker',
+  'np_courier',
+  'ukrposhta',
+  'custom',
+  'international',
+] as const
 export type DeliveryMethod = (typeof DELIVERY_METHODS)[number]
+
+/** Адреса вільним рядком: довідника немає, формат не перевіряємо. */
+export const isCustomAddress = (method?: DeliveryMethod | string | null): boolean =>
+  method === 'custom'
 
 /** Доставка за межі України: адреса звичайна, індекс не український. */
 export const isInternational = (method?: DeliveryMethod | string | null): boolean =>
   method === 'international'
+
+/** Обидва способи, де адресу пишуть руками: довідник мовчить, міста немає. */
+export const isPlainAddress = (method?: DeliveryMethod | string | null): boolean =>
+  isCustomAddress(method) || isInternational(method)
 
 /*
   Оплата лише карткою. Накладений платіж прибрано: ті гроші збирає Нова Пошта
@@ -36,6 +61,7 @@ export const deliveryMethodOptions: { label: string; value: DeliveryMethod }[] =
   { label: 'Нова Пошта — поштомат', value: 'np_locker' },
   { label: "Нова Пошта — кур'єр", value: 'np_courier' },
   { label: 'Укрпошта', value: 'ukrposhta' },
+  { label: 'Інша адреса', value: 'custom' },
   { label: 'За кордон', value: 'international' },
 ]
 
@@ -71,3 +97,34 @@ export const asPaymentMethod = (value: unknown): PaymentMethod | undefined =>
  * кошику бракує 440 ₴.
  */
 export const FREE_DELIVERY_FROM = 2500
+
+/*
+  Рядок доставки для службових повідомлень — у Telegram власниці й у лист.
+
+  Доти в повідомленні були лише товар, сума й контакти: куди відправляти,
+  доводилось дивитись в адмінці. Зібрати посилку з самого повідомлення було
+  не можна, і за кожним замовленням доводилось іти в браузер.
+
+  Складається тут, а не в кожному з трьох повідомлень окремо (Telegram про
+  неоплачене, Telegram про оплачене, лист власниці): вони різні, а адреса в
+  них має бути однакова.
+*/
+export const deliveryLine = (order: {
+  deliveryMethod?: string | null
+  deliveryCity?: string | null
+  deliveryBranch?: string | null
+  deliveryPostcode?: string | null
+}): string | null => {
+  const method = order.deliveryMethod
+  // Цифрове замовлення — самі курси, відправляти нічого.
+  if (!method) return null
+
+  const label = deliveryMethodOptions.find((option) => option.value === method)?.label ?? method
+  // Де адресу писали руками, міста немає — усе лежить одним рядком у deliveryBranch.
+  const where = [isPlainAddress(method) ? undefined : order.deliveryCity?.trim(), order.deliveryBranch?.trim()]
+    .filter(Boolean)
+    .join(', ')
+  const postcode = method === 'ukrposhta' ? order.deliveryPostcode?.trim() : undefined
+
+  return [label, where, postcode].filter(Boolean).join(' · ')
+}

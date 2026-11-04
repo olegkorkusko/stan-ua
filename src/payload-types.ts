@@ -583,7 +583,7 @@ export interface Order {
   customerName: string;
   customerPhone: string;
   customerEmail: string;
-  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'international') | null;
+  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'custom' | 'international') | null;
   deliveryCity?: string | null;
   /**
    * Для доставки за кордон сюди приходить уся адреса одним рядком, разом із країною та індексом — її пишуть у вільній формі.
@@ -641,7 +641,7 @@ export interface Customer {
         id?: string | null;
       }[]
     | null;
-  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'international') | null;
+  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'custom' | 'international') | null;
   deliveryCity?: string | null;
   deliveryBranch?: string | null;
   paymentMethod?: ('card' | 'cod') | null;
@@ -1722,6 +1722,18 @@ export interface Setting {
    * Порожньо — смуга складається сама з порога безкоштовної доставки й перекладається. Впишіть свій текст, щоб показати інше оголошення — тоді його треба перекласти окремо для кожної мови.
    */
   announcement?: string | null;
+  /**
+   * Порожньо — «Оформити замовлення».
+   */
+  buttonInStock?: string | null;
+  /**
+   * Порожньо — «Оформити під замовлення».
+   */
+  buttonPreorder?: string | null;
+  /**
+   * Порожньо — «Купити курс».
+   */
+  buttonCourse?: string | null;
   phone?: string | null;
   /**
    * Публічна — показується в підвалі сайту.
@@ -1928,6 +1940,9 @@ export interface AboutSelect<T extends boolean = true> {
  */
 export interface SettingsSelect<T extends boolean = true> {
   announcement?: T;
+  buttonInStock?: T;
+  buttonPreorder?: T;
+  buttonCourse?: T;
   phone?: T;
   email?: T;
   telegramNotify?: T;

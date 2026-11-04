@@ -9,7 +9,7 @@ import {
   priceCart,
   type CartLineInput,
 } from '@/lib/orders'
-import { asDeliveryMethod, isInternational } from '@/lib/delivery'
+import { asDeliveryMethod, deliveryLine, isInternational, isPlainAddress } from '@/lib/delivery'
 import { getRegion } from '@/lib/region.server'
 import type { Region } from '@/lib/region'
 import { formatPrice } from '@/lib/format'
@@ -78,14 +78,17 @@ export const POST = async (request: Request) => {
     }
 
     /*
-      Закордонна адреса — одним рядком, і це єдине, що ми від неї вимагаємо.
+      «Інша адреса» і «За кордон» перевіряються інакше: там немає ні міста зі
+      списку, ні індексу — лише рядок, який покупець написав сам. Вимагати від
+      нього місто окремо означало б не дати оформити саме те замовлення, заради
+      якого ці способи й зʼявились.
 
-      Розкладати її на місто, вулицю й індекс не можна: формати різні
-      («00-001» у Польщі, «SW1A 1AA» у Британії, «K1A 0B1» у Канаді), а
-      український шаблон на п'ять цифр відкинув би їх усі. Власниця відправляє
-      посилку сама, їй потрібен рядок, який можна переписати на бланк.
+      Для закордону це ще й єдине можливе: формати різні («00-001» у Польщі,
+      «SW1A 1AA» у Британії, «K1A 0B1» у Канаді), а український шаблон на пʼять
+      цифр відкинув би їх усі. Власниця відправляє посилку сама, їй потрібен
+      рядок, який можна переписати на бланк.
     */
-    if (hasPhysical && isInternational(deliveryMethod)) {
+    if (hasPhysical && isPlainAddress(deliveryMethod)) {
       if (!body.deliveryBranch?.trim()) {
         return NextResponse.json({ error: 'Вкажіть адресу доставки' }, { status: 400 })
       }
@@ -178,6 +181,13 @@ export const POST = async (request: Request) => {
         .map((line) => `• ${line.title}${line.quantity > 1 ? ` × ${line.quantity}` : ''}`)
         .join('\n')
 
+      const shipping = deliveryLine({
+        deliveryMethod,
+        deliveryCity: body.deliveryCity,
+        deliveryBranch: body.deliveryBranch,
+        deliveryPostcode: body.deliveryPostcode,
+      })
+
       const text = [
         `Нове замовлення ${orderNumber} — ОЧІКУЄ ОПЛАТИ`,
         '',
@@ -186,6 +196,7 @@ export const POST = async (request: Request) => {
         `${formatPrice(total)}`,
         `${body.customerName.trim()}, ${body.customerPhone.trim()}`,
         body.customerEmail.trim(),
+        ...(shipping ? ['', shipping] : []),
         '',
         // Порада залежить від того, чому замовлення неоплачене.
         isConfigured()

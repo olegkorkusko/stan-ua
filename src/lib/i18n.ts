@@ -343,7 +343,7 @@ type Dictionary = {
     address: string
     postcode: string
     postcodeHint: string
-    /** Доставка за кордон: уся адреса одним полем, довідника для неї немає. */
+    /** «Інша адреса» і «За кордон»: довідника немає, пишуть усе одним рядком. */
     fullAddress: string
     fullAddressHint: string
     deliveryNote: string
@@ -722,7 +722,7 @@ const uk: Dictionary = {
     postcode: 'Поштовий індекс',
     postcodeHint: "П'ять цифр — індекс відділення Укрпошти за адресою.",
     fullAddress: 'Адреса доставки',
-    fullAddressHint: 'Країна, місто, вулиця, будинок, квартира та поштовий індекс — усе в одному полі.',
+    fullAddressHint: 'Місто, вулиця, будинок, квартира та поштовий індекс — усе в одному полі. Для доставки за кордон вкажіть і країну.',
     deliveryNote: 'Доставка за тарифами перевізника.',
     payment: 'Оплата',
     card: 'Карткою онлайн · Apple Pay · Google Pay',
@@ -778,6 +778,7 @@ const uk: Dictionary = {
         np_locker: 'Нова Пошта — поштомат',
         np_courier: 'Нова Пошта — курʼєр до дверей',
         ukrposhta: 'Укрпошта',
+        custom: 'Інша адреса',
         international: 'За кордон',
       },
       payments: { card: 'Карткою онлайн' },
@@ -1251,7 +1252,7 @@ const en: Dictionary = {
     postcode: 'Postcode',
     postcodeHint: 'Five digits — the Ukrposhta postcode for this address.',
     fullAddress: 'Delivery address',
-    fullAddressHint: 'Country, city, street, building, apartment and postcode — all in one field.',
+    fullAddressHint: 'City, street, building, apartment and postcode — all in one field. For delivery abroad add the country too.',
     deliveryNote: 'Shipping is charged at the carrier rate.',
     payment: 'Payment',
     card: 'Card online · Apple Pay · Google Pay',
@@ -1306,6 +1307,7 @@ const en: Dictionary = {
         np_locker: 'Nova Poshta - locker',
         np_courier: 'Nova Poshta - courier',
         ukrposhta: 'Ukrposhta',
+        custom: 'Other address',
         international: 'International',
       },
       payments: { card: 'Card online' },

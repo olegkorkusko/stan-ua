@@ -9,7 +9,7 @@ import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 import { Suggest, useSuggestions } from '@/components/site/AddressSuggest'
 import { useLocale } from '@/components/site/LocaleLink'
-import { DELIVERY_METHODS } from '@/lib/delivery'
+import { DELIVERY_METHODS, isPlainAddress } from '@/lib/delivery'
 import { dictionary } from '@/lib/i18n'
 import { rememberSource } from '@/lib/visit-source'
 
@@ -43,11 +43,11 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
   const locale = useLocale()
   const t = dictionary(locale).checkout
   /*
-    Назви способів доставки — зі словника, а не списком у цьому файлі.
+    Підписи способів доставки — зі словника, а не списком у цьому файлі.
     Захардкоджені українською, вони лишались українськими й на англійській
     версії: покупець із-за кордону бачив «Нова Пошта — відділення» посеред
-    англійської форми. Тепер обидві мови беруться з того самого місця, що й у
-    кабінеті.
+    англійської форми. Тепер обидві мови беруться звідти ж, звідки їх бере
+    кабінет.
   */
   const methodLabels = dictionary(locale).account.delivery.methods
   const formRef = useRef<HTMLFormElement>(null)
@@ -91,17 +91,19 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
   // відділень Нової Пошти.
   const isUkrposhta = form.deliveryMethod === 'ukrposhta'
   /*
-    За кордон відправляє власниця сама, перевізника на сайті не вибирають:
-    пересилка вже закладена в закордонну ціну товару. Тому довідник Нової
-    Пошти тут мовчить так само, як і для Укрпошти, а адреса пишеться вручну.
-  */
-  const isIntl = form.deliveryMethod === 'international'
-  // Довідник Нової Пошти мовчить і для Укрпошти, і для закордону: там адресу
-  // пишуть руками.
-  const isPlainAddress = isUkrposhta || isIntl
+    «Інша адреса» і «За кордон» — довідник Нової Пошти мовчить, покупець пише
+    все сам. Те саме поле `deliveryBranch`, що й для решти способів: адреса має
+    приїхати власниці одним рядком, яким він і є.
 
-  const cities = useSuggestions('city', cityQuery, undefined, !isPlainAddress)
-  const branches = useSuggestions('branch', branchQuery, city.ref, !isPlainAddress)
+    За кордон відправляє власниця сама, перевізника на сайті не вибирають:
+    пересилка вже закладена в закордонну ціну товару.
+  */
+  const isOneLineAddress = isPlainAddress(form.deliveryMethod)
+  // Довідник мовчить і для Укрпошти: там адресу теж пишуть руками.
+  const noDirectory = isUkrposhta || isOneLineAddress
+
+  const cities = useSuggestions('city', cityQuery, undefined, !noDirectory)
+  const branches = useSuggestions('branch', branchQuery, city.ref, !noDirectory)
 
   const set = (key: keyof typeof form) => (value: string) => setForm((f) => ({ ...f, [key]: value }))
 
@@ -146,7 +148,7 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
           ...rememberSource(),
           paymentMethod: 'card',
           deliveryBranch: hasPhysical ? branch || branchQuery : undefined,
-          deliveryCity: hasPhysical && !isIntl ? city.label || cityQuery : undefined,
+          deliveryCity: hasPhysical && !isOneLineAddress ? city.label || cityQuery : undefined,
           deliveryPostcode: hasPhysical && isUkrposhta ? postcode : undefined,
           items: items.map((item) => ({
             kind: item.kind,
@@ -277,20 +279,20 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
             </div>
 
             <div className="mt-4 grid gap-3">
-              {/*
-                За кордон — одне поле замість чотирьох.
-
-                Довідника Нової Пошти там немає, а розкладати адресу на країну,
-                місто, вулицю й індекс безглуздо: формати надто різні («00-001»
-                у Польщі, «SW1A 1AA» у Британії), і кожне окреме поле — це ще
-                один привід не дооформити замовлення. Власниця відправляє
-                сама, їй потрібен рядок, який можна переписати на посилку.
-              */}
-              {isIntl ? (
+              {isOneLineAddress ? (
                 <div>
                   <label htmlFor="delivery-address" className="sr-only">
                     {t.fullAddress}
                   </label>
+                  {/*
+                    Одне поле замість міста, вулиці й індексу. Розкладати його
+                    на частини нема сенсу: сюди пишуть якраз те, чого немає в
+                    довіднику, і формат наперед невідомий — від хутора без
+                    відділення до закордонної адреси. Для закордону це ще й
+                    єдине можливе: формати різні («00-001» у Польщі, «SW1A 1AA»
+                    у Британії), а кожне окреме поле — ще один привід не
+                    дооформити замовлення.
+                  */}
                   <textarea
                     id="delivery-address"
                     className="field"
@@ -323,7 +325,7 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
 
               <Suggest
                 placeholder={
-                  form.deliveryMethod === 'np_courier' || isPlainAddress ? t.address : t.branch
+                  form.deliveryMethod === 'np_courier' || noDirectory ? t.address : t.branch
                 }
                 value={branch || branchQuery}
                 show={!branch && form.deliveryMethod !== 'np_courier'}

@@ -29,6 +29,8 @@ import * as migration_20261021_130500_backfill_price_from_export from './2026102
 import * as migration_20261021_142402_course_old_price_export from './20261021_142402_course_old_price_export';
 import * as migration_20261021_143408_product_old_price_export from './20261021_143408_product_old_price_export';
 import * as migration_20261023_165543_drop_delivery_country from './20261023_165543_drop_delivery_country';
+import * as migration_20261023_171945_button_labels from './20261023_171945_button_labels';
+import * as migration_20261023_175717_custom_delivery from './20261023_175717_custom_delivery';
 
 export const migrations = [
   {
@@ -184,6 +186,16 @@ export const migrations = [
   {
     up: migration_20261023_165543_drop_delivery_country.up,
     down: migration_20261023_165543_drop_delivery_country.down,
-    name: '20261023_165543_drop_delivery_country'
+    name: '20261023_165543_drop_delivery_country',
+  },
+  {
+    up: migration_20261023_171945_button_labels.up,
+    down: migration_20261023_171945_button_labels.down,
+    name: '20261023_171945_button_labels',
+  },
+  {
+    up: migration_20261023_175717_custom_delivery.up,
+    down: migration_20261023_175717_custom_delivery.down,
+    name: '20261023_175717_custom_delivery'
   },
 ];

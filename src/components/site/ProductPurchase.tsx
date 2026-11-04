@@ -30,6 +30,12 @@ type Props = {
   slug: string
   basePrice: number
   baseStock: number
+  /*
+    Написи кнопки з адмінки. Порожні — лишається типовий текст зі словника,
+    тому це не «кнопка без напису», а «напис за замовчуванням».
+  */
+  checkoutLabel?: string | null
+  preorderLabel?: string | null
   image?: string
   variants: PurchaseVariant[]
 }
@@ -45,24 +51,43 @@ export const ProductPurchase = ({
   slug,
   basePrice,
   baseStock,
+  checkoutLabel,
+  preorderLabel,
   image,
   variants,
 }: Props) => {
   const { add } = useCart()
   const t = dictionary(useLocale()).product
 
+  /*
+    Кольори, що є в наявності, стоять першими.
+
+    Порядок усередині кожної групи — той, що в адмінці: sort у JS стабільний,
+    тож перетягування варіацій далі працює як раніше, просто всередині «є» і
+    всередині «немає» окремо.
+
+    Колір вважається наявним, якщо хоч одна його варіація має залишок: у
+    товару з розмірами червоний може бути в S і закінчитись у M, і ховати
+    його в кінець через один розмір неправильно.
+  */
   const colors = useMemo(() => {
-    const seen = new Map<string, { id: string; title: string; hex: string }>()
+    const seen = new Map<string, { id: string; title: string; hex: string; available: boolean }>()
     for (const variant of variants) {
-      if (variant.colorId && !seen.has(variant.colorId)) {
-        seen.set(variant.colorId, {
-          id: variant.colorId,
-          title: variant.colorTitle ?? '',
-          hex: variant.colorHex ?? '#000',
-        })
+      if (!variant.colorId) continue
+      const available = (variant.stock ?? 0) > 0
+      const known = seen.get(variant.colorId)
+      if (known) {
+        if (available) known.available = true
+        continue
       }
+      seen.set(variant.colorId, {
+        id: variant.colorId,
+        title: variant.colorTitle ?? '',
+        hex: variant.colorHex ?? '#000',
+        available,
+      })
     }
-    return [...seen.values()]
+    return [...seen.values()].sort((a, b) => Number(b.available) - Number(a.available))
   }, [variants])
 
   /*
@@ -194,7 +219,7 @@ export const ProductPurchase = ({
           className="flex flex-1 items-center justify-center rounded-[2px] bg-ink px-8 py-[15px] text-[12px] font-semibold uppercase leading-[14.4px] tracking-[0.16em] text-paper transition-colors hover:bg-indigo active:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-45"
         >
           <span data-figma-node="I75:1384;10:13">
-            {(available ? t.checkout : t.preorderCheckout).toUpperCase()}
+            {(available ? checkoutLabel?.trim() || t.checkout : preorderLabel?.trim() || t.preorderCheckout).toUpperCase()}
           </span>
         </button>
         {/* Серце тут раніше було намальоване, але мертве: ні обробника, ні
