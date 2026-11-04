@@ -1,7 +1,7 @@
 import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
 
 import { isAdmin } from '@/access'
-import { deliveryMethodOptions, isInternational, storedPaymentMethodOptions } from '@/lib/delivery'
+import { deliveryMethodOptions, isCustomAddress, storedPaymentMethodOptions } from '@/lib/delivery'
 
 /*
   Лист із номером накладної.
@@ -23,10 +23,11 @@ const notifyTracking: CollectionAfterChangeHook = async ({ doc, previousDoc, ope
 
   /*
     Третій випадок тут обов'язковий: доти будь-що, крім Укрпошти, підписувалось
-    «Нова Пошта», і закордонна посилка приходила б покупцеві з назвою
-    перевізника, який за кордон не возить.
+    «Нова Пошта». Для «іншої адреси» перевізника заздалегідь немає — власниця
+    домовляється окремо, і посилка за кордон приходила б з назвою перевізника,
+    який туди не возить.
   */
-  const carrier = isInternational(doc.deliveryMethod)
+  const carrier = isCustomAddress(doc.deliveryMethod)
     ? 'пошта'
     : doc.deliveryMethod === 'ukrposhta'
       ? 'Укрпошта'

@@ -9,7 +9,7 @@ import { formatPrice } from '@/lib/format'
 import { useCart } from '@/providers/CartProvider'
 import { Suggest, useSuggestions } from '@/components/site/AddressSuggest'
 import { useLocale } from '@/components/site/LocaleLink'
-import { DELIVERY_METHODS, isPlainAddress } from '@/lib/delivery'
+import { DELIVERY_METHODS, isCustomAddress } from '@/lib/delivery'
 import { dictionary } from '@/lib/i18n'
 import { rememberSource } from '@/lib/visit-source'
 
@@ -58,7 +58,7 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
     customerEmail: profile?.email ?? '',
     comment: '',
     promoCode: '',
-    deliveryMethod: profile?.deliveryMethod || (region === 'intl' ? 'international' : 'np_branch'),
+    deliveryMethod: profile?.deliveryMethod || (region === 'intl' ? 'custom' : 'np_branch'),
     paymentMethod: 'card' as const,
     newsletter: false,
   })
@@ -98,7 +98,7 @@ export const CheckoutForm = ({ profile }: { profile?: CheckoutProfile | null }) 
     За кордон відправляє власниця сама, перевізника на сайті не вибирають:
     пересилка вже закладена в закордонну ціну товару.
   */
-  const isOneLineAddress = isPlainAddress(form.deliveryMethod)
+  const isOneLineAddress = isCustomAddress(form.deliveryMethod)
   // Довідник мовчить і для Укрпошти: там адресу теж пишуть руками.
   const noDirectory = isUkrposhta || isOneLineAddress
 

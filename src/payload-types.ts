@@ -590,7 +590,7 @@ export interface Order {
   customerName: string;
   customerPhone: string;
   customerEmail: string;
-  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'custom' | 'international') | null;
+  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'custom') | null;
   deliveryCity?: string | null;
   /**
    * Для доставки за кордон сюди приходить уся адреса одним рядком, разом із країною та індексом — її пишуть у вільній формі.
@@ -648,7 +648,7 @@ export interface Customer {
         id?: string | null;
       }[]
     | null;
-  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'custom' | 'international') | null;
+  deliveryMethod?: ('np_branch' | 'np_locker' | 'np_courier' | 'ukrposhta' | 'custom') | null;
   deliveryCity?: string | null;
   deliveryBranch?: string | null;
   paymentMethod?: ('card' | 'cod') | null;

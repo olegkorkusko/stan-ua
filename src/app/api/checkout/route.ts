@@ -9,7 +9,7 @@ import {
   priceCart,
   type CartLineInput,
 } from '@/lib/orders'
-import { asDeliveryMethod, deliveryLine, isInternational, isPlainAddress } from '@/lib/delivery'
+import { asDeliveryMethod, deliveryLine, isCustomAddress } from '@/lib/delivery'
 import { getRegion } from '@/lib/region.server'
 import type { Region } from '@/lib/region'
 import { formatPrice } from '@/lib/format'
@@ -61,7 +61,7 @@ export const POST = async (request: Request) => {
       поїде посилка, тож обманювати тут нічого.
     */
     const deliveryMethod = asDeliveryMethod(body.deliveryMethod)
-    const region: Region = isInternational(deliveryMethod) ? 'intl' : await getRegion()
+    const region: Region = await getRegion()
 
     const lines = await priceCart(payload, body.items, region)
     const hasPhysical = lines.some((line) => line.kind === 'product')
@@ -88,7 +88,7 @@ export const POST = async (request: Request) => {
       цифр відкинув би їх усі. Власниця відправляє посилку сама, їй потрібен
       рядок, який можна переписати на бланк.
     */
-    if (hasPhysical && isPlainAddress(deliveryMethod)) {
+    if (hasPhysical && isCustomAddress(deliveryMethod)) {
       if (!body.deliveryBranch?.trim()) {
         return NextResponse.json({ error: 'Вкажіть адресу доставки' }, { status: 400 })
       }

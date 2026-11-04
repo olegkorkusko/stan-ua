@@ -12,40 +12,23 @@
 
 /*
   `custom` — коли адреси немає в довіднику Нової Пошти: хутір без відділення,
-  гуртожиток, незвична адреса. Покупець пише її вільним рядком, а власниця
+  гуртожиток, адреса за кордоном. Покупець пише її вільним рядком, а власниця
   домовляється про спосіб окремо. Без цього такі замовлення просто не
   оформлювались: форма вимагала обрати місто зі списку.
 
-  `international` — для покупців поза Україною. Перевізника не називаємо
-  навмисно: відправляє власниця сама, чим зручніше на момент відправки, а
-  пересилка вже закладена в закордонну ціну товару.
+  Окремого «За кордон» у списку немає навмисно: для покупця це те саме поле, а
+  закордонну ціну вмикає не спосіб доставки, а регіон — перемикач «Україна / За
+  кордон» у шапці або країна за IP.
 
-  Так, обидва — це «адреса вільним рядком», і здається, що вистачило б одного.
-  Не вистачить: вибір `international` ВМИКАЄ закордонну ціну (checkout, route),
-  а `custom` лишає українську. Злити їх означало б або рахувати закордонну ціну
-  мешканцю хутора, або віддати товар за кордон за українською.
+  У переліку бази значення 'international' лишилось: прибрати значення з enum у
+  PostgreSQL не можна, а зайве нікому не заважає.
 */
-export const DELIVERY_METHODS = [
-  'np_branch',
-  'np_locker',
-  'np_courier',
-  'ukrposhta',
-  'custom',
-  'international',
-] as const
+export const DELIVERY_METHODS = ['np_branch', 'np_locker', 'np_courier', 'ukrposhta', 'custom'] as const
 export type DeliveryMethod = (typeof DELIVERY_METHODS)[number]
 
 /** Адреса вільним рядком: довідника немає, формат не перевіряємо. */
 export const isCustomAddress = (method?: DeliveryMethod | string | null): boolean =>
   method === 'custom'
-
-/** Доставка за межі України: адреса звичайна, індекс не український. */
-export const isInternational = (method?: DeliveryMethod | string | null): boolean =>
-  method === 'international'
-
-/** Обидва способи, де адресу пишуть руками: довідник мовчить, міста немає. */
-export const isPlainAddress = (method?: DeliveryMethod | string | null): boolean =>
-  isCustomAddress(method) || isInternational(method)
 
 /*
   Оплата лише карткою. Накладений платіж прибрано: ті гроші збирає Нова Пошта
@@ -62,7 +45,6 @@ export const deliveryMethodOptions: { label: string; value: DeliveryMethod }[] =
   { label: "Нова Пошта — кур'єр", value: 'np_courier' },
   { label: 'Укрпошта', value: 'ukrposhta' },
   { label: 'Інша адреса', value: 'custom' },
-  { label: 'За кордон', value: 'international' },
 ]
 
 export const paymentMethodOptions: { label: string; value: PaymentMethod }[] = [
@@ -120,8 +102,8 @@ export const deliveryLine = (order: {
   if (!method) return null
 
   const label = deliveryMethodOptions.find((option) => option.value === method)?.label ?? method
-  // Де адресу писали руками, міста немає — усе лежить одним рядком у deliveryBranch.
-  const where = [isPlainAddress(method) ? undefined : order.deliveryCity?.trim(), order.deliveryBranch?.trim()]
+  // Для «іншої адреси» міста немає — усе лежить одним рядком у deliveryBranch.
+  const where = [isCustomAddress(method) ? undefined : order.deliveryCity?.trim(), order.deliveryBranch?.trim()]
     .filter(Boolean)
     .join(', ')
   const postcode = method === 'ukrposhta' ? order.deliveryPostcode?.trim() : undefined
