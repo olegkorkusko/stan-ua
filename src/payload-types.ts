@@ -497,12 +497,19 @@ export interface Course {
         id?: string | null;
       }[]
     | null;
-  accessType: 'telegram' | 'canva' | 'both';
+  /**
+   * «Всі» показує всі три поля — заповніть ті, що маєте. Так курс дістається і тим, хто в Telegram, і тим, хто у WhatsApp.
+   */
+  accessType: 'telegram' | 'canva' | 'whatsapp' | 'both';
   /**
    * Наприклад -1001234567890. Бот має бути адміністратором каналу з правом створювати запрошення.
    */
   telegramChatId?: string | null;
   canvaUrl?: string | null;
+  /**
+   * Увага: у WhatsApp посилання на групу одне для всіх і безстрокове, його можна переслати. Персональних запрошень, як у Telegram, WhatsApp не робить.
+   */
+  whatsappUrl?: string | null;
   faq?:
     | {
         question: string;
@@ -1156,6 +1163,7 @@ export interface CoursesSelect<T extends boolean = true> {
   accessType?: T;
   telegramChatId?: T;
   canvaUrl?: T;
+  whatsappUrl?: T;
   faq?:
     | T
     | {

@@ -372,7 +372,11 @@ type Dictionary = {
     accessEmpty: string
     /** Друга половина рядка «12 МК · доступ назавжди» під назвою курсу. */
     accessForever: string
-    openTelegram: string
+    /**
+     * Напис на кнопці доступу. Куди вона веде — залежить від курсу: Telegram,
+     * WhatsApp чи Canva, і визначається за самим посиланням (`linkKind`).
+     */
+    open: { telegram: string; whatsapp: string; canva: string }
     preparing: string
     personalNote: string
     resend: string
@@ -747,7 +751,11 @@ const uk: Dictionary = {
     accessEmpty: 'Тут зʼявляться курси, які ви купите.',
     // З малої: у макеті це середина рядка «12 МК · доступ назавжди».
     accessForever: 'доступ назавжди',
-    openTelegram: 'Відкрити в Telegram',
+    open: {
+      telegram: 'Відкрити в Telegram',
+      whatsapp: 'Відкрити у WhatsApp',
+      canva: 'Відкрити проєкт',
+    },
     preparing: 'Посилання готується',
     personalNote: 'Посилання персональні — не пересилайте їх іншим.',
     resend: 'Видати посилання ще раз',
@@ -1276,7 +1284,11 @@ const en: Dictionary = {
     tabs: { access: 'My access', saved: 'Saved', delivery: 'Delivery details' },
     accessEmpty: 'Courses you buy will appear here.',
     accessForever: 'lifetime access',
-    openTelegram: 'Open in Telegram',
+    open: {
+      telegram: 'Open in Telegram',
+      whatsapp: 'Open in WhatsApp',
+      canva: 'Open the project',
+    },
     preparing: 'Link is being prepared',
     personalNote: 'These links are personal - please do not forward them.',
     resend: 'Issue the link again',

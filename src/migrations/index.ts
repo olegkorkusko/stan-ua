@@ -31,6 +31,8 @@ import * as migration_20261021_143408_product_old_price_export from './20261021_
 import * as migration_20261023_165543_drop_delivery_country from './20261023_165543_drop_delivery_country';
 import * as migration_20261023_171945_button_labels from './20261023_171945_button_labels';
 import * as migration_20261023_175717_custom_delivery from './20261023_175717_custom_delivery';
+import * as migration_20261104_120000_course_whatsapp from './20261104_120000_course_whatsapp';
+import * as migration_20261104_160000_course_whatsapp_access from './20261104_160000_course_whatsapp_access';
 
 export const migrations = [
   {
@@ -197,5 +199,15 @@ export const migrations = [
     up: migration_20261023_175717_custom_delivery.up,
     down: migration_20261023_175717_custom_delivery.down,
     name: '20261023_175717_custom_delivery'
+  },
+  {
+    up: migration_20261104_120000_course_whatsapp.up,
+    down: migration_20261104_120000_course_whatsapp.down,
+    name: '20261104_120000_course_whatsapp'
+  },
+  {
+    up: migration_20261104_160000_course_whatsapp_access.up,
+    down: migration_20261104_160000_course_whatsapp_access.down,
+    name: '20261104_160000_course_whatsapp_access'
   },
 ];

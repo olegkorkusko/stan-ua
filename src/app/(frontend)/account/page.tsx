@@ -10,7 +10,9 @@ import { accountCustomer } from '@/lib/account'
 import { plural } from '@/lib/format'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
+import { whatsappGroup } from '@/lib/course-access'
 import { imageAlt, imageUrl } from '@/lib/media'
+import { linkKind } from '@/lib/messengers'
 import type { Course } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -90,6 +92,19 @@ const AccountPage = async () => {
 
             const nodes = ROW_NODES[index]
             const cover = imageUrl(course.cover, 'card')
+            /*
+              Доступ буває у двох місцях одразу: персональне запрошення в
+              Telegram (чи посилання на Canva) зберігається в записі доступу, а
+              група у WhatsApp живе в самому курсі — вона одна для всіх, тож
+              зберігати її нема сенсу.
+
+              Кнопка лишається одна, як у макеті; друге посилання йде текстом
+              поряд із «видати ще раз». Коли WhatsApp — єдиний доступ, він і
+              стає кнопкою: у таких курсів у записі лежить саме він.
+            */
+            const whatsapp = whatsappGroup(course)
+            const primary = item.telegramInviteLink ?? whatsapp
+            const secondary = whatsapp && whatsapp !== primary ? whatsapp : null
             const lessons = course.lessons?.length ?? 0
             const details = [
               lessons > 0 ? plural(lessons, 'МК', 'МК', 'МК') : null,
@@ -141,19 +156,29 @@ const AccountPage = async () => {
                   >
                     {details}
                   </p>
+                  {secondary && (
+                    <a
+                      href={secondary}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="thread-link self-start text-xs text-ink transition-opacity hover:opacity-70 active:opacity-50"
+                    >
+                      {t.account.open.whatsapp}
+                    </a>
+                  )}
                   <ResendAccess courseId={course.id} />
                 </div>
 
-                {item.telegramInviteLink ? (
+                {primary ? (
                   <a
-                    href={item.telegramInviteLink}
+                    href={primary}
                     target="_blank"
                     rel="noreferrer"
                     data-figma-node={nodes?.action}
                     className="btn btn-outline w-full md:w-auto"
                   >
                     <span data-figma-node={`I${nodes?.action};10:15`}>
-                      {t.account.openTelegram.toUpperCase()}
+                      {t.account.open[linkKind(primary)].toUpperCase()}
                     </span>
                   </a>
                 ) : (

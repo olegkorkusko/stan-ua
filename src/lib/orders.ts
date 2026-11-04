@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import type { Payload } from 'payload'
 
 import { formatPrice } from '@/lib/format'
+import { whatsappGroup, withCanva, withTelegram } from '@/lib/course-access'
 import { deliveryLine } from '@/lib/delivery'
 import { priceFor, variantPrice } from '@/lib/price'
 import type { Region } from '@/lib/region'
@@ -275,9 +276,7 @@ export const fulfillOrder = async (
       const course = await payload.findByID({ collection: 'courses', id: courseId, depth: 0 })
       let inviteLink: string | undefined
 
-      const needsTelegram = ['telegram', 'both'].includes(course.accessType)
-
-      if (needsTelegram && course.telegramChatId) {
+      if (withTelegram.includes(course.accessType) && course.telegramChatId) {
         const link = await createCourseInvite(course.telegramChatId, course.title)
         if (link) {
           inviteLink = link
@@ -285,15 +284,32 @@ export const fulfillOrder = async (
         } else {
           undelivered.push(course.title)
         }
-      } else if (needsTelegram) {
-        // Канал не вказано взагалі — публікацію таке вже не проходить, але
-        // старі курси могли лишитись без нього.
+      } else if (course.accessType === 'telegram') {
+        /*
+          Канал не вказано взагалі, а він тут єдиний спосіб — покупцю нема що
+          надіслати. Публікацію таке вже не проходить, але старі курси могли
+          лишитись без нього.
+
+          Для «Всі» мовчимо: там порожній канал означає просто «цей спосіб не
+          використовуємо», і доступ прийде іншим.
+        */
         undelivered.push(course.title)
       }
 
-      if (['canva', 'both'].includes(course.accessType) && course.canvaUrl) {
+      if (withCanva.includes(course.accessType) && course.canvaUrl) {
         inviteLink = inviteLink ?? course.canvaUrl
         invites.push(`${course.title}: ${course.canvaUrl}`)
+      }
+
+      /*
+        Запасним для `inviteLink` група стає лише тоді, коли іншого немає:
+        кабінет зберігає одне посилання, і персональне запрошення в Telegram
+        там корисніше за спільну групу.
+      */
+      const whatsapp = whatsappGroup(course)
+      if (whatsapp) {
+        inviteLink = inviteLink ?? whatsapp
+        invites.push(`${course.title}: ${whatsapp}`)
       }
 
       grants.push({

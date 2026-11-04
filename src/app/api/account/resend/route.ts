@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 
 import { hasCourseAccess } from '@/lib/access'
+import { whatsappGroup, withTelegram } from '@/lib/course-access'
 import { createCourseInvite } from '@/lib/telegram'
 
 /**
@@ -31,10 +32,14 @@ export const POST = async (request: Request) => {
   const course = await payload.findByID({ collection: 'courses', id: courseId, depth: 0 })
 
   let link: string | null = null
-  if (['telegram', 'both'].includes(course.accessType) && course.telegramChatId) {
+  if (withTelegram.includes(course.accessType) && course.telegramChatId) {
     link = await createCourseInvite(course.telegramChatId, course.title)
   }
   if (!link && course.canvaUrl) link = course.canvaUrl
+  // Групу у WhatsApp перевипускати нема потреби — посилання безстрокове.
+  // Але як запасне воно потрібне: інакше курс, у якого є лише вона, віддав би
+  // покупцю «не вдалось випустити посилання».
+  if (!link) link = whatsappGroup(course)
 
   if (!link) {
     return NextResponse.json(

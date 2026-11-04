@@ -3,6 +3,7 @@ import { ValidationError } from 'payload'
 
 import { anyone, isAdmin, publishedOrAdmin } from '@/access'
 import { slugField } from '@/fields/slug'
+import { withCanva, withTelegram, withWhatsapp } from '@/lib/course-access'
 import { courseChannelProblem } from '@/lib/telegram'
 import { SUGGEST_IN_CART } from './hints'
 
@@ -58,8 +59,8 @@ export const CourseDirections: CollectionConfig = {
   ],
 }
 
-const fail = (message: string) =>
-  new ValidationError({ collection: 'courses', errors: [{ message, path: 'telegramChatId' }] })
+const fail = (message: string, path = 'telegramChatId') =>
+  new ValidationError({ collection: 'courses', errors: [{ message, path }] })
 
 /*
   Не дати опублікувати курс, доступ до якого нікому буде видати.
@@ -72,17 +73,44 @@ const fail = (message: string) =>
   курс саме зараз публікують. Інакше кожне редагування опису ходило б у Telegram.
 */
 const verifyChannel: CollectionBeforeChangeHook = async ({ data, originalDoc }) => {
-  if (!['telegram', 'both'].includes(data.accessType)) return data
-
-  const chatId = typeof data.telegramChatId === 'string' ? data.telegramChatId.trim() : ''
+  // Чернетку лишаємо яку завгодно: курс заводять поступово.
   const publishing = data.status === 'published' && originalDoc?.status !== 'published'
 
-  if (!chatId) {
-    // Чернетку без каналу лишаємо: курс заводять поступово.
-    if (publishing) throw fail('Вкажіть ID каналу — інакше після оплати покупець не отримає доступу')
-    return data
+  const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '')
+  const chatId = text(data.telegramChatId)
+  const canva = text(data.canvaUrl)
+  const whatsapp = text(data.whatsappUrl)
+
+  /*
+    Публікувати курс, доступ до якого нікому буде видати, не даємо: гроші
+    списано, лист пішов без посилання, покупець пише «а де курс?».
+
+    Для «Всі» вимагаємо не всі три, а хоча б одне. Способи складаються, і
+    «Canva + група у WhatsApp, без Telegram» — така сама жива комбінація, як
+    будь-яка інша; вимога каналу просто не дала б її опублікувати.
+  */
+  if (publishing) {
+    if (data.accessType === 'telegram' && !chatId) {
+      throw fail('Вкажіть ID каналу — інакше після оплати покупець не отримає доступу')
+    }
+    if (data.accessType === 'canva' && !canva) {
+      throw fail('Вкажіть посилання на Canva — інакше після оплати покупець не отримає доступу', 'canvaUrl')
+    }
+    if (data.accessType === 'whatsapp' && !whatsapp) {
+      throw fail('Вкажіть посилання на групу — інакше після оплати покупець не отримає доступу', 'whatsappUrl')
+    }
+    if (data.accessType === 'both' && !chatId && !canva && !whatsapp) {
+      throw fail('Заповніть хоча б одне: канал у Telegram, Canva або групу у WhatsApp')
+    }
   }
 
+  /*
+    Сам канал перевіряємо в Telegram — помилка в id або незданий ботові доступ
+    інакше виявляються аж після першого продажу. Не на кожне збереження, а коли
+    є що перевіряти: канал змінився або курс саме зараз публікують. Інакше
+    кожне редагування опису ходило б у Telegram.
+  */
+  if (!withTelegram.includes(data.accessType) || !chatId) return data
   if (!publishing && chatId === originalDoc?.telegramChatId) return data
 
   const problem = await courseChannelProblem(chatId)
@@ -216,15 +244,20 @@ export const Courses: CollectionConfig = {
               options: [
                 { label: 'Запрошення в закритий Telegram-канал', value: 'telegram' },
                 { label: 'Посилання на проєкт у Canva', value: 'canva' },
-                { label: 'І те, і те', value: 'both' },
+                { label: 'Група у WhatsApp', value: 'whatsapp' },
+                { label: 'Всі', value: 'both' },
               ],
+              admin: {
+                description:
+                  '«Всі» показує всі три поля — заповніть ті, що маєте. Так курс дістається і тим, хто в Telegram, і тим, хто у WhatsApp.',
+              },
             },
             {
               name: 'telegramChatId',
               type: 'text',
               label: 'ID Telegram-каналу',
               admin: {
-                condition: (data) => ['telegram', 'both'].includes(data?.accessType),
+                condition: (data) => withTelegram.includes(data?.accessType),
                 description:
                   'Наприклад -1001234567890. Бот має бути адміністратором каналу з правом створювати запрошення.',
               },
@@ -233,7 +266,23 @@ export const Courses: CollectionConfig = {
               name: 'canvaUrl',
               type: 'text',
               label: 'Посилання на Canva (для курсу цілком)',
-              admin: { condition: (data) => ['canva', 'both'].includes(data?.accessType) },
+              admin: { condition: (data) => withCanva.includes(data?.accessType) },
+            },
+            /*
+              Персонального запрошення, як у Telegram, WhatsApp не вміє: API для
+              цього немає, посилання на групу створюють руками в застосунку, і
+              воно одне на всіх. Тому його можна переслати тому, хто не платив, —
+              і саме це сказано в підписі, щоб клієнтка вирішувала свідомо.
+            */
+            {
+              name: 'whatsappUrl',
+              type: 'text',
+              label: 'Посилання на групу WhatsApp',
+              admin: {
+                condition: (data) => withWhatsapp.includes(data?.accessType),
+                description:
+                  'Увага: у WhatsApp посилання на групу одне для всіх і безстрокове, його можна переслати. Персональних запрошень, як у Telegram, WhatsApp не робить.',
+              },
             },
           ],
         },
