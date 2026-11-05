@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 
 import { HeroMedia } from '@/components/site/HeroMedia'
 import { ProductCard } from '@/components/site/ProductCard'
+import { visibleWhere } from '@/lib/audience'
+import { getRegion } from '@/lib/region.server'
 import { cardKey } from '@/lib/cards'
 import { dictionary, type Locale } from '@/lib/i18n'
 import { imageAlt, imageUrl } from '@/lib/media'
@@ -78,7 +80,7 @@ const CategoryPage = async ({ params }: { params: Params }) => {
   const products = await payload.find({
     locale,
     collection: 'products',
-    where: { status: { equals: 'published' }, category: { equals: category.id } },
+    where: visibleWhere(await getRegion(), { category: { equals: category.id } }),
     limit: 40,
     depth: 1,
   })

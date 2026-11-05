@@ -10,6 +10,8 @@ import { imageAlt, imageUrl } from '@/lib/media'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 import { savedItems } from '@/lib/saved'
+import { visibleWhere } from '@/lib/audience'
+import { getRegion } from '@/lib/region.server'
 
 export const dynamic = 'force-dynamic'
 
@@ -69,7 +71,7 @@ const DirectionPage = async ({ params }: { params: Params }) => {
 
   const courses = await payload.find({ locale,
     collection: 'courses',
-    where: { status: { equals: 'published' }, direction: { equals: direction.id } },
+    where: visibleWhere(await getRegion(), { direction: { equals: direction.id } }),
     limit: 40,
     depth: 1,
   })

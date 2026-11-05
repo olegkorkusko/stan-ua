@@ -16,6 +16,7 @@ import { productCard, productGallery } from '@/lib/product-media'
 import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { cardPrice, oldPriceFor, priceFor, variantPrice } from '@/lib/price'
+import { visibleWhere } from '@/lib/audience'
 import { getPricing } from '@/lib/region.server'
 import { payloadClient } from '@/lib/payload'
 import { savedItems } from '@/lib/saved'
@@ -27,6 +28,17 @@ export const dynamic = 'force-dynamic'
 
 type Params = Promise<{ slug: string }>
 
+/*
+  Сама сторінка мітку регіону НЕ перевіряє — навмисно.
+
+  Якби перевіряла, картка «Тільки Україна» віддавала б 404 роботу Google: він
+  ходить із американських адрес, тож для нього весь сайт закордонний. Сторінка
+  просто зникла б із пошуку — разом із українськими покупцями, які її шукають.
+
+  Ціна такого рішення: іноземець, який має пряме посилання на українську
+  картку, побачить її й українську ціну. Щоб це сталося, посилання треба
+  звідкись узяти — у списках, пошуку й каталозі його для нього немає.
+*/
 const findProduct = async (slug: string) => {
   const payload = await payloadClient()
   const locale = await getLocale()
@@ -73,11 +85,10 @@ const ProductPage = async ({ params }: { params: Params }) => {
       ? payload.find({
           locale,
           collection: 'products',
-          where: {
-            status: { equals: 'published' },
+          where: visibleWhere(region, {
             category: { equals: categoryId },
             id: { not_equals: product.id },
-          },
+          }),
           limit: 4,
           depth: 2,
         })

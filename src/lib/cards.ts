@@ -1,4 +1,5 @@
 import { imageUrl } from '@/lib/media'
+import { visibleWhere } from '@/lib/audience'
 import { cardPrice, priceFor } from '@/lib/price'
 import { getRegion } from '@/lib/region.server'
 import { payloadClient } from '@/lib/payload'
@@ -172,7 +173,7 @@ export const directionCards = async (locale: Locale): Promise<Map<string, Card>>
     }),
     payload.find({
       collection: 'courses',
-      where: { status: { equals: 'published' } },
+      where: visibleWhere(region),
       limit: 500,
       depth: 0,
     }),
@@ -245,7 +246,7 @@ export const categoryCards = async (locale: Locale): Promise<Map<string, Card>> 
     }),
     payload.find({
       collection: 'products',
-      where: { status: { equals: 'published' } },
+      where: visibleWhere(region),
       limit: 500,
       depth: 0,
     }),

@@ -11,6 +11,8 @@ import { payloadClient } from '@/lib/payload'
 import { savedItems } from '@/lib/saved'
 import type { Course, CourseDirection } from '@/payload-types'
 import { SectionLabel, SectionTitle } from '@/components/site/Typography'
+import { visibleWhere } from '@/lib/audience'
+import { getRegion } from '@/lib/region.server'
 
 export const dynamic = 'force-dynamic'
 
@@ -71,13 +73,18 @@ const CoursesCatalogPage = async ({ searchParams }: { searchParams: SearchParams
   const dirBySlug = new Map(directions.docs.map((d) => [d.slug, d]))
   const activeDir = params.direction ? dirBySlug.get(params.direction) : undefined
 
-  const where: Where = { status: { equals: 'published' } }
-  if (activeDir) where.direction = { equals: activeDir.id }
+  // Фільтри з адреси — окремим обʼєктом: базову умову («опубліковано» й мітка
+  // регіону) складає visibleWhere, і домішувати до неї поля напряму не можна.
+  const region = await getRegion()
+  const filters: Where = {}
+  if (activeDir) filters.direction = { equals: activeDir.id }
   // Рівень — поле самого курсу (вкладка «Основне»), а не окремого МК усередині
   // масиву lessons. Запит по 'lessons.level' Payload відхиляє з помилкою.
   if (params.level && LEVELS.includes(params.level as (typeof LEVELS)[number])) {
-    where.level = { equals: params.level }
+    filters.level = { equals: params.level }
   }
+
+  const where = visibleWhere(region, filters)
 
   const sort = sorts.some((s) => s.value === params.sort) ? params.sort! : '-createdAt'
 
@@ -108,9 +115,10 @@ const CoursesCatalogPage = async ({ searchParams }: { searchParams: SearchParams
         // Курси обраного напряму (або всі) — набори шукаємо вже по них.
         const scope = await payload.find({
           collection: 'courses',
-          where: activeDir
-            ? { status: { equals: 'published' }, direction: { equals: activeDir.id } }
-            : { status: { equals: 'published' } },
+          where: visibleWhere(
+            region,
+            activeDir ? { direction: { equals: activeDir.id } } : undefined,
+          ),
           limit: 200,
           depth: 0,
         })
@@ -119,7 +127,7 @@ const CoursesCatalogPage = async ({ searchParams }: { searchParams: SearchParams
         return payload.find({
           locale,
           collection: 'products',
-          where: { status: { equals: 'published' }, courses: { in: ids } },
+          where: visibleWhere(region, { courses: { in: ids } }),
           limit: 48,
           depth: 1,
         })

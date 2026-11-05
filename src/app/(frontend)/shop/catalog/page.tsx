@@ -7,6 +7,7 @@ import { ProductCard } from '@/components/site/ProductCard'
 import { dictionary } from '@/lib/i18n'
 import { formatPrice } from '@/lib/format'
 import { getLocale } from '@/lib/locale'
+import { visibleWhere } from '@/lib/audience'
 import { getPricing } from '@/lib/region.server'
 import { payloadClient } from '@/lib/payload'
 import { savedItems } from '@/lib/saved'
@@ -74,21 +75,25 @@ const ShopCatalogPage = async ({ searchParams }: { searchParams: SearchParams })
     payload.find({ locale, collection: 'colors', limit: 40, depth: 0 }),
   ])
 
-  const where: Where = { status: { equals: 'published' } }
+  // Фільтри з адреси — окремим обʼєктом: базову умову («опубліковано» й мітка
+  // регіону) складає visibleWhere, і домішувати до неї поля напряму не можна.
+  const filters: Where = {}
   const category = categories.docs.find((c) => c.slug === params.category)
   const color = colors.docs.find((c) => c.slug === params.color)
 
-  if (category) where.category = { equals: category.id }
-  if (color) where['variants.color'] = { equals: color.id }
-  if (params.instock === '1') where.inStock = { equals: true }
+  if (category) filters.category = { equals: category.id }
+  if (color) filters['variants.color'] = { equals: color.id }
+  if (params.instock === '1') filters.inStock = { equals: true }
 
   const range = PRICE_RANGES.find((item) => item.value === params.price)
   if (range) {
     // Фільтруємо за тією самою ціною, яку покупець бачить на картці.
-    where[priceField] = range.max
+    filters[priceField] = range.max
       ? { greater_than_equal: range.min, less_than_equal: range.max }
       : { greater_than_equal: range.min }
   }
+
+  const where = visibleWhere(region, filters)
 
   const sort = (SORTS.some((s) => s.value === params.sort) ? params.sort! : '-createdAt').replace(
     'priceFrom',

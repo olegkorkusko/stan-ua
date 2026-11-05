@@ -4,6 +4,14 @@ import { payloadClient } from '@/lib/payload'
 
 const base = process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000'
 
+/*
+  Мапу сайту мітка «Кому показувати» не фільтрує.
+
+  Карта одна на всіх, а регіон у кожного відвідувача свій — відсіяти тут
+  означало б прибрати сторінку з пошуку назовсім. Сторінки лишаються
+  доступними за прямим посиланням (див. коментар у shop/[slug]), тож Google
+  їх бачить; із каталогу й пошуку на сайті чужа картка все одно не видно.
+*/
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
   const payload = await payloadClient()
 

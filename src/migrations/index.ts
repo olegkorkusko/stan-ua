@@ -33,6 +33,7 @@ import * as migration_20261023_171945_button_labels from './20261023_171945_butt
 import * as migration_20261023_175717_custom_delivery from './20261023_175717_custom_delivery';
 import * as migration_20261104_120000_course_whatsapp from './20261104_120000_course_whatsapp';
 import * as migration_20261104_160000_course_whatsapp_access from './20261104_160000_course_whatsapp_access';
+import * as migration_20261105_100000_audience from './20261105_100000_audience';
 
 export const migrations = [
   {
@@ -209,5 +210,10 @@ export const migrations = [
     up: migration_20261104_160000_course_whatsapp_access.up,
     down: migration_20261104_160000_course_whatsapp_access.down,
     name: '20261104_160000_course_whatsapp_access'
+  },
+  {
+    up: migration_20261105_100000_audience.up,
+    down: migration_20261105_100000_audience.down,
+    name: '20261105_100000_audience'
   },
 ];

@@ -10,6 +10,7 @@ import { cartKey } from '@/lib/cart-key'
 import { priceFor, variantPrice } from '@/lib/price'
 import { getRegion } from '@/lib/region.server'
 import type { Region } from '@/lib/region'
+import { visibleWhere } from '@/lib/audience'
 
 const COOKIE = 'mk_cart'
 const YEAR = 60 * 60 * 24 * 365
@@ -160,10 +161,7 @@ const suggest = async (payload: Payload, items: { kind: string; id: string }[], 
   const products = async (suggested: boolean) => {
     const found = await payload.find({
       collection: 'products',
-      where: {
-        status: { equals: 'published' },
-        ...(suggested ? { suggestInCart: { equals: true } } : {}),
-      },
+      where: visibleWhere(region, suggested ? { suggestInCart: { equals: true } } : undefined),
       sort: 'price',
       limit: chosen.size + LIMIT,
       depth: 2,
@@ -183,7 +181,7 @@ const suggest = async (payload: Payload, items: { kind: string; id: string }[], 
   const courses = async () => {
     const found = await payload.find({
       collection: 'courses',
-      where: { status: { equals: 'published' }, suggestInCart: { equals: true } },
+      where: visibleWhere(region, { suggestInCart: { equals: true } }),
       sort: 'price',
       limit: chosen.size + LIMIT,
       depth: 1,

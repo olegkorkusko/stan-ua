@@ -8,6 +8,8 @@ import { dictionary } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { payloadClient } from '@/lib/payload'
 import { savedItems } from '@/lib/saved'
+import { visibleWhere } from '@/lib/audience'
+import { getRegion } from '@/lib/region.server'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,25 +30,24 @@ const SearchPage = async ({ searchParams }: { searchParams: SearchParams }) => {
 
   const payload = await payloadClient()
   const locale = await getLocale()
+  const region = await getRegion()
   const t = dictionary(locale)
 
   const [products, courses] = query
     ? await Promise.all([
         payload.find({ locale,
           collection: 'products',
-          where: {
-            status: { equals: 'published' },
+          where: visibleWhere(region, {
             or: [{ title: { like: query } }, { shortDescription: { like: query } }],
-          },
+          }),
           limit: 24,
           depth: 2,
         }),
         payload.find({ locale,
           collection: 'courses',
-          where: {
-            status: { equals: 'published' },
+          where: visibleWhere(region, {
             or: [{ title: { like: query } }, { tagline: { like: query } }],
-          },
+          }),
           limit: 12,
           depth: 1,
         }),

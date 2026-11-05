@@ -12,6 +12,7 @@ import { Reviews } from '@/components/site/Reviews'
 import { MediaGallery } from '@/components/site/MediaGallery'
 import { SaveButton } from '@/components/site/SaveButton'
 import { viewerOwnsCourse } from '@/lib/access'
+import { visibleWhere } from '@/lib/audience'
 import { whatsappGroup, withCanva, withTelegram } from '@/lib/course-access'
 import { plural } from '@/lib/format'
 import { imageAlt, imageUrl } from '@/lib/media'
@@ -63,6 +64,11 @@ const accessPromise = (course: Course): string => {
   return `Одразу після оплати ви отримаєте ${list}. ${tail} — доступ безтерміновий.`
 }
 
+/*
+  Сама сторінка мітку регіону НЕ перевіряє — з тієї ж причини, що й сторінка
+  товару: робот Google ходить із американських адрес, і картка «Тільки
+  Україна» зникла б із пошуку для всіх, зокрема для українців.
+*/
 const findCourse = async (slug: string) => {
   const payload = await payloadClient()
   const locale = await getLocale()
@@ -124,7 +130,7 @@ const CoursePage = async ({ params }: { params: Params }) => {
   const kits = await payload.find({
     locale,
     collection: 'products',
-    where: { status: { equals: 'published' }, courses: { in: [course.id] } },
+    where: visibleWhere(region, { courses: { in: [course.id] } }),
     limit: 8,
     depth: 1,
   })
