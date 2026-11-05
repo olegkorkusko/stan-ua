@@ -1,6 +1,8 @@
 import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 
 import { isAdmin, publishedOrAdmin } from '@/access'
+import { audienceField } from '@/fields/audience'
+import { priceFields } from '@/fields/prices'
 import { slugField } from '@/fields/slug'
 import { SUGGEST_IN_CART } from './hints'
 
@@ -141,47 +143,10 @@ export const Products: CollectionConfig = {
               localized: true,
               admin: { description: 'Один-два рядки під назвою на сторінці товару.' },
             },
-            {
-              name: 'price',
-              type: 'number',
-              label: 'Ціна, ₴',
-              required: true,
-              min: 0,
-              admin: {
-                description:
-                  'Базова ціна. Для окремих варіацій її можна перевизначити у вкладці «Варіації та залишки».',
-              },
-            },
-            {
-              name: 'priceExport',
-              type: 'number',
-              label: 'Ціна для закордону, ₴',
-              min: 0,
-              admin: {
-                description:
-                  'Для покупців поза Україною. Сюди закладають пересилку — на сайті їм пишеться «безкоштовна доставка». Порожньо — беремо звичайну ціну.',
-              },
-            },
-            {
-              name: 'oldPrice',
-              type: 'number',
-              label: 'Стара ціна, ₴',
-              min: 0,
-              admin: {
-                description:
-                  'Закреслена ціна для покупців з України. Показується на сторінці товару; на картці в каталозі її немає — так само, як у курсів.',
-              },
-            },
-            {
-              name: 'oldPriceExport',
-              type: 'number',
-              label: 'Стара ціна для закордону, ₴',
-              min: 0,
-              admin: {
-                description:
-                  'Закреслена ціна для закордону. Порожньо — за кордоном знижки не показуємо. Українську сюди НЕ підставляємо: ціна для закордону вища, і закреслена українська виглядала б як подорожчання, подане знижкою.',
-              },
-            },
+            ...priceFields({
+              baseHint:
+                'Для окремих варіацій її можна перевизначити у вкладці «Варіації та залишки».',
+            }),
             {
               name: 'cardImage',
               type: 'upload',
@@ -486,6 +451,7 @@ export const Products: CollectionConfig = {
       admin: { position: 'sidebar' },
       index: true,
     },
+    audienceField(),
     {
       name: 'featured',
       type: 'checkbox',

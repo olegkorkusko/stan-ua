@@ -2,6 +2,8 @@ import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 import { ValidationError } from 'payload'
 
 import { anyone, isAdmin, publishedOrAdmin } from '@/access'
+import { audienceField } from '@/fields/audience'
+import { priceFields } from '@/fields/prices'
 import { slugField } from '@/fields/slug'
 import { withCanva, withTelegram, withWhatsapp } from '@/lib/course-access'
 import { courseChannelProblem } from '@/lib/telegram'
@@ -160,37 +162,7 @@ export const Courses: CollectionConfig = {
               },
             },
             { name: 'description', type: 'richText', label: 'Опис', localized: true },
-            {
-              type: 'row',
-              fields: [
-                { name: 'price', type: 'number', label: 'Ціна, ₴', required: true, min: 0, admin: { width: '25%' } },
-                {
-                  name: 'oldPrice',
-                  type: 'number',
-                  label: 'Стара ціна, ₴',
-                  min: 0,
-                  admin: { width: '25%', description: 'Закреслена ціна для покупців з України.' },
-                },
-                {
-                  name: 'priceExport',
-                  type: 'number',
-                  label: 'Для закордону, ₴',
-                  min: 0,
-                  admin: { width: '25%', description: 'Порожньо — беремо звичайну ціну.' },
-                },
-                {
-                  name: 'oldPriceExport',
-                  type: 'number',
-                  label: 'Стара для закордону, ₴',
-                  min: 0,
-                  admin: {
-                    width: '25%',
-                    description:
-                      'Закреслена ціна для закордону. Порожньо — за кордоном знижки не показуємо.',
-                  },
-                },
-              ],
-            },
+            ...priceFields({ baseHint: 'Скільки коштує курс покупцям з України.' }),
             {
               name: 'level',
               type: 'select',
@@ -323,6 +295,7 @@ export const Courses: CollectionConfig = {
       admin: { position: 'sidebar' },
       index: true,
     },
+    audienceField(),
     { name: 'featured', type: 'checkbox', label: 'Показувати на головній', admin: { position: 'sidebar' } },
     {
       name: 'suggestInCart',
